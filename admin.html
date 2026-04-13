@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卡密管理后台</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;}
+
+/* Login */
+#login{display:flex;align-items:center;justify-content:center;min-height:100vh;}
+.login-box{background:#111;border:1px solid #2a2a2a;border-radius:12px;padding:36px;width:340px;text-align:center;}
+.login-box h1{font-size:16px;font-weight:500;margin-bottom:24px;color:#ddd;}
+.fi{width:100%;padding:10px 12px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;color:#fff;font-size:13px;font-family:inherit;outline:none;margin-bottom:10px;}
+.fi:focus{border-color:#666;}
+.btn{width:100%;padding:10px;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;}
+.btn-primary{background:#c8a96a;color:#0a0a0a;}
+.btn-primary:hover{background:#d4b87a;}
+.err{font-size:11px;color:#e05a5a;margin-top:8px;min-height:16px;}
+
+/* Main */
+#main{display:none;min-height:100vh;}
+.header{padding:16px 28px;border-bottom:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between;}
+.header h1{font-size:15px;font-weight:500;color:#c8a96a;}
+.header-actions{display:flex;gap:8px;align-items:center;}
+.btn-sm{padding:6px 14px;border:1px solid #2a2a2a;border-radius:5px;background:none;color:#aaa;font-size:11px;cursor:pointer;font-family:inherit;}
+.btn-sm:hover{border-color:#555;color:#fff;}
+.btn-sm.primary{background:#c8a96a;color:#0a0a0a;border-color:#c8a96a;}
+.btn-sm.primary:hover{background:#d4b87a;}
+.btn-sm.danger{color:#e05a5a;border-color:#3a1a1a;}
+.btn-sm.danger:hover{background:#1a0808;border-color:#e05a5a;}
+
+/* Template settings */
+.tpl-settings{padding:20px 28px;border-bottom:1px solid #1e1e1e;}
+.tpl-settings h2{font-size:13px;font-weight:500;color:#aaa;margin-bottom:14px;}
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:700px;}
+.tpl-card{background:#111;border:1px solid #1e1e1e;border-radius:8px;overflow:hidden;}
+.tpl-preview-box{height:140px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer;}
+.tpl-preview-box img{width:100%;height:100%;object-fit:cover;}
+.tpl-preview-box .upload-hint{position:absolute;color:#555;font-size:11px;text-align:center;}
+.tpl-preview-box:hover .upload-hint{color:#888;}
+.tpl-card-body{padding:12px;}
+.tpl-name-row{display:flex;gap:8px;align-items:center;}
+.tpl-name-input{flex:1;padding:6px 10px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:5px;color:#ddd;font-size:12px;font-family:inherit;outline:none;}
+.tpl-name-input:focus{border-color:#666;}
+.tpl-hint{font-size:10px;color:#444;margin-top:6px;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px 28px;}
+.stat{background:#111;border:1px solid #1e1e1e;border-radius:8px;padding:14px 16px;}
+.stat-label{font-size:10px;color:#555;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+.stat-val{font-size:24px;font-weight:500;color:#ddd;}
+
+/* Table */
+.table-wrap{padding:0 28px 28px;}
+.table-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.table-header h2{font-size:13px;font-weight:500;color:#aaa;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{text-align:left;padding:8px 12px;color:#555;font-weight:400;border-bottom:1px solid #1e1e1e;white-space:nowrap;}
+td{padding:10px 12px;border-bottom:1px solid #111;color:#ccc;vertical-align:middle;}
+tr:hover td{background:#0f0f0f;}
+.code-cell{font-family:monospace;font-size:12px;color:#c8a96a;letter-spacing:.05em;}
+.badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:500;}
+.badge-active{background:#0d2010;color:#4ade80;border:1px solid #1a4020;}
+.badge-inactive{background:#1a0808;color:#e05a5a;border:1px solid #3a1010;}
+.badge-expired{background:#1a1205;color:#fb923c;border:1px solid #3a2510;}
+.badge-unused{background:#111;color:#666;border:1px solid #222;}
+.td-actions{display:flex;gap:5px;}
+
+/* Template settings */
+.tpl-settings{padding:0 28px 28px;}
+.tpl-settings h2{font-size:13px;font-weight:500;color:#aaa;margin-bottom:14px;}
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.tpl-card-admin{background:#111;border:1px solid #1e1e1e;border-radius:10px;padding:16px;}
+.tpl-card-admin h3{font-size:12px;font-weight:500;color:#ddd;margin-bottom:12px;}
+.tpl-preview-admin{width:100%;aspect-ratio:3/4;background:#1a1a1a;border-radius:6px;overflow:hidden;margin-bottom:10px;position:relative;display:flex;align-items:center;justify-content:center;}
+.tpl-preview-admin img{width:100%;height:100%;object-fit:cover;}
+.tpl-preview-admin .ph{font-size:11px;color:#444;}
+.upload-area{border:1px dashed #2a2a2a;border-radius:6px;padding:10px;text-align:center;cursor:pointer;font-size:11px;color:#666;margin-bottom:8px;}
+.upload-area:hover{border-color:#555;color:#aaa;}
+.save-hint{font-size:10px;color:#4ade80;margin-top:6px;min-height:14px;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:#161616;border:1px solid #2a2a2a;border-radius:12px;padding:24px;width:380px;}
+.modal h3{font-size:14px;font-weight:500;margin-bottom:18px;color:#ddd;}
+.m-lbl{font-size:10px;color:#888;margin-bottom:4px;margin-top:10px;}
+.m-row{display:flex;gap:8px;}
+.m-row .fi{flex:1;}
+.duration-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:4px;}
+.dur-btn{padding:7px 4px;border:1px solid #2a2a2a;border-radius:5px;background:none;color:#888;font-size:11px;cursor:pointer;text-align:center;font-family:inherit;}
+.dur-btn.on{border-color:#c8a96a;color:#c8a96a;background:#1a1408;}
+.m-actions{display:flex;gap:8px;margin-top:18px;}
+.m-actions button{flex:1;padding:9px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:500;font-family:inherit;}
+.copy-hint{font-size:10px;color:#555;margin-top:4px;}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login">
+  <div class="login-box">
+    <h1>卡密管理后台</h1>
+    <input class="fi" id="admin-pw" type="password" placeholder="管理员密码" onkeydown="if(event.key==='Enter')adminLogin()">
+    <button class="btn btn-primary" onclick="adminLogin()">登录</button>
+    <div class="err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- Main -->
+<div id="main">
+  <div class="header">
+    <h1>卡密管理后台</h1>
+    <div class="header-actions">
+      <button class="btn-sm" onclick="loadLicenses()">↻ 刷新</button>
+      <button class="btn-sm primary" onclick="openCreate()">+ 生成卡密</button>
+      <button class="btn-sm" onclick="adminLogout()">退出</button>
+    </div>
+  </div>
+
+  <div class="tpl-settings">
+    <h2>模板设置</h2>
+    <div class="tpl-grid">
+      <div class="tpl-card">
+        <div class="tpl-preview-box" onclick="document.getElementById('tpl1-file').click()">
+          <img id="tpl1-img-preview" src="" style="display:none;">
+          <div class="upload-hint" id="tpl1-hint">点击上传预览图<br><span style="font-size:9px;color:#444;">建议尺寸 300×200</span></div>
+        </div>
+        <div class="tpl-card-body">
+          <div class="tpl-name-row">
+            <input class="tpl-name-input" id="tpl1-name" type="text" placeholder="模板1名称">
+            <button class="btn-sm primary" onclick="saveTpl(1)">保存</button>
+          </div>
+          <div class="tpl-hint">保存后用户首页立即更新</div>
+        </div>
+      </div>
+      <div class="tpl-card">
+        <div class="tpl-preview-box" onclick="document.getElementById('tpl2-file').click()">
+          <img id="tpl2-img-preview" src="" style="display:none;">
+          <div class="upload-hint" id="tpl2-hint">点击上传预览图<br><span style="font-size:9px;color:#444;">建议尺寸 300×200</span></div>
+        </div>
+        <div class="tpl-card-body">
+          <div class="tpl-name-row">
+            <input class="tpl-name-input" id="tpl2-name" type="text" placeholder="模板2名称">
+            <button class="btn-sm primary" onclick="saveTpl(2)">保存</button>
+          </div>
+          <div class="tpl-hint">保存后用户首页立即更新</div>
+        </div>
+      </div>
+    </div>
+    <input type="file" id="tpl1-file" accept="image/*" style="display:none" onchange="previewTpl(1,this)">
+    <input type="file" id="tpl2-file" accept="image/*" style="display:none" onchange="previewTpl(2,this)">
+  </div>
+
+  <!-- Stats -->
+    <div class="stat"><div class="stat-label">总卡密数</div><div class="stat-val" id="s-total">-</div></div>
+    <div class="stat"><div class="stat-label">使用中</div><div class="stat-val" id="s-active">-</div></div>
+    <div class="stat"><div class="stat-label">未使用</div><div class="stat-val" id="s-unused">-</div></div>
+    <div class="stat"><div class="stat-label">已停用/过期</div><div class="stat-val" id="s-inactive">-</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header"><h2>卡密列表</h2></div>
+    <table>
+      <thead>
+        <tr>
+          <th>卡密</th>
+          <th>状态</th>
+          <th>有效期</th>
+          <th>首次使用</th>
+          <th>到期时间</th>
+          <th>备注</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="lic-table"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create Modal -->
+<div class="overlay" id="create-modal">
+  <div class="modal">
+    <h3>生成卡密</h3>
+    <div class="m-lbl">卡密（留空自动生成）</div>
+    <div style="display:flex;gap:6px;">
+      <input class="fi" id="c-code" type="text" placeholder="自动生成" style="flex:1;margin-bottom:0;">
+      <button class="btn-sm" onclick="genCode()" style="white-space:nowrap;">随机生成</button>
+    </div>
+    <div class="copy-hint">格式建议：XXXX-XXXX-XXXX-XXXX</div>
+    <div class="m-lbl">有效期（首次使用后开始计算）</div>
+    <div class="duration-btns">
+      <div class="dur-btn" onclick="selDur(7)">7天</div>
+      <div class="dur-btn" onclick="selDur(30)">30天</div>
+      <div class="dur-btn" onclick="selDur(90)">90天</div>
+      <div class="dur-btn" onclick="selDur(365)">1年</div>
+      <div class="dur-btn on" onclick="selDur(0)">永久</div>
+    </div>
+    <div class="m-lbl">自定义天数（覆盖上方选择）</div>
+    <input class="fi" id="c-days" type="number" min="1" placeholder="留空=永久" style="margin-bottom:0;">
+    <div class="m-lbl">备注（客户名等）</div>
+    <input class="fi" id="c-note" type="text" placeholder="例如：张三 VIP">
+    <div class="m-lbl">数量（批量生成）</div>
+    <input class="fi" id="c-count" type="number" min="1" max="50" value="1" placeholder="1">
+    <div class="m-actions">
+      <button onclick="closeCreate()" style="background:#1e1e1e;color:#aaa;border:1px solid #2a2a2a;">取消</button>
+      <button onclick="createLicenses()" style="background:#c8a96a;color:#0a0a0a;">生成</button>
+    </div>
+  </div>
+</div>
+
+<!-- Result Modal -->
+<div class="overlay" id="result-modal">
+  <div class="modal">
+    <h3>生成成功 ✓</h3>
+    <div class="m-lbl">生成的卡密（点击复制）</div>
+    <div id="result-list" style="margin-top:8px;"></div>
+    <div class="m-actions">
+      <button onclick="copyAll()" style="background:#1e1e1e;color:#aaa;border:1px solid #2a2a2a;">复制全部</button>
+      <button onclick="closeResult()" style="background:#c8a96a;color:#0a0a0a;">完成</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+
+// ── 管理员密码（你可以改成自己的）────────────────────────────────
+const ADMIN_PW = 'bloom2026admin';
+
+let selDurVal = 0;
+let lastGenerated = [];
+
+function adminLogin(){
+  const pw = document.getElementById('admin-pw').value;
+  if(pw === ADMIN_PW){
+    document.getElementById('login').style.display='none';
+    document.getElementById('main').style.display='block';
+    loadLicenses();
+    loadTplSettings();
+  } else {
+    document.getElementById('login-err').textContent='密码错误';
+  }
+}
+function adminLogout(){
+  document.getElementById('main').style.display='none';
+  document.getElementById('login').style.display='flex';
+  document.getElementById('admin-pw').value='';
+}
+
+async function sbFetch(path, opts={}){
+  const res = await fetch(SB_URL+path, {
+    ...opts,
+    headers:{
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer '+SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...(opts.headers||{})
+    }
+  });
+  if(!res.ok) throw new Error(await res.text());
+  const text = await res.text();
+  return text ? JSON.parse(text) : [];
+}
+
+async function loadLicenses(){
+  try{
+    const data = await sbFetch('/rest/v1/licenses?select=*&order=created_at.desc');
+    renderTable(data);
+    updateStats(data);
+  }catch(e){ alert('加载失败：'+e.message); }
+}
+
+function getStatus(lic){
+  if(!lic.is_active) return 'inactive';
+  if(!lic.first_used_at) return 'unused';
+  if(lic.duration_days){
+    const exp = new Date(lic.first_used_at);
+    exp.setDate(exp.getDate() + lic.duration_days);
+    if(exp < new Date()) return 'expired';
+  }
+  if(lic.expires_at && new Date(lic.expires_at) < new Date()) return 'expired';
+  return 'active';
+}
+
+function statusBadge(lic){
+  const s = getStatus(lic);
+  const map = {active:'使用中',inactive:'已停用',unused:'未使用',expired:'已过期'};
+  const cls = s==='active'?'badge-active':s==='unused'?'badge-unused':s==='expired'?'badge-expired':'badge-inactive';
+  return `<span class="badge ${cls}">${map[s]}</span>`;
+}
+
+function calcExpiry(lic){
+  if(!lic.duration_days) return '永久';
+  if(!lic.first_used_at) return `首次使用后${lic.duration_days}天`;
+  const exp = new Date(lic.first_used_at);
+  exp.setDate(exp.getDate() + lic.duration_days);
+  return fmtDate(exp);
+}
+
+function fmtDate(d){
+  if(!d) return '-';
+  return new Date(d).toLocaleDateString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit'});
+}
+
+function renderTable(data){
+  const tb = document.getElementById('lic-table');
+  if(!data.length){ tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#444;padding:30px;">暂无卡密</td></tr>'; return; }
+  tb.innerHTML = data.map(lic => `
+    <tr>
+      <td class="code-cell" onclick="copyCode('${lic.code}')" style="cursor:pointer;" title="点击复制">${lic.code}</td>
+      <td>${statusBadge(lic)}</td>
+      <td style="color:#888;">${lic.duration_days ? lic.duration_days+'天' : '永久'}</td>
+      <td style="color:#666;">${fmtDate(lic.first_used_at)}</td>
+      <td style="color:#666;">${calcExpiry(lic)}</td>
+      <td style="color:#666;">${lic.note||'-'}</td>
+      <td>
+        <div class="td-actions">
+          ${lic.is_active
+            ? `<button class="btn-sm danger" onclick="toggleActive(${lic.id}, false)">停用</button>`
+            : `<button class="btn-sm" onclick="toggleActive(${lic.id}, true)">启用</button>`}
+          <button class="btn-sm danger" onclick="deleteLic(${lic.id})">删除</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function updateStats(data){
+  const total = data.length;
+  const active = data.filter(l=>getStatus(l)==='active').length;
+  const unused = data.filter(l=>getStatus(l)==='unused').length;
+  const inactive = data.filter(l=>['inactive','expired'].includes(getStatus(l))).length;
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-active').textContent = active;
+  document.getElementById('s-unused').textContent = unused;
+  document.getElementById('s-inactive').textContent = inactive;
+}
+
+function openCreate(){
+  selDurVal=0;
+  document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.dur-btn')[4].classList.add('on');
+  document.getElementById('c-code').value='';
+  document.getElementById('c-days').value='';
+  document.getElementById('c-note').value='';
+  document.getElementById('c-count').value='1';
+  genCode();
+  document.getElementById('create-modal').classList.add('open');
+}
+function closeCreate(){ document.getElementById('create-modal').classList.remove('open'); }
+
+function selDur(v){
+  selDurVal=v;
+  document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  document.getElementById('c-days').value = v>0?v:'';
+}
+
+function genCode(){
+  const seg = ()=>Math.random().toString(36).slice(2,6).toUpperCase();
+  document.getElementById('c-code').value = `${seg()}-${seg()}-${seg()}-${seg()}`;
+}
+
+async function createLicenses(){
+  const baseCode = document.getElementById('c-code').value.trim().toUpperCase();
+  const days = parseInt(document.getElementById('c-days').value)||null;
+  const note = document.getElementById('c-note').value.trim();
+  const count = Math.min(50, Math.max(1, parseInt(document.getElementById('c-count').value)||1));
+
+  const rows = [];
+  for(let i=0;i<count;i++){
+    let code = baseCode;
+    if(!code || count>1){
+      const seg=()=>Math.random().toString(36).slice(2,6).toUpperCase();
+      code=`${seg()}-${seg()}-${seg()}-${seg()}`;
+    }
+    rows.push({ code, is_active:true, duration_days:days, note:note||null });
+  }
+
+  try{
+    await sbFetch('/rest/v1/licenses', { method:'POST', body: JSON.stringify(rows) });
+    closeCreate();
+    lastGenerated = rows.map(r=>r.code);
+    showResult();
+    loadLicenses();
+  }catch(e){ alert('生成失败：'+e.message); }
+}
+
+function showResult(){
+  const el = document.getElementById('result-list');
+  el.innerHTML = lastGenerated.map(c=>`
+    <div onclick="copyCode('${c}')" style="padding:8px 12px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:5px;font-family:monospace;font-size:13px;color:#c8a96a;cursor:pointer;margin-bottom:6px;letter-spacing:.06em;" title="点击复制">${c}</div>
+  `).join('');
+  document.getElementById('result-modal').classList.add('open');
+}
+function closeResult(){ document.getElementById('result-modal').classList.remove('open'); }
+
+function copyAll(){
+  navigator.clipboard.writeText(lastGenerated.join('\n'));
+  alert('已复制全部卡密');
+}
+function copyCode(code){
+  navigator.clipboard.writeText(code);
+  // Brief flash
+  const toast = document.createElement('div');
+  toast.textContent='已复制 '+code;
+  toast.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#c8a96a;color:#0a0a0a;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:500;z-index:999;';
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(), 1800);
+}
+
+async function toggleActive(id, val){
+  try{
+    await sbFetch(`/rest/v1/licenses?id=eq.${id}`, { method:'PATCH', body: JSON.stringify({is_active:val}) });
+    loadLicenses();
+  }catch(e){ alert('操作失败'); }
+}
+async function deleteLic(id){
+  if(!confirm('确认删除此卡密？')) return;
+  try{
+    await sbFetch(`/rest/v1/licenses?id=eq.${id}`, { method:'DELETE', headers:{'Prefer':'return=minimal'} });
+    loadLicenses();
+  }catch(e){ alert('删除失败'); }
+}
+
+// ── Template Settings ─────────────────────────────────────────────
+let tpl1ImgData='', tpl2ImgData='';
+
+async function loadTplSettings(){
+  try{
+    const data = await sbFetch('/rest/v1/settings?select=key,value');
+    const map = {};
+    data.forEach(r=>map[r.key]=r.value);
+    if(map.tpl1_name) document.getElementById('tpl1-name').value = map.tpl1_name;
+    if(map.tpl2_name) document.getElementById('tpl2-name').value = map.tpl2_name;
+    if(map.tpl1_img && map.tpl1_img.length > 10){
+      tpl1ImgData = map.tpl1_img;
+      const img = document.getElementById('tpl1-img-preview');
+      img.src = map.tpl1_img; img.style.display='block';
+      document.getElementById('tpl1-hint').style.display='none';
+    }
+    if(map.tpl2_img && map.tpl2_img.length > 10){
+      tpl2ImgData = map.tpl2_img;
+      const img = document.getElementById('tpl2-img-preview');
+      img.src = map.tpl2_img; img.style.display='block';
+      document.getElementById('tpl2-hint').style.display='none';
+    }
+  }catch(e){ console.error('加载模板设置失败',e); }
+}
+
+function previewTpl(n, input){
+  const file = input.files[0]; if(!file) return;
+  // Compress image to base64 (max 800px wide)
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxW = 600;
+      const scale = Math.min(1, maxW/img.width);
+      canvas.width = Math.round(img.width*scale);
+      canvas.height = Math.round(img.height*scale);
+      canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+      const data = canvas.toDataURL('image/jpeg', 0.82);
+      if(n===1){ tpl1ImgData=data; }
+      else{ tpl2ImgData=data; }
+      const prev = document.getElementById(`tpl${n}-img-preview`);
+      prev.src = data; prev.style.display='block';
+      document.getElementById(`tpl${n}-hint`).style.display='none';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+async function saveTpl(n){
+  const name = document.getElementById(`tpl${n}-name`).value.trim();
+  const imgData = n===1 ? tpl1ImgData : tpl2ImgData;
+  if(!name){ alert('请填写模板名称'); return; }
+  try{
+    // Upsert name
+    await sbFetch('/rest/v1/settings', {
+      method:'POST',
+      headers:{'Prefer':'resolution=merge-duplicates'},
+      body: JSON.stringify({key:`tpl${n}_name`, value:name})
+    });
+    // Upsert image if changed
+    if(imgData){
+      await sbFetch('/rest/v1/settings', {
+        method:'POST',
+        headers:{'Prefer':'resolution=merge-duplicates'},
+        body: JSON.stringify({key:`tpl${n}_img`, value:imgData})
+      });
+    }
+    showToast(`模板${n}已保存`);
+  }catch(e){ alert('保存失败：'+e.message); }
+}
+
+function showToast(msg){
+  const toast = document.createElement('div');
+  toast.textContent = msg;
+  toast.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#4ade80;color:#0a0a0a;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:500;z-index:999;';
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(), 2000);
+}
+</script>
+</body>
+</html>
