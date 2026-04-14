@@ -163,11 +163,10 @@ tr:hover td{background:#0f0f0f;}
       <thead>
         <tr>
           <th>卡密</th>
+          <th>剩余次数</th>
           <th>状态</th>
-          <th>有效期</th>
-          <th>首次使用</th>
-          <th>到期时间</th>
           <th>备注</th>
+          <th>首次使用</th>
           <th>操作</th>
         </tr>
       </thead>
@@ -180,6 +179,16 @@ tr:hover td{background:#0f0f0f;}
 <div class="overlay" id="create-modal">
   <div class="modal">
     <h3>生成卡密</h3>
+    <div class="m-lbl">套餐（导出次数）</div>
+    <div class="duration-btns" style="grid-template-columns:repeat(5,1fr);">
+      <div class="dur-btn" onclick="selCredits(3)">试用<br><span style="font-size:10px;color:#888;">3次</span></div>
+      <div class="dur-btn" onclick="selCredits(10)">体验<br><span style="font-size:10px;color:#888;">10次</span></div>
+      <div class="dur-btn" onclick="selCredits(50)">基础<br><span style="font-size:10px;color:#888;">50次</span></div>
+      <div class="dur-btn" onclick="selCredits(200)">标准<br><span style="font-size:10px;color:#888;">200次</span></div>
+      <div class="dur-btn on" onclick="selCredits(500)">专业<br><span style="font-size:10px;color:#888;">500次</span></div>
+    </div>
+    <div class="m-lbl">自定义次数</div>
+    <input class="fi" id="c-credits" type="number" min="1" placeholder="自定义导出次数" style="margin-bottom:8px;">
     <div class="m-lbl">卡密（留空自动生成）</div>
     <div style="display:flex;gap:6px;">
       <input class="fi" id="c-code" type="text" placeholder="自动生成" style="flex:1;margin-bottom:0;">
@@ -229,6 +238,14 @@ const ADMIN_PW = 'bloom2026admin';
 
 let selDurVal = 0;
 let lastGenerated = [];
+let selectedCredits = 500;
+
+function selCredits(n){
+  selectedCredits=n;
+  document.getElementById('c-credits').value=n;
+  document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('on'));
+  event.target.closest('.dur-btn').classList.add('on');
+}
 
 function adminLogin(){
   const pw = document.getElementById('admin-pw').value;
@@ -306,23 +323,28 @@ function fmtDate(d){
 function renderTable(data){
   const tb = document.getElementById('lic-table');
   if(!data.length){ tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#444;padding:30px;">暂无卡密</td></tr>'; return; }
-  tb.innerHTML = data.map(lic => `
+  tb.innerHTML = data.map(lic => {
+    const credits=lic.credits||0;
+    const creditsBadge=credits>0
+      ?`<span style="background:#0d2010;color:#4ade80;border:1px solid #1a4020;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:500;">${credits} 次</span>`
+      :`<span style="background:#1a0808;color:#e05a5a;border:1px solid #3a1010;padding:2px 8px;border-radius:3px;font-size:11px;">已用完</span>`;
+    return `
     <tr>
       <td class="code-cell" onclick="copyCode('${lic.code}')" style="cursor:pointer;" title="点击复制">${lic.code}</td>
+      <td>${creditsBadge}</td>
       <td>${statusBadge(lic)}</td>
-      <td style="color:#888;">${lic.duration_days ? lic.duration_days+'天' : '永久'}</td>
-      <td style="color:#666;">${fmtDate(lic.first_used_at)}</td>
-      <td style="color:#666;">${calcExpiry(lic)}</td>
       <td style="color:#666;">${lic.note||'-'}</td>
+      <td style="color:#666;">${fmtDate(lic.first_used_at)}</td>
       <td>
         <div class="td-actions">
+          <button class="btn-sm primary" onclick="topupLic(${lic.id},'${lic.code}',${credits})">充值</button>
           ${lic.is_active
             ? `<button class="btn-sm danger" onclick="toggleActive(${lic.id}, false)">停用</button>`
             : `<button class="btn-sm" onclick="toggleActive(${lic.id}, true)">启用</button>`}
           <button class="btn-sm danger" onclick="deleteLic(${lic.id})">删除</button>
         </div>
       </td>
-    </tr>`).join('');
+    </tr>`}).join('');
 }
 
 function updateStats(data){
@@ -374,7 +396,8 @@ async function createLicenses(){
       const seg=()=>Math.random().toString(36).slice(2,6).toUpperCase();
       code=`${seg()}-${seg()}-${seg()}-${seg()}`;
     }
-    rows.push({ code, is_active:true, duration_days:days, note:note||null });
+    const credits = parseInt(document.getElementById('c-credits').value) || selectedCredits;
+    rows.push({ code, is_active:true, duration_days:days, note:note||null, credits:credits });
   }
 
   try{
@@ -409,6 +432,15 @@ function copyCode(code){
   setTimeout(()=>toast.remove(), 1800);
 }
 
+async function topupLic(id, code, current){
+  const n=prompt(`给「${code}」充值次数（当前剩余：${current}次）\n输入要增加的次数：`);
+  if(!n||isNaN(+n)||+n<=0)return;
+  const newCredits=current+Math.round(+n);
+  try{
+    await sbFetch(`/rest/v1/licenses?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({credits:newCredits})});
+    showToast(`充值成功，现在剩余 ${newCredits} 次`);loadLicenses();
+  }catch(e){alert('充值失败：'+e.message);}
+}
 async function toggleActive(id, val){
   try{
     await sbFetch(`/rest/v1/licenses?id=eq.${id}`, { method:'PATCH', body: JSON.stringify({is_active:val}) });

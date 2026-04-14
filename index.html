@@ -151,7 +151,7 @@ body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0a0a0a;color:#f
     <input class="license-input" id="license-input" type="text" placeholder="XXXX-XXXX-XXXX" autocomplete="off" onkeydown="if(event.key==='Enter')verifyLicense()">
     <button class="license-btn" id="license-btn" onclick="verifyLicense()">进入系统</button>
     <div class="license-err" id="license-err"></div>
-    <div class="license-hint">首次使用请联系管理员获取卡密<br>卡密与设备绑定，请勿转让</div>
+    <div class="license-hint">请联系管理员获取卡密<br>次数永久有效，用完充值即可继续使用</div>
   </div>
 </div>
 
@@ -161,6 +161,7 @@ body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0a0a0a;color:#f
     <div class="home-logo">WEDDING POSTER</div>
     <div class="home-user">
       <span id="home-code-display"></span>
+      <span id="credits-display" style="background:#1e1e1e;padding:3px 10px;border-radius:4px;font-size:11px;color:#c8a96a;"></span>
       <button class="logout-btn" onclick="logout()">退出</button>
     </div>
   </div>
@@ -310,6 +311,7 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 
 // ══ LICENSE ═════════════════════════════════════════════════════════
 let currentCode='';
+let currentLic=null;
 
 async function verifyLicense(){
   const code=document.getElementById('license-input').value.trim().toUpperCase();
@@ -325,23 +327,21 @@ async function verifyLicense(){
     if(!data||data.length===0){showErr('卡密不存在');return;}
     const lic=data[0];
     if(!lic.is_active){showErr('卡密已停用');return;}
-    // Check fixed expiry
     if(lic.expires_at&&new Date(lic.expires_at)<new Date()){showErr('卡密已过期');return;}
-    // Check duration-based expiry
     if(lic.duration_days&&lic.first_used_at){
-      const exp=new Date(lic.first_used_at);
-      exp.setDate(exp.getDate()+lic.duration_days);
+      const exp=new Date(lic.first_used_at);exp.setDate(exp.getDate()+lic.duration_days);
       if(exp<new Date()){showErr(`卡密已过期（有效期${lic.duration_days}天）`);return;}
     }
-    // First use: record timestamp
+    if((lic.credits||0)<=0){showErr('导出次数已用完，请联系管理员充值');return;}
     if(!lic.first_used_at){
       await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${lic.id}`,{
         method:'PATCH',
         headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
         body:JSON.stringify({first_used_at:new Date().toISOString()})
       });
+      lic.first_used_at=new Date().toISOString();
     }
-    currentCode=code;
+    currentCode=code;currentLic=lic;
     localStorage.setItem('wp-license',code);
     enterSystem();
   }catch(e){showErr('网络错误，请重试');}
@@ -362,18 +362,43 @@ async function checkSavedLicense(){
     if(!lic.is_active)return false;
     if(lic.expires_at&&new Date(lic.expires_at)<new Date())return false;
     if(lic.duration_days&&lic.first_used_at){
-      const exp=new Date(lic.first_used_at);
-      exp.setDate(exp.getDate()+lic.duration_days);
+      const exp=new Date(lic.first_used_at);exp.setDate(exp.getDate()+lic.duration_days);
       if(exp<new Date())return false;
     }
-    currentCode=saved;return true;
+    if((lic.credits||0)<=0)return false;
+    currentCode=saved;currentLic=lic;return true;
   }catch(e){return false;}
+}
+
+async function checkExportQuota(){
+  if(!currentLic){alert('请先登录');return false;}
+  const credits=currentLic.credits||0;
+  if(credits<=0){alert('导出次数已用完，请联系管理员充值');return false;}
+  try{
+    const newCredits=credits-1;
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${currentLic.id}`,{
+      method:'PATCH',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify({credits:newCredits})
+    });
+    const updated=await r.json();
+    if(updated&&updated[0])currentLic=updated[0];
+    else currentLic.credits=newCredits;
+    updCreditsDisplay();
+    return true;
+  }catch(e){currentLic.credits=Math.max(0,credits-1);updCreditsDisplay();return true;}
+}
+
+function updCreditsDisplay(){
+  const el=document.getElementById('credits-display');
+  if(el)el.textContent=`剩余 ${currentLic?.credits??0} 次`;
 }
 
 function enterSystem(){
   document.getElementById('license-screen').style.display='none';
   document.getElementById('home-screen').style.display='block';
   document.getElementById('home-code-display').textContent=currentCode;
+  updCreditsDisplay();
   loadTplSettings();
 }
 
@@ -609,7 +634,9 @@ function sUpload(i){
   };fi.click();
 }
 async function sExport(){
-  const p=sCur();if(!p)return;const btn=document.getElementById('s-exp-btn');btn.textContent='生成中…';btn.disabled=true;
+  const p=sCur();if(!p)return;
+  if(!await checkExportQuota())return;
+  const btn=document.getElementById('s-exp-btn');btn.textContent='生成中…';btn.disabled=true;
   const W=1200,H=1600,n=p.layout||5,SH=H/n;const{w}=sPSize();const sc=W/w;
   const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
@@ -830,7 +857,9 @@ function aUpload(i){
   };fi.click();
 }
 async function aExport(){
-  const p=aCur();if(!p)return;const btn=document.getElementById('a-exp-btn');btn.textContent='生成中…';btn.disabled=true;
+  const p=aCur();if(!p)return;
+  if(!await checkExportQuota())return;
+  const btn=document.getElementById('a-exp-btn');btn.textContent='生成中…';btn.disabled=true;
   const W=1200,H=1600,topH=Math.round(H*0.35),colsH=H-topH,hdr=p.header,n=p.cols;
   const padX=n===4?0:Math.round(W*0.03);const gap=n===4?Math.round(W*0.012):Math.round(W*0.016);
   const colW=Math.round((W-padX*2-gap*(n-1))/n);const colH=colsH;const arcR=Math.round(colW/2);
