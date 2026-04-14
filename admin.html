@@ -117,37 +117,24 @@ tr:hover td{background:#0f0f0f;}
   </div>
 
   <div class="tpl-settings">
-    <h2>模板设置</h2>
-    <div class="tpl-grid">
-      <div class="tpl-card">
-        <div class="tpl-preview-box" onclick="document.getElementById('tpl1-file').click()">
-          <img id="tpl1-img-preview" src="" style="display:none;">
-          <div class="upload-hint" id="tpl1-hint">点击上传预览图<br><span style="font-size:9px;color:#444;">建议尺寸 300×200</span></div>
-        </div>
-        <div class="tpl-card-body">
-          <div class="tpl-name-row">
-            <input class="tpl-name-input" id="tpl1-name" type="text" placeholder="模板1名称">
-            <button class="btn-sm primary" onclick="saveTpl(1)">保存</button>
-          </div>
-          <div class="tpl-hint">保存后用户首页立即更新</div>
-        </div>
-      </div>
-      <div class="tpl-card">
-        <div class="tpl-preview-box" onclick="document.getElementById('tpl2-file').click()">
-          <img id="tpl2-img-preview" src="" style="display:none;">
-          <div class="upload-hint" id="tpl2-hint">点击上传预览图<br><span style="font-size:9px;color:#444;">建议尺寸 300×200</span></div>
-        </div>
-        <div class="tpl-card-body">
-          <div class="tpl-name-row">
-            <input class="tpl-name-input" id="tpl2-name" type="text" placeholder="模板2名称">
-            <button class="btn-sm primary" onclick="saveTpl(2)">保存</button>
-          </div>
-          <div class="tpl-hint">保存后用户首页立即更新</div>
-        </div>
-      </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <h2>模板管理</h2>
+      <button class="btn-sm primary" onclick="openAddTpl()">+ 添加模板</button>
     </div>
-    <input type="file" id="tpl1-file" accept="image/*" style="display:none" onchange="previewTpl(1,this)">
-    <input type="file" id="tpl2-file" accept="image/*" style="display:none" onchange="previewTpl(2,this)">
+    <table>
+      <thead>
+        <tr>
+          <th>预览图</th>
+          <th>名称</th>
+          <th>文件URL</th>
+          <th>标签</th>
+          <th>排序</th>
+          <th>状态</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody id="tpl-table"></tbody>
+    </table>
   </div>
 
   <!-- Stats -->
@@ -172,6 +159,35 @@ tr:hover td{background:#0f0f0f;}
       </thead>
       <tbody id="lic-table"></tbody>
     </table>
+  </div>
+</div>
+
+<!-- Add Template Modal -->
+<div class="overlay" id="tpl-modal">
+  <div class="modal" style="width:420px;">
+    <h3 id="tpl-modal-title">添加模板</h3>
+    <input type="hidden" id="tpl-edit-id">
+    <div class="m-lbl">模板名称</div>
+    <input class="fi" id="tpl-name" type="text" placeholder="例如：横条版" style="margin-bottom:0;">
+    <div class="m-lbl">文件URL（上传到GitHub后的文件名）</div>
+    <input class="fi" id="tpl-url" type="text" placeholder="例如：template-xxx.html" style="margin-bottom:0;">
+    <div class="m-lbl">描述</div>
+    <input class="fi" id="tpl-desc" type="text" placeholder="简短描述" style="margin-bottom:0;">
+    <div class="m-lbl">标签</div>
+    <input class="fi" id="tpl-tag" type="text" placeholder="例如：3块 / 4块" style="margin-bottom:0;">
+    <div class="m-lbl">排序（数字越小越靠前）</div>
+    <input class="fi" id="tpl-sort" type="number" value="99" style="margin-bottom:0;">
+    <div class="m-lbl">预览图</div>
+    <div class="upload-area" onclick="document.getElementById('tpl-img-file').click()">
+      点击上传预览图（建议 3:4 比例）
+    </div>
+    <input type="file" id="tpl-img-file" accept="image/*" style="display:none" onchange="previewTplImg(this)">
+    <img id="tpl-img-preview" src="" style="display:none;width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-top:6px;">
+    <input type="hidden" id="tpl-img-data">
+    <div class="m-actions">
+      <button onclick="closeTplModal()" style="background:#1e1e1e;color:#aaa;border:1px solid #2a2a2a;">取消</button>
+      <button onclick="saveTplToDb()" style="background:#c8a96a;color:#0a0a0a;">保存</button>
+    </div>
   </div>
 </div>
 
@@ -253,7 +269,7 @@ function adminLogin(){
     document.getElementById('login').style.display='none';
     document.getElementById('main').style.display='block';
     loadLicenses();
-    loadTplSettings();
+    loadTemplates();
   } else {
     document.getElementById('login-err').textContent='密码错误';
   }
@@ -455,78 +471,111 @@ async function deleteLic(id){
   }catch(e){ alert('删除失败'); }
 }
 
-// ── Template Settings ─────────────────────────────────────────────
-let tpl1ImgData='', tpl2ImgData='';
-
-async function loadTplSettings(){
+// ── Template Management ───────────────────────────────────────────
+async function loadTemplates(){
   try{
-    const data = await sbFetch('/rest/v1/settings?select=key,value');
-    const map = {};
-    data.forEach(r=>map[r.key]=r.value);
-    if(map.tpl1_name) document.getElementById('tpl1-name').value = map.tpl1_name;
-    if(map.tpl2_name) document.getElementById('tpl2-name').value = map.tpl2_name;
-    if(map.tpl1_img && map.tpl1_img.length > 10){
-      tpl1ImgData = map.tpl1_img;
-      const img = document.getElementById('tpl1-img-preview');
-      img.src = map.tpl1_img; img.style.display='block';
-      document.getElementById('tpl1-hint').style.display='none';
-    }
-    if(map.tpl2_img && map.tpl2_img.length > 10){
-      tpl2ImgData = map.tpl2_img;
-      const img = document.getElementById('tpl2-img-preview');
-      img.src = map.tpl2_img; img.style.display='block';
-      document.getElementById('tpl2-hint').style.display='none';
-    }
-  }catch(e){ console.error('加载模板设置失败',e); }
+    const data=await sbFetch('/rest/v1/templates?order=sort_order.asc&select=*');
+    const tb=document.getElementById('tpl-table');
+    if(!data.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#444;padding:20px;">暂无模板</td></tr>';return;}
+    tb.innerHTML=data.map(t=>`<tr>
+      <td>${t.img&&t.img.length>10?`<img src="${t.img}" style="width:40px;height:53px;object-fit:cover;border-radius:3px;">`:'<div style="width:40px;height:53px;background:#1a1a1a;border-radius:3px;"></div>'}</td>
+      <td style="font-weight:500;color:#ddd;">${t.name}</td>
+      <td style="font-family:monospace;font-size:11px;color:#888;">${t.url}</td>
+      <td style="color:#666;">${t.tag||'-'}</td>
+      <td style="color:#666;">${t.sort_order}</td>
+      <td>${t.is_active?'<span style="color:#4ade80;">显示</span>':'<span style="color:#e05a5a;">隐藏</span>'}</td>
+      <td><div class="td-actions">
+        <button class="btn-sm" onclick="editTpl(${t.id})">编辑</button>
+        <button class="btn-sm danger" onclick="toggleTpl(${t.id},${!t.is_active})">${t.is_active?'隐藏':'显示'}</button>
+        <button class="btn-sm danger" onclick="deleteTpl(${t.id})">删除</button>
+      </div></td>
+    </tr>`).join('');
+    window._tplData=data;
+  }catch(e){alert('加载模板失败');}
 }
 
-function previewTpl(n, input){
-  const file = input.files[0]; if(!file) return;
-  // Compress image to base64 (max 800px wide)
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const maxW = 600;
-      const scale = Math.min(1, maxW/img.width);
-      canvas.width = Math.round(img.width*scale);
-      canvas.height = Math.round(img.height*scale);
+function openAddTpl(){
+  document.getElementById('tpl-modal-title').textContent='添加模板';
+  document.getElementById('tpl-edit-id').value='';
+  document.getElementById('tpl-name').value='';
+  document.getElementById('tpl-url').value='';
+  document.getElementById('tpl-desc').value='';
+  document.getElementById('tpl-tag').value='';
+  document.getElementById('tpl-sort').value='99';
+  document.getElementById('tpl-img-data').value='';
+  document.getElementById('tpl-img-preview').style.display='none';
+  document.getElementById('tpl-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('tpl-name').focus(),50);
+}
+
+function editTpl(id){
+  const t=(window._tplData||[]).find(x=>x.id===id);if(!t)return;
+  document.getElementById('tpl-modal-title').textContent='编辑模板';
+  document.getElementById('tpl-edit-id').value=id;
+  document.getElementById('tpl-name').value=t.name||'';
+  document.getElementById('tpl-url').value=t.url||'';
+  document.getElementById('tpl-desc').value=t.description||'';
+  document.getElementById('tpl-tag').value=t.tag||'';
+  document.getElementById('tpl-sort').value=t.sort_order||99;
+  document.getElementById('tpl-img-data').value=t.img||'';
+  const prev=document.getElementById('tpl-img-preview');
+  if(t.img&&t.img.length>10){prev.src=t.img;prev.style.display='block';}
+  else{prev.style.display='none';}
+  document.getElementById('tpl-modal').classList.add('open');
+}
+
+function closeTplModal(){document.getElementById('tpl-modal').classList.remove('open');}
+
+function previewTplImg(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      const maxW=600;const scale=Math.min(1,maxW/img.width);
+      canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);
       canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-      const data = canvas.toDataURL('image/jpeg', 0.82);
-      if(n===1){ tpl1ImgData=data; }
-      else{ tpl2ImgData=data; }
-      const prev = document.getElementById(`tpl${n}-img-preview`);
-      prev.src = data; prev.style.display='block';
-      document.getElementById(`tpl${n}-hint`).style.display='none';
-    };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-  input.value='';
+      const data=canvas.toDataURL('image/jpeg',0.82);
+      document.getElementById('tpl-img-data').value=data;
+      const prev=document.getElementById('tpl-img-preview');prev.src=data;prev.style.display='block';
+    };img.src=ev.target.result;
+  };reader.readAsDataURL(file);input.value='';
 }
 
-async function saveTpl(n){
-  const name = document.getElementById(`tpl${n}-name`).value.trim();
-  const imgData = n===1 ? tpl1ImgData : tpl2ImgData;
-  if(!name){ alert('请填写模板名称'); return; }
+async function saveTplToDb(){
+  const editId=document.getElementById('tpl-edit-id').value;
+  const name=document.getElementById('tpl-name').value.trim();
+  const url=document.getElementById('tpl-url').value.trim();
+  if(!name||!url){alert('名称和URL必填');return;}
+  const payload={
+    name,url,
+    description:document.getElementById('tpl-desc').value.trim()||null,
+    tag:document.getElementById('tpl-tag').value.trim()||null,
+    sort_order:parseInt(document.getElementById('tpl-sort').value)||99,
+    img:document.getElementById('tpl-img-data').value||null,
+  };
   try{
-    // Upsert name
-    await sbFetch('/rest/v1/settings', {
-      method:'POST',
-      headers:{'Prefer':'resolution=merge-duplicates'},
-      body: JSON.stringify({key:`tpl${n}_name`, value:name})
-    });
-    // Upsert image if changed
-    if(imgData){
-      await sbFetch('/rest/v1/settings', {
-        method:'POST',
-        headers:{'Prefer':'resolution=merge-duplicates'},
-        body: JSON.stringify({key:`tpl${n}_img`, value:imgData})
-      });
+    if(editId){
+      await sbFetch(`/rest/v1/templates?id=eq.${editId}`,{method:'PATCH',body:JSON.stringify(payload)});
+      showToast('模板已更新');
+    }else{
+      await sbFetch('/rest/v1/templates',{method:'POST',body:JSON.stringify({...payload,is_active:true})});
+      showToast('模板已添加');
     }
-    showToast(`模板${n}已保存`);
-  }catch(e){ alert('保存失败：'+e.message); }
+    closeTplModal();loadTemplates();
+  }catch(e){alert('保存失败：'+e.message);}
+}
+
+async function toggleTpl(id,val){
+  try{await sbFetch(`/rest/v1/templates?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({is_active:val})});loadTemplates();}
+  catch(e){alert('操作失败');}
+}
+
+async function deleteTpl(id){
+  if(!confirm('确认删除此模板？用户首页将不再显示'))return;
+  try{await sbFetch(`/rest/v1/templates?id=eq.${id}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});loadTemplates();}
+  catch(e){alert('删除失败');}
 }
 
 function showToast(msg){
