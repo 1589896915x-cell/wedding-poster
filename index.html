@@ -82,16 +82,26 @@ const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
 
 // ══ 模板列表 — 从 Supabase 动态加载 ═══════════════════════════
+// 本地备用模板（Supabase加载失败时使用）
+const FALLBACK_TEMPLATES=[
+  {id:1,name:'横条版',description:'多个横向条块，右侧文字叠加，适合场馆展示',tag:'3块 / 4块 / 5块',url:'template-strip.html',img:null,is_active:true},
+  {id:2,name:'拱形版',description:'上方标题区 + 下方拱形图片列，优雅大气',tag:'3列 / 4列',url:'template-arch.html',img:null,is_active:true},
+  {id:3,name:'全幅条块版',description:'4张图全幅铺满，中间黑色遮罩大字，顶部Logo可替换',tag:'4条 · Logo · 遮罩文字',url:'template-fullstrip.html',img:null,is_active:true},
+  {id:4,name:'大图文字版',description:'上方大图渐变过渡，中间标题+副标题+按钮，下方3/4张小图',tag:'3图 / 4图',url:'template-topbig.html',img:null,is_active:true},
+];
+
 async function loadTemplates(){
   try{
     const r=await fetch(`${SB_URL}/rest/v1/templates?is_active=eq.true&order=sort_order.asc&select=*`,{
       headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
     });
+    if(!r.ok)throw new Error('HTTP '+r.status);
     const templates=await r.json();
+    if(!templates||!templates.length)throw new Error('empty');
     renderTemplates(templates);
   }catch(e){
-    // fallback: show error
-    document.getElementById('tpl-grid').innerHTML='<div style="color:#555;font-size:12px;">模板加载失败，请刷新重试</div>';
+    console.warn('Supabase模板加载失败，使用本地备用列表',e);
+    renderTemplates(FALLBACK_TEMPLATES);
   }
 }
 
