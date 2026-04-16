@@ -138,6 +138,7 @@ tr:hover td{background:#0f0f0f;}
   </div>
 
   <!-- Stats -->
+  <div class="stats">
     <div class="stat"><div class="stat-label">总卡密数</div><div class="stat-val" id="s-total">-</div></div>
     <div class="stat"><div class="stat-label">使用中</div><div class="stat-val" id="s-active">-</div></div>
     <div class="stat"><div class="stat-label">未使用</div><div class="stat-val" id="s-unused">-</div></div>
@@ -471,27 +472,54 @@ async function deleteLic(id){
   }catch(e){ alert('删除失败'); }
 }
 
-// ── Template Management ───────────────────────────────────────────
+// ── Template Management (GitHub API) ─────────────────────────────
+const GH_TOKEN='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';
+const GH_REPO='1589896915x-cell/婚礼海报';
+const GH_FILE='templates.json';
+let _tplSha=''; // 当前文件的sha，更新时需要
+
+async function ghGetTemplates(){
+  const r=await fetch(`https://api.github.com/repos/${encodeURIComponent(GH_REPO)}/contents/${GH_FILE}`,{
+    headers:{'Authorization':'token '+GH_TOKEN,'Accept':'application/vnd.github.v3+json'}
+  });
+  if(!r.ok)throw new Error('读取失败 '+r.status);
+  const d=await r.json();
+  _tplSha=d.sha;
+  return JSON.parse(atob(d.content.replace(/\n/g,'')));
+}
+
+async function ghSaveTemplates(templates){
+  const content=btoa(unescape(encodeURIComponent(JSON.stringify(templates,null,2))));
+  const r=await fetch(`https://api.github.com/repos/${encodeURIComponent(GH_REPO)}/contents/${GH_FILE}`,{
+    method:'PUT',
+    headers:{'Authorization':'token '+GH_TOKEN,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+    body:JSON.stringify({message:'更新模板列表',content,sha:_tplSha})
+  });
+  if(!r.ok){const e=await r.json();throw new Error(e.message||'保存失败');}
+  const d=await r.json();
+  _tplSha=d.content.sha;
+}
+
 async function loadTemplates(){
   try{
-    const data=await sbFetch('/rest/v1/templates?order=sort_order.asc&select=*');
+    const data=await ghGetTemplates();
+    window._tplData=data;
     const tb=document.getElementById('tpl-table');
     if(!data.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#444;padding:20px;">暂无模板</td></tr>';return;}
-    tb.innerHTML=data.map(t=>`<tr>
+    tb.innerHTML=data.map((t,i)=>`<tr>
       <td>${t.img&&t.img.length>10?`<img src="${t.img}" style="width:40px;height:53px;object-fit:cover;border-radius:3px;">`:'<div style="width:40px;height:53px;background:#1a1a1a;border-radius:3px;"></div>'}</td>
       <td style="font-weight:500;color:#ddd;">${t.name}</td>
       <td style="font-family:monospace;font-size:11px;color:#888;">${t.url}</td>
       <td style="color:#666;">${t.tag||'-'}</td>
-      <td style="color:#666;">${t.sort_order}</td>
-      <td>${t.is_active?'<span style="color:#4ade80;">显示</span>':'<span style="color:#e05a5a;">隐藏</span>'}</td>
+      <td style="color:#666;">${i+1}</td>
+      <td>${t.is_active!==false?'<span style="color:#4ade80;">显示</span>':'<span style="color:#e05a5a;">隐藏</span>'}</td>
       <td><div class="td-actions">
-        <button class="btn-sm" onclick="editTpl(${t.id})">编辑</button>
-        <button class="btn-sm danger" onclick="toggleTpl(${t.id},${!t.is_active})">${t.is_active?'隐藏':'显示'}</button>
-        <button class="btn-sm danger" onclick="deleteTpl(${t.id})">删除</button>
+        <button class="btn-sm" onclick="editTpl(${i})">编辑</button>
+        <button class="btn-sm danger" onclick="toggleTpl(${i},${t.is_active===false})">${t.is_active!==false?'隐藏':'显示'}</button>
+        <button class="btn-sm danger" onclick="deleteTpl(${i})">删除</button>
       </div></td>
     </tr>`).join('');
-    window._tplData=data;
-  }catch(e){alert('加载模板失败');}
+  }catch(e){alert('加载模板失败：'+e.message);}
 }
 
 function openAddTpl(){
@@ -508,15 +536,15 @@ function openAddTpl(){
   setTimeout(()=>document.getElementById('tpl-name').focus(),50);
 }
 
-function editTpl(id){
-  const t=(window._tplData||[]).find(x=>x.id===id);if(!t)return;
+function editTpl(i){
+  const t=(window._tplData||[])[i];if(!t)return;
   document.getElementById('tpl-modal-title').textContent='编辑模板';
-  document.getElementById('tpl-edit-id').value=id;
+  document.getElementById('tpl-edit-id').value=i;
   document.getElementById('tpl-name').value=t.name||'';
   document.getElementById('tpl-url').value=t.url||'';
   document.getElementById('tpl-desc').value=t.description||'';
   document.getElementById('tpl-tag').value=t.tag||'';
-  document.getElementById('tpl-sort').value=t.sort_order||99;
+  document.getElementById('tpl-sort').value=i+1;
   document.getElementById('tpl-img-data').value=t.img||'';
   const prev=document.getElementById('tpl-img-preview');
   if(t.img&&t.img.length>10){prev.src=t.img;prev.style.display='block';}
@@ -544,7 +572,7 @@ function previewTplImg(input){
 }
 
 async function saveTplToDb(){
-  const editId=document.getElementById('tpl-edit-id').value;
+  const editIdx=document.getElementById('tpl-edit-id').value;
   const name=document.getElementById('tpl-name').value.trim();
   const url=document.getElementById('tpl-url').value.trim();
   if(!name||!url){alert('名称和URL必填');return;}
@@ -552,30 +580,39 @@ async function saveTplToDb(){
     name,url,
     description:document.getElementById('tpl-desc').value.trim()||null,
     tag:document.getElementById('tpl-tag').value.trim()||null,
-    sort_order:parseInt(document.getElementById('tpl-sort').value)||99,
     img:document.getElementById('tpl-img-data').value||null,
+    is_active:true,
   };
   try{
-    if(editId){
-      await sbFetch(`/rest/v1/templates?id=eq.${editId}`,{method:'PATCH',body:JSON.stringify(payload)});
-      showToast('模板已更新');
+    const data=window._tplData||[];
+    if(editIdx!==''){
+      data[parseInt(editIdx)]={...data[parseInt(editIdx)],...payload};
     }else{
-      await sbFetch('/rest/v1/templates',{method:'POST',body:JSON.stringify({...payload,is_active:true})});
-      showToast('模板已添加');
+      data.push(payload);
     }
+    await ghSaveTemplates(data);
+    showToast(editIdx!==''?'模板已更新，Vercel部署中…':'模板已添加，Vercel部署中…');
     closeTplModal();loadTemplates();
   }catch(e){alert('保存失败：'+e.message);}
 }
 
-async function toggleTpl(id,val){
-  try{await sbFetch(`/rest/v1/templates?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({is_active:val})});loadTemplates();}
-  catch(e){alert('操作失败');}
+async function toggleTpl(i,show){
+  try{
+    const data=window._tplData||[];
+    data[i].is_active=show;
+    await ghSaveTemplates(data);
+    showToast('已更新，Vercel部署中…');loadTemplates();
+  }catch(e){alert('操作失败：'+e.message);}
 }
 
-async function deleteTpl(id){
+async function deleteTpl(i){
   if(!confirm('确认删除此模板？用户首页将不再显示'))return;
-  try{await sbFetch(`/rest/v1/templates?id=eq.${id}`,{method:'DELETE',headers:{'Prefer':'return=minimal'}});loadTemplates();}
-  catch(e){alert('删除失败');}
+  try{
+    const data=window._tplData||[];
+    data.splice(i,1);
+    await ghSaveTemplates(data);
+    showToast('已删除，Vercel部署中…');loadTemplates();
+  }catch(e){alert('删除失败：'+e.message);}
 }
 
 function showToast(msg){
