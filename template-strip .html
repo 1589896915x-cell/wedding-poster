@@ -262,7 +262,7 @@ function defStrip(i){
     // text block position: % from right, % from top
     textRight:5, textTop:50,
     textAlign:'right',
-    opacity:75,
+    opacity:75, overlayColor:'#000000', overlayWidth:58,
   };
 }
 
@@ -383,7 +383,7 @@ async function renderPoster(){
   poster.innerHTML=p.strips.slice(0,n).map((s,i)=>`
     <div class="strip" id="strip-${i}" data-i="${i}" style="cursor:${urls[i]?'grab':'pointer'};">
       ${urls[i]?`<img class="strip-img" id="simg-${i}" src="${urls[i]}" draggable="false">`:`<div class="strip-empty" onclick="uploadImg(${i})"><span>＋</span><span>点击上传图片</span></div>`}
-      ${urls[i]?`<div class="strip-overlay" id="sovl-${i}" style="background:linear-gradient(to left,rgba(0,0,0,${((s.opacity??75)/100).toFixed(2)}) 0%,rgba(0,0,0,${((s.opacity??75)/100*0.8).toFixed(2)}) 30%,rgba(0,0,0,${((s.opacity??75)/100*0.2).toFixed(2)}) 52%,rgba(0,0,0,0) 58%);"></div>`:''}
+      ${urls[i]?`<div class="strip-overlay" id="sovl-${i}" style="background:${overlayBg(s)};"></div>`:''}
       <div class="strip-text" id="stxt-${i}" style="${stripTextStyle(s,h,n)}">
         <div id="sb-${i}" style="font-family:'${s.brandFont||'Cormorant Garamond'}',serif;font-size:${s.brandSize||9}px;font-weight:${s.brandWeight||300};color:${s.brandColor||'rgba(255,255,255,0.55)'};letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;">${esc(s.brand)}</div>
         <div id="se-${i}" style="font-family:'${s.enFont||'Cormorant Garamond'}',serif;font-size:${s.enSize||22}px;font-weight:${s.enWeight||600};color:${s.enColor||'#fff'};letter-spacing:.06em;text-transform:uppercase;line-height:1.1;white-space:nowrap;">${esc(s.en)}</div>
@@ -452,7 +452,14 @@ function renderRP(){
         <div class="rp-row" style="margin-top:6px;"><label>缩放</label><input id="sl-zoom" class="rp-slider" type="range" min="1" max="3" step="0.05" value="${s.zoom||1}" oninput="setSF(${selStrip},'zoom',+this.value);document.getElementById('v-zoom').textContent=Math.round(this.value*100)+'%'"><span class="rp-val" id="v-zoom">${Math.round((s.zoom||1)*100)}%</span></div>
         <div class="rp-row"><label>横移</label><input id="sl-px" class="rp-slider" type="range" min="0" max="100" step="1" value="${s.px}" oninput="setSF(${selStrip},'px',+this.value);document.getElementById('v-px').textContent=this.value+'%'"><span class="rp-val" id="v-px">${Math.round(s.px)}%</span></div>
         <div class="rp-row"><label>纵移</label><input id="sl-py" class="rp-slider" type="range" min="0" max="100" step="1" value="${s.py}" oninput="setSF(${selStrip},'py',+this.value);document.getElementById('v-py').textContent=this.value+'%'"><span class="rp-val" id="v-py">${Math.round(s.py)}%</span></div>
-        <div class="rp-row"><label>不透明</label><input id="sl-op" class="rp-slider" type="range" min="0" max="100" step="1" value="${s.opacity??75}" oninput="setSF(${selStrip},'opacity',+this.value);document.getElementById('v-op').textContent=this.value+'%'"><span class="rp-val" id="v-op">${s.opacity??75}%</span></div>`:''}
+        <div class="rp-row"><label>不透明</label><input id="sl-op" class="rp-slider" type="range" min="0" max="100" step="1" value="${s.opacity??75}" oninput="setSF(${selStrip},'opacity',+this.value);document.getElementById('v-op').textContent=this.value+'%'"><span class="rp-val" id="v-op">${s.opacity??75}%</span></div>
+        <div class="rp-row"><label>遮罩宽</label><input id="sl-ow" class="rp-slider" type="range" min="10" max="100" step="1" value="${s.overlayWidth??58}" oninput="setSF(${selStrip},'overlayWidth',+this.value);document.getElementById('v-ow').textContent=this.value+'%'"><span class="rp-val" id="v-ow">${s.overlayWidth??58}%</span></div>
+        <div class="rp-label">遮罩颜色</div>
+        <div class="col-row">
+          <div class="col-dot" style="background:${s.overlayColor||'#000000'};" onclick="document.getElementById('oc-${selStrip}').click()"></div>
+          <input id="oc-${selStrip}" type="color" value="${s.overlayColor||'#000000'}" style="display:none" onchange="setSF(${selStrip},'overlayColor',this.value);this.previousElementSibling.style.background=this.value">
+          <span class="col-label">颜色</span>
+        </div>`:''}
     </div>
 
     <div class="rp-section">
@@ -534,12 +541,20 @@ function updTxtStyle(i){
   if(se){se.style.fontFamily=`'${s.enFont}',serif`;se.style.fontSize=s.enSize+'px';se.style.color=s.enColor;}
   if(sz){sz.style.fontFamily=`'${s.zhFont}',serif`;sz.style.fontSize=s.zhSize+'px';sz.style.color=s.zhColor;}
 }
-function updOverlay(i,opacity){
-  const el=document.getElementById(`sovl-${i}`);if(!el)return;
-  const o=(opacity??75)/100;
-  el.style.background=`linear-gradient(to left,rgba(0,0,0,${o.toFixed(2)}) 0%,rgba(0,0,0,${(o*0.8).toFixed(2)}) 30%,rgba(0,0,0,${(o*0.2).toFixed(2)}) 52%,rgba(0,0,0,0) 58%)`;
+function overlayBg(s){
+  const o=(s.opacity??75)/100;
+  const w=(s.overlayWidth??58)/100;
+  const c=s.overlayColor||'#000000';
+  const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);
+  const p1=Math.round((1-w)*100),p2=Math.round((1-w*0.5)*100);
+  return `linear-gradient(to right,rgba(${r},${g},${b},0) 0%,rgba(${r},${g},${b},${(o*0.2).toFixed(2)}) ${p1}%,rgba(${r},${g},${b},${(o*0.8).toFixed(2)}) ${p2}%,rgba(${r},${g},${b},${o.toFixed(2)}) 100%)`;
 }
-async function setSF(i,key,val){const p=cur();if(!p)return;p.strips[i][key]=val;applyTransform(i,p.strips[i]);if(key==='opacity')updOverlay(i,val);await saveProject(p);}
+
+function updOverlay(i,s){
+  const el=document.getElementById(`sovl-${i}`);if(!el)return;
+  el.style.background=overlayBg(s);
+}
+async function setSF(i,key,val){const p=cur();if(!p)return;p.strips[i][key]=val;applyTransform(i,p.strips[i]);updOverlay(i,p.strips[i]);await saveProject(p);}
 async function setTxt(i,key,val){
   const p=cur();if(!p)return;p.strips[i][key]=val;
   const map={brand:`sb-${i}`,en:`se-${i}`,zh:`sz-${i}`};
@@ -590,8 +605,14 @@ async function exportPNG(){
       });
     }
     const o=(s.opacity??75)/100;
-    const grad=ctx.createLinearGradient(W,y,0,y);
-    grad.addColorStop(0,`rgba(0,0,0,${o.toFixed(2)})`);grad.addColorStop(.3,`rgba(0,0,0,${(o*0.8).toFixed(2)})`);grad.addColorStop(.52,`rgba(0,0,0,${(o*0.2).toFixed(2)})`);grad.addColorStop(.58,'rgba(0,0,0,0)');
+    const ow=(s.overlayWidth??58)/100;
+    const oc=s.overlayColor||'#000000';
+    const cr=parseInt(oc.slice(1,3),16),cg=parseInt(oc.slice(3,5),16),cb=parseInt(oc.slice(5,7),16);
+    const grad=ctx.createLinearGradient(0,y,W,y);
+    grad.addColorStop(0,`rgba(${cr},${cg},${cb},0)`);
+    grad.addColorStop(1-ow,`rgba(${cr},${cg},${cb},${(o*0.2).toFixed(2)})`);
+    grad.addColorStop(1-ow*0.5,`rgba(${cr},${cg},${cb},${(o*0.8).toFixed(2)})`);
+    grad.addColorStop(1,`rgba(${cr},${cg},${cb},${o.toFixed(2)})`);
     ctx.fillStyle=grad;ctx.fillRect(0,y,W,SH);
     if(i<n-1){ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y+SH);ctx.lineTo(W,y+SH);ctx.stroke();}
 
