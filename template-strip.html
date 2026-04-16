@@ -401,7 +401,15 @@ async function renderPoster(){
     el.addEventListener('mousedown',onMD);
     el.addEventListener('touchstart',onTS,{passive:false});
   });
-  p.strips.slice(0,n).forEach((s,i)=>{if(urls[i])applyTransform(i,s);});
+  p.strips.slice(0,n).forEach((s,i)=>{
+    if(urls[i]){
+      const img=document.getElementById(`simg-${i}`);
+      if(img){
+        if(img.complete&&img.naturalWidth)applyTransform(i,s);
+        else img.onload=()=>applyTransform(i,s);
+      }
+    }
+  });
 }
 
 function applyTransform(i,s){
