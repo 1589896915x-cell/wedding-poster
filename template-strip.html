@@ -43,7 +43,7 @@ body{background:#0e0e0e;font-family:system-ui,sans-serif;color:#fff;height:100vh
 .poster{display:flex;flex-direction:column;overflow:hidden;background:#000;flex-shrink:0;}
 .strip{flex:1;position:relative;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.07);}
 .strip:last-child{border-bottom:none;}
-.strip-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;}
+.strip-img{position:absolute;pointer-events:none;max-width:none;}
 .strip-overlay{position:absolute;inset:0;background:linear-gradient(to left,rgba(0,0,0,.75) 0%,rgba(0,0,0,.60) 30%,rgba(0,0,0,.15) 52%,rgba(0,0,0,0) 58%);pointer-events:none;}
 .strip-text{position:absolute;display:flex;flex-direction:column;gap:2px;pointer-events:none;}
 .strip-empty{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:#0a0a0a;color:#333;cursor:pointer;}
@@ -382,7 +382,7 @@ async function renderPoster(){
 
   poster.innerHTML=p.strips.slice(0,n).map((s,i)=>`
     <div class="strip" id="strip-${i}" data-i="${i}" style="cursor:${urls[i]?'grab':'pointer'};">
-      ${urls[i]?`<img class="strip-img" id="simg-${i}" src="${urls[i]}" draggable="false">`:`<div class="strip-empty" onclick="uploadImg(${i})"><span>＋</span><span>点击上传图片</span></div>`}
+      ${urls[i]?`<img class="strip-img" id="simg-${i}" src="${urls[i]}" draggable="false" onload="applyTransform(${i},cur()?.strips[${i}]||{})">`:`<div class="strip-empty" onclick="uploadImg(${i})"><span>＋</span><span>点击上传图片</span></div>`}
       ${urls[i]?`<div class="strip-overlay" id="sovl-${i}" style="background:${overlayBg(s)};"></div>`:''}
       <div class="strip-text" id="stxt-${i}" style="${stripTextStyle(s,h,n)}">
         <div id="sb-${i}" style="font-family:'${s.brandFont||'Cormorant Garamond'}',serif;font-size:${s.brandSize||9}px;font-weight:${s.brandWeight||300};color:${s.brandColor||'rgba(255,255,255,0.55)'};letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;">${esc(s.brand)}</div>
@@ -400,9 +400,20 @@ async function renderPoster(){
 
 function applyTransform(i,s){
   const img=document.getElementById(`simg-${i}`);if(!img)return;
-  img.style.objectPosition=`${s.px}% ${s.py}%`;
-  img.style.transform=`scale(${s.zoom||1})`;
-  img.style.transformOrigin=`${s.px}% ${s.py}%`;
+  const strip=document.getElementById(`strip-${i}`);if(!strip)return;
+  const cW=strip.clientWidth,cH=strip.clientHeight;
+  if(!cW||!cH)return;
+  const nW=img.naturalWidth||cW,nH=img.naturalHeight||cH;
+  const zoom=s.zoom||1;
+  // fit image to container first (contain), then scale
+  const baseScale=Math.min(cW/nW,cH/nH);
+  const scale=baseScale*zoom;
+  const rW=nW*scale,rH=nH*scale;
+  const left=(s.px/100)*(cW-rW);
+  const top=(s.py/100)*(cH-rH);
+  img.style.width=rW+'px';img.style.height=rH+'px';
+  img.style.left=left+'px';img.style.top=top+'px';
+  img.style.transform='';
 }
 
 // ── Drag ──────────────────────────────────────────────────────────
@@ -597,9 +608,12 @@ async function exportPNG(){
         const img=new Image();
         img.onload=()=>{
           ctx.save();ctx.beginPath();ctx.rect(0,y,W,SH);ctx.clip();
-          const zoom=s.zoom||1,ir=img.width/img.height,cr=W/SH;
-          let bw,bh;if(ir>cr){bh=SH*zoom;bw=bh*ir;}else{bw=W*zoom;bh=bw/ir;}
-          ctx.drawImage(img,(s.px/100)*(W-bw),y+(s.py/100)*(SH-bh),bw,bh);
+          const zoom=s.zoom||1;
+          const baseScale=Math.min(W/img.width,SH/img.height);
+          const sc2=baseScale*zoom;
+          const rW=img.width*sc2,rH=img.height*sc2;
+          const dx=(s.px/100)*(W-rW),dy=y+(s.py/100)*(SH-rH);
+          ctx.drawImage(img,dx,dy,rW,rH);
           ctx.restore();res();
         };img.src=url;
       });
