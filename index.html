@@ -75,16 +75,18 @@ body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0a0a0a;color:#f
 const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
 
-// ══ 模板列表 — 从 templates.json 读取 ════════════════════════
+// ══ 模板列表 — 从 Supabase 读取 ════════════════════════
 async function loadTemplates(){
   try{
-    const r=await fetch('templates.json?_='+Date.now());
+    const r=await fetch(`${SB_URL}/rest/v1/templates?is_active=eq.true&order=sort_order.asc&select=*`,{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+    });
     if(!r.ok)throw new Error('HTTP '+r.status);
     const templates=await r.json();
     if(!templates||!templates.length)throw new Error('empty');
-    renderTemplates(templates.filter(t=>t.is_active!==false));
+    renderTemplates(templates);
   }catch(e){
-    console.warn('templates.json加载失败',e);
+    console.warn('模板加载失败',e);
     document.getElementById('tpl-grid').innerHTML='<div style="color:#e05a5a;font-size:12px;">模板加载失败，请刷新重试</div>';
   }
 }
