@@ -376,22 +376,25 @@ async function renderPoster(){
   const poster=document.getElementById('poster');
   const p=cur();
   if(!p){poster.innerHTML='<div class="no-proj" style="height:400px;"><p>新建或选择项目</p></div>';return;}
-  const{w,h}=posterSize();const n=p.layout||5;
-  poster.style.cssText=`width:${w}px;height:${h}px;box-shadow:0 20px 60px rgba(0,0,0,.5);`;
+  const{w}=posterSize();const n=p.layout||5;
+  poster.style.cssText=`width:${w}px;box-shadow:0 20px 60px rgba(0,0,0,.5);`;
   const urls=await Promise.all(p.strips.slice(0,n).map(s=>getImgURL(s.imgKey)));
 
-  poster.innerHTML=p.strips.slice(0,n).map((s,i)=>`
-    <div class="strip" id="strip-${i}" data-i="${i}" style="cursor:${urls[i]?'grab':'pointer'};">
-      ${urls[i]?`<img class="strip-img" id="simg-${i}" src="${urls[i]}" draggable="false" onload="applyTransform(${i},cur()?.strips[${i}]||{})">`:`<div class="strip-empty" onclick="uploadImg(${i})"><span>＋</span><span>点击上传图片</span></div>`}
+  poster.innerHTML=p.strips.slice(0,n).map((s,i)=>{
+    // 有图片时高度由图片比例决定，无图时用固定高度
+    const aspectH=s.nW&&s.nH?Math.round(w*s.nH/s.nW*( s.zoom||1)):Math.round(w*0.28);
+    const stripH=urls[i]?aspectH:Math.round(w*0.28);
+    return `
+    <div class="strip" id="strip-${i}" data-i="${i}" style="height:${stripH}px;cursor:${urls[i]?'grab':'pointer'};">
+      ${urls[i]?`<img class="strip-img" id="simg-${i}" src="${urls[i]}" draggable="false" style="width:${w}px;height:${stripH}px;object-fit:contain;object-position:${s.px||50}% ${s.py||50}%;position:absolute;left:0;top:0;">`:`<div class="strip-empty" onclick="uploadImg(${i})"><span>＋</span><span>点击上传图片</span></div>`}
       ${urls[i]?`<div class="strip-overlay" id="sovl-${i}" style="background:${overlayBg(s)};"></div>`:''}
-      <div class="strip-text" id="stxt-${i}" style="${stripTextStyle(s,h,n)}">
+      <div class="strip-text" id="stxt-${i}" style="right:${s.textRight||5}%;top:${s.textTop||50}%;transform:translateY(-50%);text-align:${s.textAlign||'right'};align-items:${s.textAlign==='left'?'flex-start':s.textAlign==='center'?'center':'flex-end'};">
         <div id="sb-${i}" style="font-family:'${s.brandFont||'Cormorant Garamond'}',serif;font-size:${s.brandSize||9}px;font-weight:${s.brandWeight||300};color:${s.brandColor||'rgba(255,255,255,0.55)'};letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;">${esc(s.brand)}</div>
         <div id="se-${i}" style="font-family:'${s.enFont||'Cormorant Garamond'}',serif;font-size:${s.enSize||22}px;font-weight:${s.enWeight||600};color:${s.enColor||'#fff'};letter-spacing:.06em;text-transform:uppercase;line-height:1.1;white-space:nowrap;">${esc(s.en)}</div>
         <div id="sz-${i}" style="font-family:'${s.zhFont||'Noto Serif SC'}',serif;font-size:${s.zhSize||19}px;font-weight:${s.zhWeight||300};color:${s.zhColor||'#fff'};letter-spacing:.18em;white-space:nowrap;">「${esc(s.zh)}」</div>
       </div>
-    </div>`).join('');
+    </div>`}).join('');
 
-  p.strips.slice(0,n).forEach((s,i)=>applyTransform(i,s));
   poster.querySelectorAll('.strip').forEach(el=>{
     el.addEventListener('mousedown',onMD);
     el.addEventListener('touchstart',onTS,{passive:false});
@@ -584,6 +587,8 @@ function uploadImg(i){
     const file=e.target.files[0];if(!file)return;
     const p=cur();if(!p)return;
     const key=ikey(curId,i);
+    const u=URL.createObjectURL(file);
+    await new Promise(res=>{const img=new Image();img.onload=()=>{p.strips[i].nW=img.naturalWidth;p.strips[i].nH=img.naturalHeight;URL.revokeObjectURL(u);res();};img.src=u;});
     await saveImg(key,file);
     p.strips[i].imgKey=key;p.strips[i].px=50;p.strips[i].py=50;p.strips[i].zoom=1;
     await saveProject(p);await renderPoster();renderRP();fi.value='';
@@ -594,29 +599,39 @@ function uploadImg(i){
 async function exportPNG(){
   const p=cur();if(!p)return;
   const btn=document.getElementById('export-btn');btn.textContent='生成中…';btn.disabled=true;
-  const W=1200,H=1600,n=p.layout||5,SH=H/n;
-  const{w}=posterSize();const scale=W/w;
+  const W=1200,n=p.layout||5;
+  // 先计算每条高度
+  const stripHeights=[];
+  for(let i=0;i<n;i++){
+    const s=p.strips[i];
+    if(s.nW&&s.nH){stripHeights.push(Math.round(W*s.nH/s.nW*(s.zoom||1)));}
+    else{stripHeights.push(Math.round(W*0.28));}
+  }
+  const H=stripHeights.reduce((a,b)=>a+b,0);
   const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
-  await document.fonts.ready;
 
+  let y=0;
   for(let i=0;i<n;i++){
-    const s=p.strips[i],y=i*SH;
+    const s=p.strips[i],SH=stripHeights[i];
     const url=await getImgURL(s.imgKey);
     if(url){
       await new Promise(res=>{
         const img=new Image();
         img.onload=()=>{
-          ctx.save();ctx.beginPath();ctx.rect(0,y,W,SH);ctx.clip();
           const zoom=s.zoom||1;
-          const baseScale=Math.min(W/img.width,SH/img.height);
-          const sc2=baseScale*zoom;
-          const rW=img.width*sc2,rH=img.height*sc2;
-          const dx=(s.px/100)*(W-rW),dy=y+(s.py/100)*(SH-rH);
-          ctx.drawImage(img,dx,dy,rW,rH);
-          ctx.restore();res();
+          const iW=s.nW||img.width,iH=s.nH||img.height;
+          const SH=Math.round(W*iH/iW*zoom);
+          ctx.save();ctx.beginPath();ctx.rect(0,y,W,SH);ctx.clip();
+          ctx.drawImage(img,0,y,W,SH);
+          ctx.restore();
+          // update y for next strip
+          stripHeights[i]=SH;
+          res();
         };img.src=url;
       });
+    } else {
+      stripHeights[i]=Math.round(W*0.28);
     }
     const o=(s.opacity??75)/100;
     const ow=(s.overlayWidth??58)/100;
@@ -630,15 +645,15 @@ async function exportPNG(){
     ctx.fillStyle=grad;ctx.fillRect(0,y,W,SH);
     if(i<n-1){ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y+SH);ctx.lineTo(W,y+SH);ctx.stroke();}
 
-    // Text position
+    // Text
+    const expScale=W/1200;
     const align=s.textAlign||'right';
     ctx.textAlign=align;
     const textRight=(s.textRight||5)/100*W;
     const textTop=(s.textTop||50)/100*SH+y;
-    // Total text block height estimate
-    const bSz=Math.round((s.brandSize||9)*scale);
-    const eSz=Math.round((s.enSize||22)*scale);
-    const zSz=Math.round((s.zhSize||19)*scale);
+    const bSz=Math.round((s.brandSize||9));
+    const eSz=Math.round((s.enSize||22));
+    const zSz=Math.round((s.zhSize||19));
     const totalH=bSz+eSz+zSz+16;
     const startY=textTop-totalH/2;
     let tx=align==='right'?W-textRight:align==='left'?textRight:W/2;
@@ -654,12 +669,18 @@ async function exportPNG(){
     ctx.font=`${s.zhWeight||300} ${zSz}px "${s.zhFont||'Noto Serif SC'}","STSong",serif`;
     ctx.fillStyle=s.zhColor||'#ffffff';
     ctx.fillText(`「${s.zh}」`,tx,startY+bSz+eSz+zSz+14);
+
+    y+=SH;
   }
 
-  const a=document.createElement('a');
-  a.download=(p.name||'poster')+`_${n}块_1200x1600.png`;
-  a.href=canvas.toDataURL('image/png',1);a.click();
-  btn.textContent='↓ 导出 PNG';btn.disabled=false;
+  canvas.toBlob(blob=>{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.download=(p.name||'poster')+`_${n}块_1200x${H}.png`;
+    a.href=url;a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    btn.textContent='↓ 导出 PNG';btn.disabled=false;
+  },'image/png');
 }
 
 // ── Init ──────────────────────────────────────────────────────────
