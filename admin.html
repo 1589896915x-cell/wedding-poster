@@ -100,6 +100,7 @@ tr:hover td{background:#0f0f0f;}
   <div class="login-box">
     <h1>卡密管理后台</h1>
     <input class="fi" id="admin-pw" type="password" placeholder="管理员密码" onkeydown="if(event.key==='Enter')adminLogin()">
+    <input class="fi" id="admin-token" type="password" placeholder="GitHub Token" onkeydown="if(event.key==='Enter')adminLogin()">
     <button class="btn btn-primary" onclick="adminLogin()">登录</button>
     <div class="err" id="login-err"></div>
   </div>
@@ -266,7 +267,10 @@ function selCredits(n){
 
 function adminLogin(){
   const pw = document.getElementById('admin-pw').value;
+  const token = document.getElementById('admin-token').value.trim();
   if(pw === ADMIN_PW){
+    if(!token){document.getElementById('login-err').textContent='请输入GitHub Token';return;}
+    sessionStorage.setItem('gh_token', token);
     document.getElementById('login').style.display='none';
     document.getElementById('main').style.display='block';
     loadLicenses();
@@ -276,9 +280,11 @@ function adminLogin(){
   }
 }
 function adminLogout(){
+  sessionStorage.removeItem('gh_token');
   document.getElementById('main').style.display='none';
   document.getElementById('login').style.display='flex';
   document.getElementById('admin-pw').value='';
+  document.getElementById('admin-token').value='';
 }
 
 async function sbFetch(path, opts={}){
@@ -473,14 +479,14 @@ async function deleteLic(id){
 }
 
 // ── Template Management (GitHub API) ─────────────────────────────
-const GH_TOKEN='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';
+const GH_TOKEN=()=>sessionStorage.getItem('gh_token')||'';
 const GH_REPO='1589896915x-cell/%E5%A9%9A%E7%A4%BC%E6%B5%B7%E6%8A%A5';
 const GH_FILE='templates.json';
 let _tplSha='';
 
 async function ghGetTemplates(){
   const r=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,{
-    headers:{'Authorization':'token '+GH_TOKEN,'Accept':'application/vnd.github.v3+json'}
+    headers:{'Authorization':'token '+GH_TOKEN(),'Accept':'application/vnd.github.v3+json'}
   });
   if(!r.ok)throw new Error('读取失败 '+r.status);
   const d=await r.json();
@@ -492,7 +498,7 @@ async function ghSaveTemplates(templates){
   const content=btoa(unescape(encodeURIComponent(JSON.stringify(templates,null,2))));
   const r=await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`,{
     method:'PUT',
-    headers:{'Authorization':'token '+GH_TOKEN,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+    headers:{'Authorization':'token '+GH_TOKEN(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
     body:JSON.stringify({message:'更新模板列表',content,sha:_tplSha})
   });
   if(!r.ok){const e=await r.json();throw new Error(e.message||'保存失败');}
