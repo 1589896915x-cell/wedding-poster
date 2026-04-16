@@ -254,15 +254,17 @@ function defStrip(i){
   return {
     brand:'BLOOM ART CENTER', en:n.en, zh:n.zh,
     imgKey:null, px:50, py:50, zoom:1,
-    // font
-    brandFont:'Cormorant Garamond', enFont:'Cormorant Garamond', zhFont:'Noto Serif SC',
-    brandSize:9, enSize:22, zhSize:19,
-    brandColor:'rgba(255,255,255,0.55)', enColor:'#ffffff', zhColor:'#ffffff',
-    brandWeight:'300', enWeight:'600', zhWeight:'300',
-    // text block position: % from right, % from top
-    textRight:5, textTop:50,
-    textAlign:'right',
+    textRight:5, textTop:50, textAlign:'right',
     opacity:75, overlayColor:'#000000', overlayWidth:58,
+  };
+}
+
+// 全局共享文字样式默认值
+function defStyle(){
+  return {
+    brandFont:'Cormorant Garamond', brandSize:9, brandWeight:'300', brandColor:'rgba(255,255,255,0.55)',
+    enFont:'Cormorant Garamond', enSize:22, enWeight:'600', enColor:'#ffffff',
+    zhFont:'Noto Serif SC', zhSize:19, zhWeight:'300', zhColor:'#ffffff',
   };
 }
 
@@ -303,6 +305,7 @@ async function createProject(){
   const name=document.getElementById('nm-name').value.trim()||'未命名';
   const n=pickedLayout;
   const p={id:uid(),name,ct:Date.now(),at:Date.now(),layout:n,
+    style:defStyle(),
     strips:Array.from({length:n},(_,i)=>defStrip(i))};
   await saveProject(p);projects.unshift(p);closeNewModal();renderProjList();openProj(p.id);
 }
@@ -376,22 +379,21 @@ async function renderPoster(){
   const poster=document.getElementById('poster');
   const p=cur();
   if(!p){poster.innerHTML='<div class="no-proj" style="height:400px;"><p>新建或选择项目</p></div>';return;}
-  const{w}=posterSize();const n=p.layout||5;
-  poster.style.cssText=`width:${w}px;box-shadow:0 20px 60px rgba(0,0,0,.5);`;
+  const{w,h}=posterSize();const n=p.layout||5;
+  const st=p.style||(p.style=defStyle());
+  poster.style.cssText=`width:${w}px;height:${h}px;box-shadow:0 20px 60px rgba(0,0,0,.5);`;
   const urls=await Promise.all(p.strips.slice(0,n).map(s=>getImgURL(s.imgKey)));
 
   poster.innerHTML=p.strips.slice(0,n).map((s,i)=>{
-    // 有图片时高度由图片比例决定，无图时用固定高度
-    const aspectH=s.nW&&s.nH?Math.round(w*s.nH/s.nW*( s.zoom||1)):Math.round(w*0.28);
-    const stripH=urls[i]?aspectH:Math.round(w*0.28);
+    const stripH=Math.round(h/n);
     return `
     <div class="strip" id="strip-${i}" data-i="${i}" style="height:${stripH}px;cursor:${urls[i]?'grab':'pointer'};">
-      ${urls[i]?`<img class="strip-img" id="simg-${i}" src="${urls[i]}" draggable="false" style="width:${w}px;height:${stripH}px;object-fit:contain;object-position:${s.px||50}% ${s.py||50}%;position:absolute;left:0;top:0;">`:`<div class="strip-empty" onclick="uploadImg(${i})"><span>＋</span><span>点击上传图片</span></div>`}
+      ${urls[i]?`<img class="strip-img" id="simg-${i}" src="${urls[i]}" draggable="false" style="position:absolute;left:0;top:0;">`:`<div class="strip-empty" onclick="uploadImg(${i})"><span>＋</span><span>点击上传图片</span></div>`}
       ${urls[i]?`<div class="strip-overlay" id="sovl-${i}" style="background:${overlayBg(s)};"></div>`:''}
       <div class="strip-text" id="stxt-${i}" style="right:${s.textRight||5}%;top:${s.textTop||50}%;transform:translateY(-50%);text-align:${s.textAlign||'right'};align-items:${s.textAlign==='left'?'flex-start':s.textAlign==='center'?'center':'flex-end'};">
-        <div id="sb-${i}" style="font-family:'${s.brandFont||'Cormorant Garamond'}',serif;font-size:${s.brandSize||9}px;font-weight:${s.brandWeight||300};color:${s.brandColor||'rgba(255,255,255,0.55)'};letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;">${esc(s.brand)}</div>
-        <div id="se-${i}" style="font-family:'${s.enFont||'Cormorant Garamond'}',serif;font-size:${s.enSize||22}px;font-weight:${s.enWeight||600};color:${s.enColor||'#fff'};letter-spacing:.06em;text-transform:uppercase;line-height:1.1;white-space:nowrap;">${esc(s.en)}</div>
-        <div id="sz-${i}" style="font-family:'${s.zhFont||'Noto Serif SC'}',serif;font-size:${s.zhSize||19}px;font-weight:${s.zhWeight||300};color:${s.zhColor||'#fff'};letter-spacing:.18em;white-space:nowrap;">「${esc(s.zh)}」</div>
+        <div id="sb-${i}" style="font-family:'${st.brandFont||'Cormorant Garamond'}',serif;font-size:${st.brandSize||9}px;font-weight:${st.brandWeight||300};color:${st.brandColor||'rgba(255,255,255,0.55)'};letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;">${esc(s.brand)}</div>
+        <div id="se-${i}" style="font-family:'${st.enFont||'Cormorant Garamond'}',serif;font-size:${st.enSize||22}px;font-weight:${st.enWeight||600};color:${st.enColor||'#fff'};letter-spacing:.06em;text-transform:uppercase;line-height:1.1;white-space:nowrap;">${esc(s.en)}</div>
+        <div id="sz-${i}" style="font-family:'${st.zhFont||'Noto Serif SC'}',serif;font-size:${st.zhSize||19}px;font-weight:${st.zhWeight||300};color:${st.zhColor||'#fff'};letter-spacing:.18em;white-space:nowrap;">「${esc(s.zh)}」</div>
       </div>
     </div>`}).join('');
 
@@ -399,6 +401,7 @@ async function renderPoster(){
     el.addEventListener('mousedown',onMD);
     el.addEventListener('touchstart',onTS,{passive:false});
   });
+  p.strips.slice(0,n).forEach((s,i)=>{if(urls[i])applyTransform(i,s);});
 }
 
 function applyTransform(i,s){
@@ -408,15 +411,13 @@ function applyTransform(i,s){
   if(!cW||!cH)return;
   const nW=img.naturalWidth||cW,nH=img.naturalHeight||cH;
   const zoom=s.zoom||1;
-  // fit image to container first (contain), then scale
-  const baseScale=Math.min(cW/nW,cH/nH);
-  const scale=baseScale*zoom;
-  const rW=nW*scale,rH=nH*scale;
+  const baseScale=Math.max(cW/nW,cH/nH)*zoom;
+  const rW=nW*baseScale,rH=nH*baseScale;
   const left=(s.px/100)*(cW-rW);
   const top=(s.py/100)*(cH-rH);
   img.style.width=rW+'px';img.style.height=rH+'px';
   img.style.left=left+'px';img.style.top=top+'px';
-  img.style.transform='';
+  img.style.objectFit='';img.style.transform='';
 }
 
 // ── Drag ──────────────────────────────────────────────────────────
@@ -447,7 +448,7 @@ function renderRP(){
   const rp=document.getElementById('rp');
   const p=cur();if(!p){rp.innerHTML='<div class="no-proj"><p>新建或选择项目</p></div>';return;}
   const n=p.layout||5;const s=p.strips[selStrip];
-
+  const st=p.style||(p.style=defStyle());
   const toHex=c=>{if(!c||c.startsWith('#'))return c||'#ffffff';const m=c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);if(!m)return '#ffffff';return '#'+[m[1],m[2],m[3]].map(x=>parseInt(x).toString(16).padStart(2,'0')).join('');};
 
   rp.innerHTML=`
@@ -499,37 +500,62 @@ function renderRP(){
     </div>
 
     <div class="rp-section">
-      <div class="rp-sec-title">品牌名样式</div>
+      <div class="rp-sec-title">品牌名样式（全局）</div>
       <div class="rp-label">字体</div>
-      <select class="rp-select" onchange="setSF(${selStrip},'brandFont',this.value);updTxtStyle(${selStrip})">${fontOpts(s.brandFont||'Cormorant Garamond')}</select>
-      <div class="rp-row"><label>字号</label><input class="rp-num" type="number" min="6" max="100" value="${s.brandSize||9}" oninput="setSF(${selStrip},'brandSize',+this.value);updTxtStyle(${selStrip})"><span class="rp-unit">px</span></div>
+      <select class="rp-select" onchange="setStyle('brandFont',this.value)">${fontOpts(st.brandFont||'Cormorant Garamond')}</select>
+      <div class="rp-row"><label>字号</label><input class="rp-num" type="number" min="6" max="100" value="${st.brandSize||9}" oninput="setStyle('brandSize',+this.value)"><span class="rp-unit">px</span></div>
+      <div class="rp-label">字重</div>
+      <select class="rp-select" onchange="setStyle('brandWeight',this.value)">
+        <option value="300" ${(st.brandWeight||'300')==='300'?'selected':''}>细 300</option>
+        <option value="400" ${st.brandWeight==='400'?'selected':''}>常规 400</option>
+        <option value="500" ${st.brandWeight==='500'?'selected':''}>中等 500</option>
+        <option value="700" ${st.brandWeight==='700'?'selected':''}>粗 700</option>
+        <option value="900" ${st.brandWeight==='900'?'selected':''}>超粗 900</option>
+      </select>
       <div class="col-row">
-        <div class="col-dot" style="background:${s.brandColor||'rgba(255,255,255,0.55)'};" onclick="document.getElementById('bc').click()"></div>
-        <input id="bc" type="color" value="${toHex(s.brandColor)}" style="display:none" onchange="setSF(${selStrip},'brandColor',this.value);updTxtStyle(${selStrip});this.previousElementSibling.style.background=this.value">
+        <div class="col-dot" style="background:${st.brandColor||'rgba(255,255,255,0.55)'};" onclick="document.getElementById('bc').click()"></div>
+        <input id="bc" type="color" value="${toHex(st.brandColor)}" style="display:none" onchange="setStyle('brandColor',this.value);this.previousElementSibling.style.background=this.value">
         <span class="col-label">颜色</span>
       </div>
     </div>
 
     <div class="rp-section">
-      <div class="rp-sec-title">英文标题样式</div>
+      <div class="rp-sec-title">英文标题样式（全局）</div>
       <div class="rp-label">字体</div>
-      <select class="rp-select" onchange="setSF(${selStrip},'enFont',this.value);updTxtStyle(${selStrip})">${fontOpts(s.enFont||'Cormorant Garamond')}</select>
-      <div class="rp-row"><label>字号</label><input class="rp-num" type="number" min="6" max="200" value="${s.enSize||22}" oninput="setSF(${selStrip},'enSize',+this.value);updTxtStyle(${selStrip})"><span class="rp-unit">px</span></div>
+      <select class="rp-select" onchange="setStyle('enFont',this.value)">${fontOpts(st.enFont||'Cormorant Garamond')}</select>
+      <div class="rp-row"><label>字号</label><input class="rp-num" type="number" min="6" max="200" value="${st.enSize||22}" oninput="setStyle('enSize',+this.value)"><span class="rp-unit">px</span></div>
+      <div class="rp-label">字重</div>
+      <select class="rp-select" onchange="setStyle('enWeight',this.value)">
+        <option value="300" ${(st.enWeight||'600')==='300'?'selected':''}>细 300</option>
+        <option value="400" ${st.enWeight==='400'?'selected':''}>常规 400</option>
+        <option value="500" ${st.enWeight==='500'?'selected':''}>中等 500</option>
+        <option value="600" ${(st.enWeight||'600')==='600'?'selected':''}>半粗 600</option>
+        <option value="700" ${st.enWeight==='700'?'selected':''}>粗 700</option>
+        <option value="900" ${st.enWeight==='900'?'selected':''}>超粗 900</option>
+      </select>
       <div class="col-row">
-        <div class="col-dot" style="background:${s.enColor||'#fff'};" onclick="document.getElementById('ec').click()"></div>
-        <input id="ec" type="color" value="${toHex(s.enColor)||'#ffffff'}" style="display:none" onchange="setSF(${selStrip},'enColor',this.value);updTxtStyle(${selStrip});this.previousElementSibling.style.background=this.value">
+        <div class="col-dot" style="background:${st.enColor||'#fff'};" onclick="document.getElementById('ec').click()"></div>
+        <input id="ec" type="color" value="${toHex(st.enColor)||'#ffffff'}" style="display:none" onchange="setStyle('enColor',this.value);this.previousElementSibling.style.background=this.value">
         <span class="col-label">颜色</span>
       </div>
     </div>
 
     <div class="rp-section">
-      <div class="rp-sec-title">中文名称样式</div>
+      <div class="rp-sec-title">中文名称样式（全局）</div>
       <div class="rp-label">字体</div>
-      <select class="rp-select" onchange="setSF(${selStrip},'zhFont',this.value);updTxtStyle(${selStrip})">${fontOpts(s.zhFont||'Noto Serif SC')}</select>
-      <div class="rp-row"><label>字号</label><input class="rp-num" type="number" min="6" max="200" value="${s.zhSize||19}" oninput="setSF(${selStrip},'zhSize',+this.value);updTxtStyle(${selStrip})"><span class="rp-unit">px</span></div>
+      <select class="rp-select" onchange="setStyle('zhFont',this.value)">${fontOpts(st.zhFont||'Noto Serif SC')}</select>
+      <div class="rp-row"><label>字号</label><input class="rp-num" type="number" min="6" max="200" value="${st.zhSize||19}" oninput="setStyle('zhSize',+this.value)"><span class="rp-unit">px</span></div>
+      <div class="rp-label">字重</div>
+      <select class="rp-select" onchange="setStyle('zhWeight',this.value)">
+        <option value="300" ${(st.zhWeight||'300')==='300'?'selected':''}>细 300</option>
+        <option value="400" ${st.zhWeight==='400'?'selected':''}>常规 400</option>
+        <option value="500" ${st.zhWeight==='500'?'selected':''}>中等 500</option>
+        <option value="700" ${st.zhWeight==='700'?'selected':''}>粗 700</option>
+        <option value="900" ${st.zhWeight==='900'?'selected':''}>超粗 900</option>
+      </select>
       <div class="col-row">
-        <div class="col-dot" style="background:${s.zhColor||'#fff'};" onclick="document.getElementById('zc').click()"></div>
-        <input id="zc" type="color" value="${toHex(s.zhColor)||'#ffffff'}" style="display:none" onchange="setSF(${selStrip},'zhColor',this.value);updTxtStyle(${selStrip});this.previousElementSibling.style.background=this.value">
+        <div class="col-dot" style="background:${st.zhColor||'#fff'};" onclick="document.getElementById('zc').click()"></div>
+        <input id="zc" type="color" value="${toHex(st.zhColor)||'#ffffff'}" style="display:none" onchange="setStyle('zhColor',this.value);this.previousElementSibling.style.background=this.value">
         <span class="col-label">颜色</span>
       </div>
     </div>`;
@@ -546,14 +572,24 @@ function updTxtPos(i){
   el.style.textAlign=s.textAlign||'right';
   el.style.alignItems=s.textAlign==='left'?'flex-start':s.textAlign==='center'?'center':'flex-end';
 }
+async function setStyle(key,val){
+  const p=cur();if(!p)return;
+  if(!p.style)p.style=defStyle();
+  p.style[key]=val;
+  // 同步更新所有板块的文字样式
+  const n=p.layout||5;
+  for(let i=0;i<n;i++)updTxtStyle(i);
+  await saveProject(p);
+}
 function updTxtStyle(i){
-  const p=cur();if(!p)return;const s=p.strips[i];
+  const p=cur();if(!p)return;
+  const st=p.style||defStyle();
   const sb=document.getElementById(`sb-${i}`);
   const se=document.getElementById(`se-${i}`);
   const sz=document.getElementById(`sz-${i}`);
-  if(sb){sb.style.fontFamily=`'${s.brandFont}',serif`;sb.style.fontSize=s.brandSize+'px';sb.style.color=s.brandColor;}
-  if(se){se.style.fontFamily=`'${s.enFont}',serif`;se.style.fontSize=s.enSize+'px';se.style.color=s.enColor;}
-  if(sz){sz.style.fontFamily=`'${s.zhFont}',serif`;sz.style.fontSize=s.zhSize+'px';sz.style.color=s.zhColor;}
+  if(sb){sb.style.fontFamily=`'${st.brandFont}',serif`;sb.style.fontSize=st.brandSize+'px';sb.style.fontWeight=st.brandWeight||'300';sb.style.color=st.brandColor;}
+  if(se){se.style.fontFamily=`'${st.enFont}',serif`;se.style.fontSize=st.enSize+'px';se.style.fontWeight=st.enWeight||'600';se.style.color=st.enColor;}
+  if(sz){sz.style.fontFamily=`'${st.zhFont}',serif`;sz.style.fontSize=st.zhSize+'px';sz.style.fontWeight=st.zhWeight||'300';sz.style.color=st.zhColor;}
 }
 function overlayBg(s){
   const o=(s.opacity??75)/100;
@@ -595,44 +631,37 @@ function uploadImg(i){
   };fi.click();
 }
 
-// ── Export ────────────────────────────────────────────────────────
 async function exportPNG(){
   const p=cur();if(!p)return;
+  if(!await wpCheckExportQuota())return;
   const btn=document.getElementById('export-btn');btn.textContent='生成中…';btn.disabled=true;
-  const W=1200,n=p.layout||5;
-  // 先计算每条高度
-  const stripHeights=[];
-  for(let i=0;i<n;i++){
-    const s=p.strips[i];
-    if(s.nW&&s.nH){stripHeights.push(Math.round(W*s.nH/s.nW*(s.zoom||1)));}
-    else{stripHeights.push(Math.round(W*0.28));}
-  }
-  const H=stripHeights.reduce((a,b)=>a+b,0);
+  const W=1200,H=1600,n=p.layout||5;
+  const SH=Math.round(H/n);
+  const st=p.style||defStyle();
   const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
 
-  let y=0;
+  // 预加载所有图片
+  const urls=await Promise.all(p.strips.slice(0,n).map(s=>getImgURL(s.imgKey)));
+  function loadImg(url){return new Promise(res=>{if(!url){res(null);return;}const img=new Image();img.onload=()=>res(img);img.onerror=()=>res(null);img.src=url;});}
+  const imgs=await Promise.all(urls.map(loadImg));
+
   for(let i=0;i<n;i++){
-    const s=p.strips[i],SH=stripHeights[i];
-    const url=await getImgURL(s.imgKey);
-    if(url){
-      await new Promise(res=>{
-        const img=new Image();
-        img.onload=()=>{
-          const zoom=s.zoom||1;
-          const iW=s.nW||img.width,iH=s.nH||img.height;
-          const SH=Math.round(W*iH/iW*zoom);
-          ctx.save();ctx.beginPath();ctx.rect(0,y,W,SH);ctx.clip();
-          ctx.drawImage(img,0,y,W,SH);
-          ctx.restore();
-          // update y for next strip
-          stripHeights[i]=SH;
-          res();
-        };img.src=url;
-      });
-    } else {
-      stripHeights[i]=Math.round(W*0.28);
+    const s=p.strips[i];
+    const y=i*SH;
+    const img=imgs[i];
+    if(img){
+      const zoom=s.zoom||1;
+      const nW=img.naturalWidth,nH=img.naturalHeight;
+      const baseScale=Math.max(W/nW,SH/nH)*zoom;
+      const rW=nW*baseScale,rH=nH*baseScale;
+      const left=(s.px/100)*(W-rW);
+      const top=(s.py/100)*(SH-rH);
+      ctx.save();ctx.beginPath();ctx.rect(0,y,W,SH);ctx.clip();
+      ctx.drawImage(img,left,y+top,rW,rH);
+      ctx.restore();
     }
+
     const o=(s.opacity??75)/100;
     const ow=(s.overlayWidth??58)/100;
     const oc=s.overlayColor||'#000000';
@@ -646,37 +675,34 @@ async function exportPNG(){
     if(i<n-1){ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y+SH);ctx.lineTo(W,y+SH);ctx.stroke();}
 
     // Text
-    const expScale=W/1200;
     const align=s.textAlign||'right';
     ctx.textAlign=align;
     const textRight=(s.textRight||5)/100*W;
     const textTop=(s.textTop||50)/100*SH+y;
-    const bSz=Math.round((s.brandSize||9));
-    const eSz=Math.round((s.enSize||22));
-    const zSz=Math.round((s.zhSize||19));
+    const bSz=st.brandSize||9;
+    const eSz=st.enSize||22;
+    const zSz=st.zhSize||19;
     const totalH=bSz+eSz+zSz+16;
     const startY=textTop-totalH/2;
-    let tx=align==='right'?W-textRight:align==='left'?textRight:W/2;
+    const tx=align==='right'?W-textRight:align==='left'?textRight:W/2;
 
-    ctx.font=`${s.brandWeight||300} ${bSz}px "${s.brandFont||'Cormorant Garamond'}",serif`;
-    ctx.fillStyle=s.brandColor||'rgba(255,255,255,0.55)';
+    ctx.font=`${st.brandWeight||300} ${bSz}px "${st.brandFont||'Cormorant Garamond'}",serif`;
+    ctx.fillStyle=st.brandColor||'rgba(255,255,255,0.55)';
     ctx.fillText(s.brand,tx,startY+bSz);
 
-    ctx.font=`${s.enWeight||600} ${eSz}px "${s.enFont||'Cormorant Garamond'}",serif`;
-    ctx.fillStyle=s.enColor||'#ffffff';
+    ctx.font=`${st.enWeight||600} ${eSz}px "${st.enFont||'Cormorant Garamond'}",serif`;
+    ctx.fillStyle=st.enColor||'#ffffff';
     ctx.fillText(s.en,tx,startY+bSz+eSz+6);
 
-    ctx.font=`${s.zhWeight||300} ${zSz}px "${s.zhFont||'Noto Serif SC'}","STSong",serif`;
-    ctx.fillStyle=s.zhColor||'#ffffff';
+    ctx.font=`${st.zhWeight||300} ${zSz}px "${st.zhFont||'Noto Serif SC'}","STSong",serif`;
+    ctx.fillStyle=st.zhColor||'#ffffff';
     ctx.fillText(`「${s.zh}」`,tx,startY+bSz+eSz+zSz+14);
-
-    y+=SH;
   }
 
   canvas.toBlob(blob=>{
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.download=(p.name||'poster')+`_${n}块_1200x${H}.png`;
+    a.download=(p.name||'poster')+`_${n}块_1200x1600.png`;
     a.href=url;a.click();
     setTimeout(()=>URL.revokeObjectURL(url),5000);
     btn.textContent='↓ 导出 PNG';btn.disabled=false;
