@@ -767,7 +767,12 @@ async function exportPNG(){
 
 // ── Init ──────────────────────────────────────────────────────────
 window.addEventListener('resize',()=>{if(curId)renderPoster();});
-openDB().then(async()=>{await loadAll();renderProjList();});
+(async()=>{
+  await wpCheckAuth();
+  await openDB();
+  await loadAll();
+  renderProjList();
+})();
 </script>
 </body>
 </html>
