@@ -262,7 +262,7 @@ function defStrip(i){
 // 全局共享文字样式默认值
 function defStyle(){
   return {
-    brandFont:'Cormorant Garamond', brandSize:9, brandWeight:'300', brandColor:'rgba(255,255,255,0.55)',
+    brandFont:'Cormorant Garamond', brandSize:9, brandWeight:'300', brandColor:'#ffffff',
     enFont:'Cormorant Garamond', enSize:22, enWeight:'600', enColor:'#ffffff',
     zhFont:'Noto Serif SC', zhSize:19, zhWeight:'300', zhColor:'#ffffff',
   };
@@ -334,13 +334,35 @@ function renderProjList(){
       <h3>${esc(p.name)}</h3>
       <div class="meta"><span>${new Date(p.at).toLocaleDateString('zh-CN')}</span><span class="strips-badge">${p.layout||5}块</span></div>
       <div class="proj-item-actions">
+        <button class="pa-btn" onclick="event.stopPropagation();renameProj('${p.id}')">改名</button>
         <button class="pa-btn" onclick="event.stopPropagation();dupProj('${p.id}')">复制</button>
         <button class="pa-btn del" onclick="event.stopPropagation();delProj('${p.id}')">删除</button>
       </div>
     </div>`).join('');
 }
+
+async function renameProj(id){
+  const p=projects.find(x=>x.id===id);if(!p)return;
+  const n=prompt('新名称：',p.name);
+  if(!n||!n.trim())return;
+  p.name=n.trim();
+  await saveProject(p);
+  if(curId===id)document.getElementById('proj-name-in').value=p.name;
+  renderProjList();
+}
 async function openProj(id){
   curId=id;selStrip=0;const p=cur();if(!p)return;
+  // 迁移旧的rgba半透明颜色为纯hex（修复偏色问题）
+  if(p.style){
+    ['brandColor','enColor','zhColor'].forEach(k=>{
+      const c=p.style[k];
+      if(c&&c.startsWith('rgba')){
+        const m=c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        if(m)p.style[k]='#'+[m[1],m[2],m[3]].map(x=>parseInt(x).toString(16).padStart(2,'0')).join('');
+      }
+    });
+    await saveProject(p);
+  }
   document.getElementById('proj-name-in').value=p.name;
   document.getElementById('layout-sw').style.display='flex';
   updateLayoutSw();renderProjList();await renderPoster();renderRP();
@@ -682,29 +704,55 @@ async function exportPNG(){
     ctx.fillStyle=grad;ctx.fillRect(0,y,W,SH);
     if(i<n-1){ctx.strokeStyle='rgba(255,255,255,0.08)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y+SH);ctx.lineTo(W,y+SH);ctx.stroke();}
 
-    // Text
+    // Text - 按预览尺寸缩放字号（用户在面板里看的是预览尺寸的字号）
+    const{w:pvW}=posterSize();
+    const sc=W/pvW;
     const align=s.textAlign||'right';
-    ctx.textAlign=align;
     const textRight=(s.textRight||5)/100*W;
     const textTop=(s.textTop||50)/100*SH+y;
-    const bSz=st.brandSize||9;
-    const eSz=st.enSize||22;
-    const zSz=st.zhSize||19;
-    const totalH=bSz+eSz+zSz+16;
+    const bSz=Math.round((st.brandSize||9)*sc);
+    const eSz=Math.round((st.enSize||22)*sc);
+    const zSz=Math.round((st.zhSize||19)*sc);
+    const gap=Math.round(4*sc);
+    const totalH=bSz+eSz+zSz+gap*2;
     const startY=textTop-totalH/2;
+
+    // 自定义绘制带letter-spacing的文本
+    function drawText(text,x,y,size,letterSpacing,align){
+      const ls=size*letterSpacing;
+      ctx.textBaseline='top';
+      // 先测宽度
+      const chars=text.split('');
+      let totalW=0;
+      chars.forEach((ch,idx)=>{
+        totalW+=ctx.measureText(ch).width;
+        if(idx<chars.length-1)totalW+=ls;
+      });
+      // 按对齐计算起始x
+      let curX=align==='right'?x-totalW:align==='center'?x-totalW/2:x;
+      chars.forEach((ch,idx)=>{
+        ctx.fillText(ch,curX,y);
+        curX+=ctx.measureText(ch).width;
+        if(idx<chars.length-1)curX+=ls;
+      });
+    }
+
     const tx=align==='right'?W-textRight:align==='left'?textRight:W/2;
 
+    // 品牌名 - uppercase, letter-spacing .18em
     ctx.font=`${st.brandWeight||300} ${bSz}px "${st.brandFont||'Cormorant Garamond'}",serif`;
-    ctx.fillStyle=st.brandColor||'rgba(255,255,255,0.55)';
-    ctx.fillText(s.brand,tx,startY+bSz);
+    ctx.fillStyle=st.brandColor||'#ffffff';
+    drawText((s.brand||'').toUpperCase(),tx,startY,bSz,0.18,align);
 
+    // 英文标题 - uppercase, letter-spacing .06em
     ctx.font=`${st.enWeight||600} ${eSz}px "${st.enFont||'Cormorant Garamond'}",serif`;
     ctx.fillStyle=st.enColor||'#ffffff';
-    ctx.fillText(s.en,tx,startY+bSz+eSz+6);
+    drawText((s.en||'').toUpperCase(),tx,startY+bSz+gap,eSz,0.06,align);
 
+    // 中文名称 - letter-spacing .18em
     ctx.font=`${st.zhWeight||300} ${zSz}px "${st.zhFont||'Noto Serif SC'}","STSong",serif`;
     ctx.fillStyle=st.zhColor||'#ffffff';
-    ctx.fillText(`「${s.zh}」`,tx,startY+bSz+eSz+zSz+14);
+    drawText(`「${s.zh||''}」`,tx,startY+bSz+eSz+gap*2,zSz,0.18,align);
   }
 
   canvas.toBlob(blob=>{
