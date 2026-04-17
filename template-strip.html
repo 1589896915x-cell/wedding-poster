@@ -188,8 +188,8 @@ async function wpCheckAuth(){
 }
 function wpUpdCredits(){const el=document.getElementById('wp-credits');if(el&&_lic)el.textContent=`剩余 ${_lic.credits||0} 次`;}
 async function wpCheckExportQuota(){
-  if(!_lic){alert('请先登录');return false;}
   if(location.protocol==='file:'||location.hostname==='localhost'){return true;}
+  if(!_lic){alert('请先登录');return false;}
   if((_lic.credits||0)<=0){alert('导出次数已用完，请联系管理员充值');return false;}
   try{
     const newC=(_lic.credits||0)-1;
