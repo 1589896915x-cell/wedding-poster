@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>黑金厅版 - 婚礼场馆展示</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC',sans-serif;background:#111;color:#fff;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+.topbar{height:40px;background:#0a0a0a;border-bottom:1px solid #1e1e1e;display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0;}
+.topbar a{color:#888;font-size:18px;text-decoration:none;line-height:1;}
+.topbar .lbl{font-size:12px;color:#666;}
+.credits{background:#1e1e1e;padding:3px 10px;border-radius:4px;font-size:11px;color:#c8a96a;margin-left:auto;}
+.logout{padding:4px 12px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:11px;cursor:pointer;font-family:inherit;}
+
+.main{display:flex;flex:1;overflow:hidden;}
+.sb{width:188px;flex-shrink:0;background:#111;border-right:1px solid #1e1e1e;display:flex;flex-direction:column;}
+.sb-head{padding:12px;border-bottom:1px solid #1e1e1e;}
+.sb-head h2{font-size:13px;font-weight:500;}
+.sb-head p{font-size:10px;color:#555;margin-top:2px;}
+.sb-new{margin:10px;padding:7px;border:1px dashed #333;border-radius:6px;color:#888;font-size:11px;cursor:pointer;text-align:center;background:#161616;}
+.sb-new:hover{border-color:#666;color:#ccc;}
+.sb-list{flex:1;overflow-y:auto;padding:6px 8px;}
+.pi{padding:8px 10px;border-radius:6px;cursor:pointer;margin-bottom:3px;border:1px solid transparent;}
+.pi:hover{background:#1a1a1a;}
+.pi.on{background:#1a1a1a;border-color:#2a2a2a;}
+.pi h3{font-size:12px;color:#ddd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pi p{font-size:9px;color:#555;margin-top:2px;}
+.pi-acts{display:flex;gap:4px;margin-top:5px;}
+.pi-btn{padding:2px 7px;background:none;border:1px solid #2a2a2a;border-radius:3px;color:#666;font-size:9px;cursor:pointer;}
+.pi-btn:hover{border-color:#555;color:#aaa;}
+.pi-btn.del:hover{border-color:#c00;color:#f55;}
+
+.editor{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.ed-top{height:44px;background:#111;border-bottom:1px solid #1e1e1e;display:flex;align-items:center;gap:10px;padding:0 14px;flex-shrink:0;}
+.pname{background:none;border:none;outline:none;color:#fff;font-size:13px;font-weight:500;font-family:inherit;flex:1;max-width:220px;}
+.pname::placeholder{color:#444;}
+.exp-btn{padding:6px 14px;background:#c8392b;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;margin-left:auto;}
+.exp-btn:hover{background:#a02d22;}
+.ed-body{display:flex;flex:1;overflow:hidden;}
+.canvas{flex:1;background:#1a1a1a;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:20px;}
+#poster{box-shadow:0 20px 60px rgba(0,0,0,.6);position:relative;flex-shrink:0;}
+
+.rp{width:240px;flex-shrink:0;background:#111;border-left:1px solid #1e1e1e;overflow-y:auto;padding:12px 10px;}
+.rp-t{font-size:10px;color:#888;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;}
+.sec{margin-top:10px;padding-top:9px;border-top:1px solid #1a1a1a;}
+.sec-t{font-size:10px;color:#aaa;letter-spacing:.5px;margin-bottom:7px;font-weight:500;}
+.lbl{font-size:9px;color:#666;margin-bottom:2px;margin-top:5px;}
+.fi{width:100%;padding:5px 7px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:4px;color:#ddd;font-size:11px;font-family:inherit;outline:none;margin-bottom:3px;}
+.fi:focus{border-color:#555;}
+.ta{width:100%;padding:5px 7px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:4px;color:#ddd;font-size:11px;font-family:inherit;outline:none;margin-bottom:3px;resize:vertical;min-height:50px;}
+.sel{width:100%;padding:5px 7px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:4px;color:#ddd;font-size:11px;font-family:inherit;outline:none;margin-bottom:3px;}
+.row{display:flex;gap:5px;align-items:center;margin-bottom:4px;}
+.row label{font-size:9px;color:#666;min-width:32px;flex-shrink:0;}
+.num{width:52px;padding:4px 6px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:4px;color:#ddd;font-size:11px;font-family:inherit;outline:none;text-align:center;}
+.unit{font-size:9px;color:#555;}
+.sld{flex:1;accent-color:#c8392b;}
+.fval{font-size:9px;color:#888;min-width:30px;text-align:right;}
+.img-btn{width:100%;padding:6px;border:1px dashed #2a2a2a;border-radius:4px;background:none;color:#888;font-size:10px;cursor:pointer;text-align:center;margin-top:3px;font-family:inherit;}
+.img-btn:hover{border-color:#555;color:#ccc;}
+.drag-hint{font-size:9px;color:#444;text-align:center;margin-top:2px;}
+.col-tabs{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:6px;}
+.ct{padding:4px 9px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:10px;cursor:pointer;font-family:inherit;}
+.ct.on{background:#2a2a2a;color:#fff;border-color:#444;}
+.empty{display:flex;align-items:center;justify-content:center;height:100%;color:#333;font-size:12px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html">←</a>
+  <span class="lbl">黑金厅版</span>
+  <span class="credits" id="wp-credits"></span>
+  <button class="logout" onclick="wpLogout()">退出</button>
+</div>
+
+<div class="main">
+  <div class="sb">
+    <div class="sb-head"><h2>项目</h2><p>黑金厅版模板</p></div>
+    <div class="sb-new" onclick="newProj()">＋ 新建项目</div>
+    <div class="sb-list" id="proj-list"><div style="font-size:10px;color:#444;padding:8px 4px;">加载中…</div></div>
+  </div>
+  <div class="editor">
+    <div class="ed-top">
+      <input class="pname" id="pname" placeholder="项目名称" oninput="onNameChange()">
+      <button class="exp-btn" id="exp-btn" onclick="doExport()">↓ 导出 PNG 1200×1600</button>
+    </div>
+    <div class="ed-body">
+      <div class="canvas"><div id="poster"></div></div>
+      <div class="rp" id="rp"><div class="empty">新建或选择项目</div></div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fi-main" accept="image/*" style="display:none">
+<input type="file" id="fi-sub" accept="image/*" style="display:none">
+
+<script>
+// ══ Auth ══════════════════════════════════════════════════════════
+const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+let _lic=null;
+async function wpCheckAuth(){
+  if(location.protocol==='file:'||location.hostname==='localhost'){
+    _lic={credits:999,id:'test'};
+    const el=document.getElementById('wp-credits');if(el)el.textContent='测试模式';
+    return true;
+  }
+  const code=localStorage.getItem('wp-license');
+  if(!code){location.href='index.html';return false;}
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const d=await r.json();
+    if(!d||!d[0]||!d[0].is_active){location.href='index.html';return false;}
+    const lic=d[0];
+    if((lic.credits||0)<=0){location.href='index.html';return false;}
+    if(lic.expires_at&&new Date(lic.expires_at)<new Date()){location.href='index.html';return false;}
+    if(lic.duration_days&&lic.first_used_at){const exp=new Date(lic.first_used_at);exp.setDate(exp.getDate()+lic.duration_days);if(exp<new Date()){location.href='index.html';return false;}}
+    _lic=lic;updCredits();return true;
+  }catch(e){return true;}
+}
+function updCredits(){const el=document.getElementById('wp-credits');if(el&&_lic)el.textContent=`剩余 ${_lic.credits||0} 次`;}
+async function wpCheckExportQuota(){
+  if(location.protocol==='file:'||location.hostname==='localhost')return true;
+  if(!_lic){alert('请先登录');return false;}
+  if((_lic.credits||0)<=0){alert('次数已用完，请充值');return false;}
+  try{
+    const nc=(_lic.credits||0)-1;
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${_lic.id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({credits:nc})});
+    const d=await r.json();if(d&&d[0])_lic=d[0];else _lic.credits=nc;updCredits();return true;
+  }catch(e){_lic.credits=Math.max(0,(_lic.credits||0)-1);updCredits();return true;}
+}
+function wpLogout(){localStorage.removeItem('wp-license');location.href='index.html';}
+
+// ══ DB ═════════════════════════════════════════════════════════════
+let DB=null;
+function openDB(){return new Promise((r,j)=>{const q=indexedDB.open('heijin-v1',1);q.onupgradeneeded=e=>{const d=e.target.result;['P','I'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,s==='P'?{keyPath:'id'}:{});});};q.onsuccess=e=>{DB=e.target.result;r();};q.onerror=j;});}
+const tx=(s,m='readonly')=>DB.transaction(s,m).objectStore(s);
+const dbG=(s,k)=>new Promise((r,j)=>{const q=tx(s).get(k);q.onsuccess=()=>r(q.result);q.onerror=j;});
+const dbP=(s,v,k)=>new Promise((r,j)=>{const q=k!==undefined?tx(s,'readwrite').put(v,k):tx(s,'readwrite').put(v);q.onsuccess=r;q.onerror=j;});
+const dbD=(s,k)=>new Promise((r,j)=>{const t=DB.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=r;t.onerror=j;});
+const dbAll=(s)=>new Promise((r,j)=>{const q=tx(s).getAll();q.onsuccess=()=>r(q.result);q.onerror=j;});
+
+// ══ State ══════════════════════════════════════════════════════════
+let projs=[],curId=null,selSub=0;
+const imgCache={};
+const FONTS=['Noto Serif SC','Noto Sans SC','Cormorant Garamond','Georgia','STSong','STKaiti','Microsoft YaHei','PingFang SC','Arial','Times New Roman'];
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const cur=()=>projs.find(p=>p.id===curId)||null;
+const mk=(id)=>`hj-m-${id}`;
+const sk=(id,i)=>`hj-s-${id}-${i}`;
+
+function defP(name){return{
+  id:uid(),name,ct:Date.now(),at:Date.now(),
+  bgColor:'#f5ede0',borderColor:'#c8a06a',borderWidth:7,
+  mainImg:{imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1},
+  subs:[
+    {imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1},
+    {imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1},
+  ],
+  headerPct:30, mainImgPct:40,
+
+  title:'黑金厅',
+  titleFont:'Noto Serif SC',titleSize:108,titleWeight:'700',titleColor:'#1a1410',
+  titleX:56, titleY:90,
+
+  numText:'NO.1',
+  numFont:'Noto Serif SC',numSize:180,numWeight:'500',numColor:'#c8a06a',numItalic:false,
+  numX:730, numY:130,
+
+  desc:'神秘深邃的黑与流光溢彩的金\n电影感配色尽显高级\n让每一帧画面都散发着浓厚的艺术气息',
+  descFont:'Noto Sans SC',descSize:25,descWeight:'400',descColor:'#1a1410',
+  descX:59, descY:250,
+
+  keyword:'【婚礼关键词】轻奢 复古 艺术',
+  keywordFont:'Noto Sans SC',keywordSize:31,keywordWeight:'700',keywordColor:'#1a1410',
+  keywordX:56, keywordY:400,
+
+  subTitle:'配套专属新娘房',
+  subTitleFont:'Noto Serif SC',subTitleSize:26,subTitleWeight:'500',subTitleColor:'#1a1410',
+  subDesc:'含化妆间 / 卫生间 / 更衣区',
+  subDescFont:'Cormorant Garamond',subDescSize:20,subDescWeight:'700',subDescColor:'#8a6a4a',
+  subBlockX:875, subBlockY:370,
+  subTitleOffsetX:0, subTitleOffsetY:0,
+  subDescOffsetX:0, subDescOffsetY:0,
+};}
+
+// ══ Image cache ════════════════════════════════════════════════════
+async function saveImg(key,blob){await dbP('I',blob,key);if(imgCache[key])URL.revokeObjectURL(imgCache[key]);imgCache[key]=URL.createObjectURL(blob);}
+async function delImg(key){try{await dbD('I',key);}catch(e){}if(imgCache[key]){URL.revokeObjectURL(imgCache[key]);delete imgCache[key];}}
+async function getURL(key){if(!key)return null;if(imgCache[key])return imgCache[key];try{const b=await dbG('I',key);if(!b)return null;imgCache[key]=URL.createObjectURL(b);return imgCache[key];}catch(e){return null;}}
+
+async function save(p){p.at=Date.now();await dbP('P',p);}
+
+// ══ 项目管理 ═══════════════════════════════════════════════════════
+async function newProj(){
+  if(!DB){try{await openDB();}catch(e){alert('数据库未就绪');return;}}
+  const n=prompt('项目名称：','未命名');if(!n)return;
+  const p=defP(n.trim()||'未命名');
+  await save(p);projs.unshift(p);renderList();openProj(p.id);
+}
+function renderList(){
+  const el=document.getElementById('proj-list');
+  if(!projs.length){el.innerHTML='<div style="font-size:10px;color:#444;padding:8px 4px;">暂无项目</div>';return;}
+  el.innerHTML=projs.map(p=>`
+    <div class="pi ${p.id===curId?'on':''}" onclick="openProj('${p.id}')">
+      <h3>${esc(p.name)}</h3>
+      <p>${new Date(p.at).toLocaleDateString('zh-CN')}</p>
+      <div class="pi-acts">
+        <button class="pi-btn" onclick="event.stopPropagation();renameProj('${p.id}')">改名</button>
+        <button class="pi-btn" onclick="event.stopPropagation();dupProj('${p.id}')">复制</button>
+        <button class="pi-btn del" onclick="event.stopPropagation();delP('${p.id}')">删除</button>
+      </div>
+    </div>`).join('');
+}
+async function openProj(id){
+  curId=id;selSub=0;const p=cur();if(!p)return;
+  document.getElementById('pname').value=p.name;
+  renderList();await renderPoster();renderRP();
+}
+async function renameProj(id){
+  const p=projs.find(x=>x.id===id);if(!p)return;
+  const n=prompt('新名称：',p.name);if(!n||!n.trim())return;
+  p.name=n.trim();await save(p);
+  if(curId===id)document.getElementById('pname').value=p.name;
+  renderList();
+}
+async function dupProj(id){
+  const p=projs.find(x=>x.id===id);if(!p)return;
+  const nid=uid();const np={...JSON.parse(JSON.stringify(p)),id:nid,name:p.name+' 副本',ct:Date.now(),at:Date.now()};
+  // 复制图片
+  const mb=await dbG('I',mk(id));if(mb){await dbP('I',mb,mk(nid));np.mainImg.imgKey=mk(nid);}
+  for(let i=0;i<2;i++){const b=await dbG('I',sk(id,i));if(b){await dbP('I',b,sk(nid,i));np.subs[i].imgKey=sk(nid,i);}}
+  await save(np);projs.unshift(np);renderList();
+}
+async function delP(id){
+  if(!confirm('确认删除？'))return;
+  await delImg(mk(id));for(let i=0;i<2;i++)await delImg(sk(id,i));
+  await dbD('P',id);projs=projs.filter(x=>x.id!==id);
+  if(curId===id){curId=null;document.getElementById('poster').innerHTML='';renderRP();}
+  renderList();
+}
+async function onNameChange(){const p=cur();if(!p)return;p.name=document.getElementById('pname').value;await save(p);renderList();}
+
+// ══ 海报渲染 ══════════════════════════════════════════════════════
+function pSz(){
+  const a=document.querySelector('.canvas');
+  const aH=a.clientHeight-40,aW=a.clientWidth-40;
+  let h,w;
+  if(aH*0.75<aW){h=Math.floor(aH);w=Math.floor(h*0.75);}
+  else{w=Math.floor(aW);h=Math.floor(w/0.75);}
+  return{w,h};
+}
+function iLay(nW,nH,cW,cH,zoom,px,py){
+  if(!nW||!nH)return{left:0,top:0,width:cW,height:cH};
+  const s=Math.max(cW/nW,cH/nH)*(zoom||1);
+  const rW=nW*s,rH=nH*s;
+  return{left:-((px||50)/100)*Math.max(0,rW-cW),top:-((py||50)/100)*Math.max(0,rH-cH),width:rW,height:rH};
+}
+
+async function renderPoster(){
+  const el=document.getElementById('poster');
+  const p=cur();
+  if(!p){el.innerHTML='<div class="empty" style="height:400px;">新建或选择项目</div>';return;}
+  const{w,h}=pSz();const sc=w/1200;
+  const borderW=Math.round(8*sc);
+  const padding=Math.round(50*sc);
+  const headerH=Math.round(h*(p.headerPct||32)/100);
+  const mainH=Math.round(h*(p.mainImgPct||40)/100);
+  const subH=h-headerH-mainH-borderW*2-padding*0.5;
+  const innerW=w-borderW*2;
+  const contentPadX=Math.round(60*sc);
+  
+  el.style.cssText=`width:${w}px;height:${h}px;background:${p.bgColor};position:relative;overflow:hidden;`;
+  
+  const mainUrl=await getURL(p.mainImg.imgKey);
+  const subUrls=await Promise.all(p.subs.map(s=>getURL(s.imgKey)));
+  
+  // 字号缩放
+  const titleSz=Math.round((p.titleSize||108)*sc);
+  const descSz=Math.round((p.descSize||22)*sc);
+  const kwSz=Math.round((p.keywordSize||24)*sc);
+  const numSz=Math.round((p.numSize||130)*sc);
+  const stSz=Math.round((p.subTitleSize||26)*sc);
+  const sdSz=Math.round((p.subDescSize||18)*sc);
+  
+  const bw=Math.round((p.borderWidth||3)*sc);
+  el.innerHTML=`
+  <!-- 金色边框 -->
+  <div style="position:absolute;inset:${borderW}px;border:${bw}px solid ${p.borderColor};pointer-events:none;z-index:5;"></div>
+
+  <!-- 坐标辅助层（hover显示位置） -->
+  <div id="coord-hint" style="position:absolute;top:${borderW+4}px;right:${borderW+8}px;font-size:${Math.round(9*sc)}px;color:rgba(180,120,40,0.7);pointer-events:none;z-index:10;font-family:monospace;"></div>
+  <div id="crosshair-h" style="position:absolute;left:${borderW}px;right:${borderW}px;height:1px;background:rgba(200,160,106,0.25);pointer-events:none;z-index:9;display:none;top:0;"></div>
+  <div id="crosshair-v" style="position:absolute;top:${borderW}px;bottom:${borderW}px;width:1px;background:rgba(200,160,106,0.25);pointer-events:none;z-index:9;display:none;left:0;"></div>
+
+  <!-- Header 区（绝对定位，所有元素独立） -->
+  <div id="header-zone" style="position:absolute;top:${borderW}px;left:${borderW}px;right:${borderW}px;height:${headerH}px;overflow:visible;">
+
+    <!-- 标题 黑金厅 -->
+    <div style="position:absolute;left:${p.titleX*sc}px;top:${p.titleY*sc}px;font-family:'${p.titleFont}',serif;font-size:${titleSz}px;font-weight:${p.titleWeight};color:${p.titleColor};letter-spacing:0.15em;line-height:1;white-space:nowrap;">${esc(p.title)}</div>
+
+    <!-- NO.1 -->
+    <div style="position:absolute;left:${p.numX*sc}px;top:${p.numY*sc}px;font-family:'${p.numFont}',serif;font-size:${numSz}px;font-weight:${p.numWeight};color:${p.numColor};font-style:${p.numItalic?'italic':'normal'};line-height:1;white-space:nowrap;">${esc(p.numText)}</div>
+
+    <!-- 块1：描述文字 -->
+    <div style="position:absolute;left:${p.descX*sc}px;top:${p.descY*sc}px;">
+      ${(p.desc||'').split('\n').map(line=>
+        `<div style="font-family:'${p.descFont}',sans-serif;font-size:${descSz}px;font-weight:${p.descWeight};color:${p.descColor};line-height:1.8;letter-spacing:.02em;white-space:nowrap;">${esc(line)}</div>`
+      ).join('')}
+    </div>
+
+    <!-- 块2：关键词 -->
+    <div style="position:absolute;left:${p.keywordX*sc}px;top:${p.keywordY*sc}px;font-family:'${p.keywordFont}',sans-serif;font-size:${kwSz}px;font-weight:${p.keywordWeight};color:${p.keywordColor};letter-spacing:.12em;white-space:nowrap;">${esc(p.keyword)}</div>
+
+    <!-- 块3：副标题组 -->
+    <div style="position:absolute;left:${p.subBlockX*sc}px;top:${p.subBlockY*sc}px;display:flex;flex-direction:column;align-items:flex-end;text-align:right;">
+      <div style="position:relative;left:${(p.subTitleOffsetX||0)*sc}px;top:${(p.subTitleOffsetY||0)*sc}px;font-family:'${p.subTitleFont}',serif;font-size:${stSz}px;font-weight:${p.subTitleWeight};color:${p.subTitleColor};letter-spacing:.18em;white-space:nowrap;margin-bottom:${Math.round(8*sc)}px;">${esc(p.subTitle)}</div>
+      <div style="width:${Math.round(220*sc)}px;height:1px;background:${p.borderColor};opacity:0.6;margin-bottom:${Math.round(8*sc)}px;"></div>
+      <div style="position:relative;left:${(p.subDescOffsetX||0)*sc}px;top:${(p.subDescOffsetY||0)*sc}px;font-family:'${p.subDescFont}',sans-serif;font-size:${sdSz}px;font-weight:${p.subDescWeight};color:${p.subDescColor};letter-spacing:.12em;white-space:nowrap;">${esc(p.subDesc)}</div>
+    </div>
+
+  </div>
+  
+  <!-- 主图 -->
+  <div id="main-w" style="position:absolute;top:${headerH+borderW}px;left:${borderW+contentPadX*0.5}px;right:${borderW+contentPadX*0.5}px;height:${mainH}px;overflow:hidden;cursor:${mainUrl?'grab':'pointer'};background:#e8dcc5;">
+    ${mainUrl?`<img id="main-img" src="${mainUrl}" draggable="false" style="position:absolute;display:block;">`:`<div onclick="uploadMain()" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#aa9878;cursor:pointer;"><div style="font-size:28px;opacity:.5;">＋</div><div style="font-size:11px;">点击上传主图</div></div>`}
+  </div>
+  
+  <!-- 两张小图 -->
+  <div style="position:absolute;bottom:${borderW}px;left:${borderW+contentPadX*0.5}px;right:${borderW+contentPadX*0.5}px;height:${subH}px;display:flex;gap:${Math.round(16*sc)}px;">
+    ${p.subs.map((s,i)=>`
+      <div id="sub-w-${i}" data-i="${i}" style="flex:1;overflow:hidden;cursor:${subUrls[i]?'grab':'pointer'};background:#e8dcc5;position:relative;">
+        ${subUrls[i]?`<img id="sub-img-${i}" src="${subUrls[i]}" draggable="false" style="position:absolute;display:block;">`:`<div onclick="uploadSub(${i})" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#aa9878;cursor:pointer;"><div style="font-size:22px;opacity:.5;">＋</div><div style="font-size:10px;">${i===0?'左图':'右图'}</div></div>`}
+      </div>`).join('')}
+  </div>`;
+  
+  // 图片位置
+  if(mainUrl){
+    const img=document.getElementById('main-img');
+    if(img.complete&&img.naturalWidth)updMainPos();
+    else img.onload=()=>updMainPos();
+  }
+  p.subs.forEach((s,i)=>{
+    if(subUrls[i]){
+      const img=document.getElementById(`sub-img-${i}`);
+      if(img.complete&&img.naturalWidth)updSubPos(i);
+      else img.onload=()=>updSubPos(i);
+    }
+  });
+  
+  // 拖拽
+  const mw=document.getElementById('main-w');
+  if(mw&&mainUrl)mw.addEventListener('mousedown',onMainMD);
+  p.subs.forEach((s,i)=>{
+    const sw=document.getElementById(`sub-w-${i}`);
+    if(sw&&subUrls[i])sw.addEventListener('mousedown',onSubMD);
+  });
+
+  // 坐标辅助：鼠标移过海报时显示当前坐标（1200px换算）
+  el.addEventListener('mousemove',e=>{
+    const rect=el.getBoundingClientRect();
+    const rx=(e.clientX-rect.left)/sc, ry=(e.clientY-rect.top)/sc;
+    const hint=document.getElementById('coord-hint');
+    const ch=document.getElementById('crosshair-h');
+    const cv=document.getElementById('crosshair-v');
+    if(hint)hint.textContent=`x:${Math.round(rx)}  y:${Math.round(ry)}`;
+    if(ch){ch.style.display='block';ch.style.top=(e.clientY-rect.top)+'px';}
+    if(cv){cv.style.display='block';cv.style.left=(e.clientX-rect.left)+'px';}
+  });
+  el.addEventListener('mouseleave',()=>{
+    const ch=document.getElementById('crosshair-h');
+    const cv=document.getElementById('crosshair-v');
+    if(ch)ch.style.display='none';
+    if(cv)cv.style.display='none';
+  });
+}
+
+function updMainPos(){
+  const p=cur();if(!p)return;const img=document.getElementById('main-img');if(!img)return;
+  const w=document.getElementById('main-w').clientWidth,h=document.getElementById('main-w').clientHeight;
+  const l=iLay(p.mainImg.nW||img.naturalWidth,p.mainImg.nH||img.naturalHeight,w,h,p.mainImg.zoom,p.mainImg.px,p.mainImg.py);
+  img.style.width=l.width+'px';img.style.height=l.height+'px';img.style.left=l.left+'px';img.style.top=l.top+'px';
+}
+function updSubPos(i){
+  const p=cur();if(!p)return;const s=p.subs[i];const img=document.getElementById(`sub-img-${i}`);if(!img)return;
+  const cel=document.getElementById(`sub-w-${i}`);const w=cel.clientWidth,h=cel.clientHeight;
+  const l=iLay(s.nW||img.naturalWidth,s.nH||img.naturalHeight,w,h,s.zoom,s.px,s.py);
+  img.style.width=l.width+'px';img.style.height=l.height+'px';img.style.left=l.left+'px';img.style.top=l.top+'px';
+}
+
+// ══ 拖拽 ═══════════════════════════════════════════════════════════
+let mainDrag={on:false,sx:0,sy:0,px0:50,py0:50};
+let subDrag={on:false,i:-1,sx:0,sy:0,px0:50,py0:50};
+
+function onMainMD(e){const p=cur();if(!p||!p.mainImg.imgKey||e.button!==0)return;mainDrag={on:true,sx:e.clientX,sy:e.clientY,px0:p.mainImg.px,py0:p.mainImg.py};e.preventDefault();}
+function onSubMD(e){const i=+this.dataset.i;const p=cur();if(!p||!p.subs[i].imgKey||e.button!==0)return;subDrag={on:true,i,sx:e.clientX,sy:e.clientY,px0:p.subs[i].px,py0:p.subs[i].py};e.preventDefault();}
+
+document.addEventListener('mousemove',e=>{
+  if(mainDrag.on){
+    const p=cur();const w=document.getElementById('main-w');if(!p||!w)return;
+    const img=document.getElementById('main-img');if(!img)return;
+    const cW=w.clientWidth,cH=w.clientHeight;
+    const l0=iLay(p.mainImg.nW,p.mainImg.nH,cW,cH,p.mainImg.zoom,mainDrag.px0,mainDrag.py0);
+    const mx=Math.max(0,l0.width-cW),my=Math.max(0,l0.height-cH);
+    p.mainImg.px=mx>0?Math.max(0,Math.min(100,mainDrag.px0-(e.clientX-mainDrag.sx)/mx*100)):50;
+    p.mainImg.py=my>0?Math.max(0,Math.min(100,mainDrag.py0-(e.clientY-mainDrag.sy)/my*100)):50;
+    updMainPos();
+  }
+  if(subDrag.on){
+    const p=cur();const i=subDrag.i;const cel=document.getElementById(`sub-w-${i}`);if(!p||!cel)return;
+    const s=p.subs[i];
+    const cW=cel.clientWidth,cH=cel.clientHeight;
+    const l0=iLay(s.nW,s.nH,cW,cH,s.zoom,subDrag.px0,subDrag.py0);
+    const mx=Math.max(0,l0.width-cW),my=Math.max(0,l0.height-cH);
+    s.px=mx>0?Math.max(0,Math.min(100,subDrag.px0-(e.clientX-subDrag.sx)/mx*100)):50;
+    s.py=my>0?Math.max(0,Math.min(100,subDrag.py0-(e.clientY-subDrag.sy)/my*100)):50;
+    updSubPos(i);
+  }
+});
+document.addEventListener('mouseup',async()=>{
+  if(mainDrag.on){mainDrag.on=false;const p=cur();if(p)await save(p);}
+  if(subDrag.on){subDrag.on=false;const p=cur();if(p)await save(p);}
+});
+
+// ══ 上传 ═══════════════════════════════════════════════════════════
+function uploadMain(){
+  const fi=document.getElementById('fi-main');
+  fi.onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;const p=cur();if(!p)return;
+    const u=URL.createObjectURL(f);
+    await new Promise(res=>{const img=new Image();img.onload=()=>{p.mainImg.nW=img.naturalWidth;p.mainImg.nH=img.naturalHeight;URL.revokeObjectURL(u);res();};img.src=u;});
+    await saveImg(mk(curId),f);p.mainImg.imgKey=mk(curId);p.mainImg.px=50;p.mainImg.py=50;p.mainImg.zoom=1;
+    await save(p);await renderPoster();renderRP();fi.value='';
+  };fi.click();
+}
+function uploadSub(i){
+  const fi=document.getElementById('fi-sub');
+  fi.onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;const p=cur();if(!p)return;
+    const u=URL.createObjectURL(f);
+    await new Promise(res=>{const img=new Image();img.onload=()=>{p.subs[i].nW=img.naturalWidth;p.subs[i].nH=img.naturalHeight;URL.revokeObjectURL(u);res();};img.src=u;});
+    await saveImg(sk(curId,i),f);p.subs[i].imgKey=sk(curId,i);p.subs[i].px=50;p.subs[i].py=50;p.subs[i].zoom=1;
+    await save(p);await renderPoster();renderRP();fi.value='';
+  };fi.click();
+}
+
+// ══ 右侧面板 ══════════════════════════════════════════════════════
+function fO(sel){return FONTS.map(f=>`<option value="${f}" ${sel===f?'selected':''}>${f}</option>`).join('');}
+function wO(sel,sizes=['300','400','500','700','900']){
+  const labels={300:'细 300',400:'常规 400',500:'中等 500',700:'粗 700',900:'超粗 900',600:'半粗 600'};
+  return sizes.map(w=>`<option value="${w}" ${sel===w?'selected':''}>${labels[w]}</option>`).join('');
+}
+
+function renderRP(){
+  const rp=document.getElementById('rp');const p=cur();
+  if(!p){rp.innerHTML='<div class="empty">新建或选择项目</div>';return;}
+  const sub=p.subs[selSub];
+
+  rp.innerHTML=`<div class="rp-t">编辑面板</div>
+
+  <div class="sec"><div class="sec-t">整体样式</div>
+    <div class="lbl">背景色</div>
+    <input type="color" value="${p.bgColor}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;margin-bottom:4px;" onchange="setP('bgColor',this.value);reRender()">
+    <div class="lbl">边框色</div>
+    <input type="color" value="${p.borderColor}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;margin-bottom:4px;" onchange="setP('borderColor',this.value);setP('numColor',this.value);reRender()">
+    <div class="row"><label>边框粗细</label><input class="num" type="number" min="0" max="20" value="${p.borderWidth||3}" oninput="setP('borderWidth',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="lbl">Header区高度</div>
+    <div class="row"><input class="sld" type="range" min="20" max="45" value="${p.headerPct}" oninput="setP('headerPct',+this.value);reRender()"><span class="fval">${p.headerPct}%</span></div>
+    <div class="lbl">主图高度</div>
+    <div class="row"><input class="sld" type="range" min="25" max="55" value="${p.mainImgPct}" oninput="setP('mainImgPct',+this.value);reRender()"><span class="fval">${p.mainImgPct}%</span></div>
+  </div>
+
+  <div class="sec"><div class="sec-t">标题「黑金厅」</div>
+    <input class="fi" type="text" value="${esc(p.title)}" oninput="setP('title',this.value);reRender()">
+    <div class="lbl">字体</div><select class="sel" onchange="setP('titleFont',this.value);reRender()">${fO(p.titleFont)}</select>
+    <div class="row"><label>字号</label><input class="num" type="number" min="30" max="300" value="${p.titleSize}" oninput="setP('titleSize',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="lbl">字重</div><select class="sel" onchange="setP('titleWeight',this.value);reRender()">${wO(p.titleWeight)}</select>
+    <div class="lbl">颜色</div>
+    <input type="color" value="${p.titleColor}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;margin-bottom:4px;" onchange="setP('titleColor',this.value);reRender()">
+    <div class="lbl">位置</div>
+    <div class="row"><label>左右</label><input class="num" type="number" min="-500" max="1200" value="${p.titleX||55}" oninput="setP('titleX',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="row"><label>上下</label><input class="num" type="number" min="-500" max="1000" value="${p.titleY||55}" oninput="setP('titleY',+this.value);reRender()"><span class="unit">px</span></div>
+  </div>
+
+  <div class="sec"><div class="sec-t">NO.1</div>
+    <input class="fi" type="text" value="${esc(p.numText)}" oninput="setP('numText',this.value);reRender()">
+    <div class="lbl">字体</div><select class="sel" onchange="setP('numFont',this.value);reRender()">${fO(p.numFont)}</select>
+    <div class="row"><label>字号</label><input class="num" type="number" min="30" max="400" value="${p.numSize}" oninput="setP('numSize',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="lbl">字重</div><select class="sel" onchange="setP('numWeight',this.value);reRender()">${wO(p.numWeight,['300','400','500','600','700','900'])}</select>
+    <div class="lbl">颜色</div>
+    <input type="color" value="${p.numColor}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;margin-bottom:4px;" onchange="setP('numColor',this.value);setP('borderColor',this.value);reRender()">
+    <div class="row"><label><input type="checkbox" ${p.numItalic?'checked':''} onchange="setP('numItalic',this.checked);reRender()"> 斜体</label></div>
+    <div class="lbl">位置</div>
+    <div class="row"><label>左右</label><input class="num" type="number" min="-500" max="1200" value="${p.numX||620}" oninput="setP('numX',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="row"><label>上下</label><input class="num" type="number" min="-500" max="1000" value="${p.numY||45}" oninput="setP('numY',+this.value);reRender()"><span class="unit">px</span></div>
+  </div>
+
+  <div class="sec"><div class="sec-t">块1：描述文字（整体+每行）</div>
+    <textarea class="ta" oninput="setP('desc',this.value);reRender()">${esc(p.desc)}</textarea>
+    <div class="lbl">字体</div><select class="sel" onchange="setP('descFont',this.value);reRender()">${fO(p.descFont)}</select>
+    <div class="row"><label>字号</label><input class="num" type="number" min="10" max="60" value="${p.descSize}" oninput="setP('descSize',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="lbl">字重</div><select class="sel" onchange="setP('descWeight',this.value);reRender()">${wO(p.descWeight)}</select>
+    <div class="lbl">颜色</div>
+    <input type="color" value="${p.descColor}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;margin-bottom:4px;" onchange="setP('descColor',this.value);reRender()">
+    <div class="lbl">块整体位置</div>
+    <div class="row"><label>左右</label><input class="num" type="number" min="-500" max="1200" value="${p.descX||59}" oninput="setP('descX',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="row"><label>上下</label><input class="num" type="number" min="-500" max="1000" value="${p.descY||210}" oninput="setP('descY',+this.value);reRender()"><span class="unit">px</span></div>
+  </div>
+
+  <div class="sec"><div class="sec-t">块2：关键词标签</div>
+    <input class="fi" type="text" value="${esc(p.keyword)}" oninput="setP('keyword',this.value);reRender()">
+    <div class="lbl">字体</div><select class="sel" onchange="setP('keywordFont',this.value);reRender()">${fO(p.keywordFont)}</select>
+    <div class="row"><label>字号</label><input class="num" type="number" min="10" max="80" value="${p.keywordSize}" oninput="setP('keywordSize',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="lbl">字重</div><select class="sel" onchange="setP('keywordWeight',this.value);reRender()">${wO(p.keywordWeight)}</select>
+    <div class="lbl">颜色</div>
+    <input type="color" value="${p.keywordColor}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;margin-bottom:4px;" onchange="setP('keywordColor',this.value);reRender()">
+    <div class="lbl">位置</div>
+    <div class="row"><label>左右</label><input class="num" type="number" min="-500" max="1200" value="${p.keywordX||55}" oninput="setP('keywordX',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="row"><label>上下</label><input class="num" type="number" min="-500" max="1000" value="${p.keywordY||360}" oninput="setP('keywordY',+this.value);reRender()"><span class="unit">px</span></div>
+  </div>
+
+  <div class="sec"><div class="sec-t">块3：副标题（配套专属新娘房）</div>
+    <input class="fi" type="text" value="${esc(p.subTitle)}" oninput="setP('subTitle',this.value);reRender()">
+    <div class="lbl">字体</div><select class="sel" onchange="setP('subTitleFont',this.value);reRender()">${fO(p.subTitleFont)}</select>
+    <div class="row"><label>字号</label><input class="num" type="number" min="10" max="80" value="${p.subTitleSize}" oninput="setP('subTitleSize',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="lbl">字重</div><select class="sel" onchange="setP('subTitleWeight',this.value);reRender()">${wO(p.subTitleWeight)}</select>
+    <div class="lbl">颜色</div>
+    <input type="color" value="${p.subTitleColor}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;margin-bottom:4px;" onchange="setP('subTitleColor',this.value);reRender()">
+    <div class="lbl">块整体位置</div>
+    <div class="row"><label>左右</label><input class="num" type="number" min="-500" max="1200" value="${p.subBlockX||620}" oninput="setP('subBlockX',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="row"><label>上下</label><input class="num" type="number" min="-500" max="1000" value="${p.subBlockY||260}" oninput="setP('subBlockY',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="lbl" style="margin-top:6px;">副标题行偏移</div>
+    <div class="row"><label>左右</label><input class="num" type="number" min="-300" max="300" value="${p.subTitleOffsetX||0}" oninput="setP('subTitleOffsetX',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="row"><label>上下</label><input class="num" type="number" min="-300" max="300" value="${p.subTitleOffsetY||0}" oninput="setP('subTitleOffsetY',+this.value);reRender()"><span class="unit">px</span></div>
+  </div>
+
+  <div class="sec"><div class="sec-t">块3：副描述（含化妆间…）</div>
+    <input class="fi" type="text" value="${esc(p.subDesc)}" oninput="setP('subDesc',this.value);reRender()">
+    <div class="lbl">字体</div><select class="sel" onchange="setP('subDescFont',this.value);reRender()">${fO(p.subDescFont)}</select>
+    <div class="row"><label>字号</label><input class="num" type="number" min="8" max="40" value="${p.subDescSize}" oninput="setP('subDescSize',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="lbl">字重</div><select class="sel" onchange="setP('subDescWeight',this.value);reRender()">${wO(p.subDescWeight)}</select>
+    <div class="lbl">颜色</div>
+    <input type="color" value="${p.subDescColor}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;margin-bottom:4px;" onchange="setP('subDescColor',this.value);reRender()">
+    <div class="lbl">副描述行偏移</div>
+    <div class="row"><label>左右</label><input class="num" type="number" min="-300" max="300" value="${p.subDescOffsetX||0}" oninput="setP('subDescOffsetX',+this.value);reRender()"><span class="unit">px</span></div>
+    <div class="row"><label>上下</label><input class="num" type="number" min="-300" max="300" value="${p.subDescOffsetY||0}" oninput="setP('subDescOffsetY',+this.value);reRender()"><span class="unit">px</span></div>
+  </div>
+
+  <div class="sec"><div class="sec-t">主图（中间）</div>
+    <button class="img-btn" onclick="uploadMain()">${p.mainImg.imgKey?'更换主图':'上传主图'}</button>
+    ${p.mainImg.imgKey?`<div class="drag-hint">拖动或用滑块调整位置</div>
+    <div class="row" style="margin-top:5px;"><label>缩放</label><input class="sld" type="range" min="1" max="3" step="0.05" value="${p.mainImg.zoom}" oninput="setMain('zoom',+this.value);updMainPos()"><span class="fval">${Math.round(p.mainImg.zoom*100)}%</span></div>
+    <div class="row"><label>左右</label><input class="sld" type="range" min="0" max="100" value="${p.mainImg.px}" oninput="setMain('px',+this.value);updMainPos()"><span class="fval">${Math.round(p.mainImg.px)}%</span></div>
+    <div class="row"><label>上下</label><input class="sld" type="range" min="0" max="100" value="${p.mainImg.py}" oninput="setMain('py',+this.value);updMainPos()"><span class="fval">${Math.round(p.mainImg.py)}%</span></div>`:''}
+  </div>
+
+  <div class="sec"><div class="sec-t">底部小图</div>
+    <div class="col-tabs">
+      <button class="ct ${selSub===0?'on':''}" onclick="selSub=0;renderRP()">左图</button>
+      <button class="ct ${selSub===1?'on':''}" onclick="selSub=1;renderRP()">右图</button>
+    </div>
+    <button class="img-btn" onclick="uploadSub(${selSub})">${sub.imgKey?'更换图片':'上传图片'}</button>
+    ${sub.imgKey?`<div class="drag-hint">拖动或用滑块调整位置</div>
+    <div class="row" style="margin-top:5px;"><label>缩放</label><input class="sld" type="range" min="1" max="3" step="0.05" value="${sub.zoom}" oninput="setSub(${selSub},'zoom',+this.value);updSubPos(${selSub})"><span class="fval">${Math.round(sub.zoom*100)}%</span></div>
+    <div class="row"><label>左右</label><input class="sld" type="range" min="0" max="100" value="${sub.px}" oninput="setSub(${selSub},'px',+this.value);updSubPos(${selSub})"><span class="fval">${Math.round(sub.px)}%</span></div>
+    <div class="row"><label>上下</label><input class="sld" type="range" min="0" max="100" value="${sub.py}" oninput="setSub(${selSub},'py',+this.value);updSubPos(${selSub})"><span class="fval">${Math.round(sub.py)}%</span></div>`:''}
+  </div>`;
+}
+
+async function setP(k,v){const p=cur();if(!p)return;p[k]=v;await save(p);}
+async function setDescLineOffset(i,axis,v){
+  const p=cur();if(!p)return;
+  if(!p.descLineOffsets)p.descLineOffsets=[[0,0],[0,0],[0,0]];
+  while(p.descLineOffsets.length<=i)p.descLineOffsets.push([0,0]);
+  p.descLineOffsets[i][axis]=v;
+  await save(p);await renderPoster();
+}
+async function setMain(k,v){const p=cur();if(!p)return;p.mainImg[k]=v;await save(p);}
+async function setSub(i,k,v){const p=cur();if(!p)return;p.subs[i][k]=v;await save(p);}
+async function reRender(){await renderPoster();}
+
+// ══ 导出 ═══════════════════════════════════════════════════════════
+async function doExport(){
+  const p=cur();if(!p)return;
+  if(!await wpCheckExportQuota())return;
+  const btn=document.getElementById('exp-btn');btn.textContent='生成中…';btn.disabled=true;
+  
+  const W=1200,H=1600;
+  const borderW=8;
+  const headerH=Math.round(H*(p.headerPct||32)/100);
+  const mainH=Math.round(H*(p.mainImgPct||40)/100);
+  const subH=H-headerH-mainH-borderW*2-25;
+  const contentPadX=60;
+  
+  const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  
+  // 背景
+  ctx.fillStyle=p.bgColor;ctx.fillRect(0,0,W,H);
+  
+  // 预加载所有图片
+  const mainUrl=await getURL(p.mainImg.imgKey);
+  const subUrls=await Promise.all(p.subs.map(s=>getURL(s.imgKey)));
+  function loadImg(url){return new Promise(res=>{if(!url){res(null);return;}const img=new Image();img.onload=()=>res(img);img.onerror=()=>res(null);img.src=url;});}
+  const [mainImg,...subImgs]=await Promise.all([loadImg(mainUrl),...subUrls.map(loadImg)]);
+  
+  // 主图
+  if(mainImg){
+    const mx=borderW+contentPadX*0.5, my=headerH+borderW;
+    const mW=W-borderW*2-contentPadX, mH=mainH;
+    const zoom=p.mainImg.zoom||1;
+    const nW=mainImg.naturalWidth,nH=mainImg.naturalHeight;
+    const s=Math.max(mW/nW,mH/nH)*zoom;
+    const rW=nW*s,rH=nH*s;
+    const left=mx-((p.mainImg.px||50)/100)*Math.max(0,rW-mW);
+    const top=my-((p.mainImg.py||50)/100)*Math.max(0,rH-mH);
+    ctx.save();ctx.beginPath();ctx.rect(mx,my,mW,mH);ctx.clip();
+    ctx.drawImage(mainImg,left,top,rW,rH);ctx.restore();
+  } else {
+    ctx.fillStyle='#e8dcc5';ctx.fillRect(borderW+contentPadX*0.5,headerH+borderW,W-borderW*2-contentPadX,mainH);
+  }
+  
+  // 小图
+  const subGap=16;
+  const subW=(W-borderW*2-contentPadX-subGap)/2;
+  const subY=H-borderW-subH;
+  for(let i=0;i<2;i++){
+    const sx=borderW+contentPadX*0.5+i*(subW+subGap);
+    const img=subImgs[i];const s=p.subs[i];
+    if(img){
+      const zoom=s.zoom||1;
+      const nW=img.naturalWidth,nH=img.naturalHeight;
+      const sc=Math.max(subW/nW,subH/nH)*zoom;
+      const rW=nW*sc,rH=nH*sc;
+      const left=sx-((s.px||50)/100)*Math.max(0,rW-subW);
+      const top=subY-((s.py||50)/100)*Math.max(0,rH-subH);
+      ctx.save();ctx.beginPath();ctx.rect(sx,subY,subW,subH);ctx.clip();
+      ctx.drawImage(img,left,top,rW,rH);ctx.restore();
+    } else {
+      ctx.fillStyle='#e8dcc5';ctx.fillRect(sx,subY,subW,subH);
+    }
+  }
+  
+  // Header文字（绝对坐标，与预览一致）
+  ctx.textBaseline='top';
+
+  function drawLS(text,x,y,size,ls,align){
+    const spacing=size*ls;
+    const chars=text.split('');
+    let totalW=0;
+    chars.forEach((ch,i)=>{totalW+=ctx.measureText(ch).width;if(i<chars.length-1)totalW+=spacing;});
+    let curX=align==='right'?x-totalW:align==='center'?x-totalW/2:x;
+    chars.forEach((ch,i)=>{ctx.fillText(ch,curX,y);curX+=ctx.measureText(ch).width;if(i<chars.length-1)curX+=spacing;});
+  }
+
+  // 标题
+  ctx.fillStyle=p.titleColor;
+  ctx.font=`${p.titleWeight} ${p.titleSize}px "${p.titleFont}",serif`;
+  ctx.textAlign='left';
+  drawLS(p.title,(p.titleX||55),(p.titleY||55),p.titleSize,0.15,'left');
+
+  // NO.1
+  ctx.fillStyle=p.numColor;
+  ctx.font=`${p.numItalic?'italic ':''} ${p.numWeight} ${p.numSize}px "${p.numFont}",serif`;
+  ctx.textAlign='left';
+  ctx.fillText(p.numText,(p.numX||620),(p.numY||45));
+
+  // 块1：描述文字
+  ctx.fillStyle=p.descColor;
+  ctx.font=`${p.descWeight} ${p.descSize}px "${p.descFont}",sans-serif`;
+  const descLH=Math.round(p.descSize*1.8);
+  (p.desc||'').split('\n').forEach((line,i)=>{
+    ctx.fillText(line,(p.descX||59),(p.descY||210)+i*descLH);
+  });
+
+  // 块2：关键词
+  ctx.fillStyle=p.keywordColor;
+  ctx.font=`${p.keywordWeight} ${p.keywordSize}px "${p.keywordFont}",sans-serif`;
+  drawLS(p.keyword,(p.keywordX||55),(p.keywordY||360),p.keywordSize,0.12,'left');
+
+  // 块3：副标题组
+  const bx=p.subBlockX||620, by=p.subBlockY||260;
+  // 副标题（右对齐参考点：bx + 副标题宽度，所以用left对齐从bx开始）
+  ctx.fillStyle=p.subTitleColor;
+  ctx.font=`${p.subTitleWeight} ${p.subTitleSize}px "${p.subTitleFont}",serif`;
+  ctx.textAlign='left';
+  const stX=bx+(p.subTitleOffsetX||0), stY=by+(p.subTitleOffsetY||0);
+  ctx.fillText(p.subTitle,stX,stY);
+  // 分隔线
+  const sepY=stY+p.subTitleSize+8;
+  ctx.strokeStyle=p.borderColor;ctx.globalAlpha=0.6;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(bx,sepY);ctx.lineTo(bx+220,sepY);ctx.stroke();
+  ctx.globalAlpha=1;
+  // 副描述
+  ctx.fillStyle=p.subDescColor;
+  ctx.font=`${p.subDescWeight} ${p.subDescSize}px "${p.subDescFont}",sans-serif`;
+  const sdX=bx+(p.subDescOffsetX||0), sdY=sepY+8+(p.subDescOffsetY||0);
+  ctx.fillText(p.subDesc,sdX,sdY);
+
+  // 金色边框
+  ctx.strokeStyle=p.borderColor;ctx.lineWidth=p.borderWidth||3;
+  ctx.strokeRect(borderW,borderW,W-borderW*2,H-borderW*2);
+  
+  // 导出
+  canvas.toBlob(blob=>{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.download=(p.name||'poster')+`_黑金厅版_1200x1600.png`;
+    a.href=url;a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    btn.textContent='↓ 导出 PNG 1200×1600';btn.disabled=false;
+  },'image/png');
+}
+
+window.addEventListener('resize',()=>{if(curId)renderPoster();});
+
+// ══ Init ═══════════════════════════════════════════════════════════
+(async()=>{
+  await wpCheckAuth();
+  try{
+    await openDB();
+    const all=await dbAll('P');
+    projs=all.sort((a,b)=>b.at-a.at);
+    renderList();
+  }catch(e){
+    document.getElementById('proj-list').innerHTML='<div style="font-size:10px;color:#e05a5a;padding:8px;">初始化失败，请刷新</div>';
+  }
+})();
+</script>
+</body>
+</html>
