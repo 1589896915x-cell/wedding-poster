@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>竖版场馆展示 - 婚礼海报</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Noto+Serif+SC:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Playfair+Display:wght@400;500;700&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0e0e0e;color:#fff;height:100vh;overflow:hidden;display:flex;padding-top:40px;}
+.psb{width:186px;flex-shrink:0;background:#161616;border-right:1px solid #242424;display:flex;flex-direction:column;}
+.psb-head{padding:13px 12px 9px;border-bottom:1px solid #242424;}
+.psb-head h2{font-size:12px;font-weight:500;color:#ddd;}
+.psb-head p{font-size:9px;color:#444;margin-top:2px;}
+.psb-new{margin:9px 10px;padding:7px;background:#1c1c1c;border:1px dashed #2e2e2e;border-radius:5px;color:#777;font-size:10px;cursor:pointer;text-align:center;}
+.psb-new:hover{border-color:#555;color:#bbb;}
+.proj-list{flex:1;overflow-y:auto;padding:5px 7px;}
+.proj-item{padding:8px 9px;border-radius:5px;cursor:pointer;margin-bottom:3px;border:1px solid transparent;}
+.proj-item:hover{background:#1c1c1c;}
+.proj-item.active{background:#1c1c1c;border-color:#2e2e2e;}
+.proj-item h3{font-size:11px;font-weight:400;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.proj-item .meta{font-size:9px;color:#444;margin-top:2px;}
+.proj-item-actions{display:flex;gap:3px;margin-top:5px;}
+.pa-btn{padding:2px 6px;background:none;border:1px solid #242424;border-radius:3px;color:#555;font-size:9px;cursor:pointer;font-family:inherit;}
+.pa-btn:hover{border-color:#555;color:#aaa;}
+.pa-btn.del:hover{border-color:#b00;color:#f44;}
+.editor{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:44px;background:#161616;border-bottom:1px solid #242424;display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;}
+.proj-name-in{background:none;border:none;outline:none;color:#fff;font-size:13px;font-weight:500;font-family:inherit;flex:1;max-width:240px;}
+.proj-name-in::placeholder{color:#333;}
+.sp{flex:1;}
+.tbtn-export{padding:6px 16px;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;background:#c8392b;color:#fff;}
+.tbtn-export:hover{background:#a02d22;}
+.tbtn-export:disabled{background:#6a1f17;cursor:default;}
+.body{display:flex;flex:1;overflow:hidden;}
+.canvas-area{flex:1;background:#0f0f0f;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.rp{width:262px;flex-shrink:0;background:#161616;border-left:1px solid #242424;overflow-y:auto;padding:10px 10px 24px;}
+.rp::-webkit-scrollbar{width:3px;}.rp::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px;}
+.rp-title{font-size:9px;font-weight:600;color:#555;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px;}
+.rp-sec{margin-top:10px;padding-top:9px;border-top:1px solid #1e1e1e;}
+.rp-sec-t{font-size:9px;color:#444;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px;}
+.rp-lbl{font-size:9px;color:#555;margin-bottom:2px;margin-top:5px;}
+.rp-input{width:100%;padding:5px 7px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;margin-bottom:3px;}
+.rp-input:focus{border-color:#444;}
+.rp-select{width:100%;padding:4px 6px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;margin-bottom:3px;}
+.rp-select-sm{flex:1;padding:4px 4px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;}
+.style-row{display:flex;gap:4px;align-items:center;margin-bottom:4px;}
+.rp-num{width:50px;padding:4px 5px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;}
+.rp-num-w{width:62px;padding:4px 5px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;}
+.rp-unit{font-size:9px;color:#444;white-space:nowrap;}
+.col-dot{width:20px;height:20px;border-radius:3px;border:1px solid #333;cursor:pointer;flex-shrink:0;}
+.col-dot:hover{border-color:#666;}
+.rp-row{display:flex;gap:5px;align-items:center;margin-bottom:4px;}
+.rp-row label{font-size:9px;color:#555;min-width:24px;flex-shrink:0;}
+.rp-slider{flex:1;accent-color:#c8392b;cursor:pointer;}
+.rp-val{font-size:9px;color:#555;min-width:28px;text-align:right;}
+.rp-btn-img{width:100%;padding:6px;border:1px dashed #2a2a2a;border-radius:4px;background:none;color:#666;font-size:10px;cursor:pointer;font-family:inherit;display:block;text-align:center;margin-bottom:2px;}
+.rp-btn-img:hover{border-color:#555;color:#aaa;}
+.rp-drag-hint{font-size:9px;color:#333;text-align:center;margin-bottom:3px;}
+.slot-tabs{display:flex;gap:3px;margin-bottom:7px;flex-wrap:wrap;}
+.slot-tab{flex:1;padding:4px 2px;border:1px solid #222;border-radius:4px;background:none;color:#555;font-size:9px;cursor:pointer;font-family:inherit;text-align:center;}
+.slot-tab.active{background:#222;color:#ddd;border-color:#444;}
+.circle-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;}
+.circle-sw{width:26px;height:26px;border-radius:50%;border:1.5px solid #333;cursor:pointer;flex-shrink:0;}
+.circle-sw:hover{border-color:#666;}
+.pos-box{background:#141414;border:1px solid #222;border-radius:5px;padding:6px 7px;margin-top:5px;}
+.pos-box-t{font-size:9px;color:#c8a96a;margin-bottom:5px;}
+.pos-row{display:flex;gap:4px;align-items:center;margin-bottom:4px;}
+.pos-row label{font-size:9px;color:#444;min-width:12px;}
+.pos-sl{flex:1;accent-color:#c8a96a;}
+.backup-row{display:flex;gap:5px;margin-top:6px;}
+.bk-btn{flex:1;padding:5px 4px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:9px;cursor:pointer;font-family:inherit;}
+.bk-btn:hover{border-color:#555;color:#aaa;}
+.no-proj{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#2a2a2a;gap:8px;}
+.no-proj p{font-size:12px;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:#1c1c1c;border:1px solid #2e2e2e;border-radius:10px;padding:22px;width:300px;}
+.modal h3{font-size:14px;font-weight:500;margin-bottom:16px;color:#ddd;}
+.modal-lbl{font-size:10px;color:#777;margin-bottom:4px;}
+.modal-in{width:100%;padding:8px 10px;background:#111;border:1px solid #2e2e2e;border-radius:5px;color:#fff;font-size:13px;font-family:inherit;outline:none;margin-bottom:16px;}
+.modal-in:focus{border-color:#555;}
+.modal-actions{display:flex;gap:8px;}
+.modal-actions button{flex:1;padding:8px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
+</style>
+</head>
+<body>
+<div style="height:40px;background:#0a0a0a;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;padding:0 14px;gap:10px;position:fixed;top:0;left:0;right:0;z-index:100;">
+  <a href="index.html" style="font-size:18px;color:#555;text-decoration:none;padding:2px 6px;line-height:1;">←</a>
+  <span style="font-size:11px;color:#444;">竖版场馆展示</span>
+  <div style="flex:1;"></div>
+  <span id="wp-credits" style="background:#1a1a1a;padding:3px 10px;border-radius:4px;font-size:11px;color:#c8a96a;"></span>
+  <button onclick="wpLogout()" style="padding:4px 12px;border:1px solid #222;border-radius:4px;background:none;color:#555;font-size:11px;cursor:pointer;font-family:inherit;">退出</button>
+</div>
+<div class="psb">
+  <div class="psb-head"><h2>项目</h2><p>Ctrl+Z 撤销 · 自动保存</p></div>
+  <div class="psb-new" onclick="openNewModal()">＋ 新建项目</div>
+  <div class="proj-list" id="proj-list"><div style="font-size:10px;color:#333;padding:8px 4px;">加载中…</div></div>
+</div>
+<div class="editor">
+  <div class="topbar">
+    <input class="proj-name-in" id="proj-name-in" type="text" placeholder="项目名称" oninput="onNameChange()">
+    <div class="sp"></div>
+    <button class="tbtn-export" id="export-btn" onclick="exportPNG()">↓ 导出 PNG</button>
+  </div>
+  <div class="body">
+    <div class="canvas-area" id="canvas-area"><div id="poster"></div></div>
+    <div class="rp" id="rp"><div class="no-proj"><p>新建或选择项目</p></div></div>
+  </div>
+</div>
+<input type="file" id="file-in" accept="image/*" style="display:none">
+<input type="file" id="json-in" accept=".json" style="display:none">
+<div class="overlay" id="new-modal">
+  <div class="modal">
+    <h3>新建项目</h3>
+    <div class="modal-lbl">项目名称</div>
+    <input class="modal-in" id="nm-name" type="text" placeholder="未命名">
+    <div class="modal-actions">
+      <button onclick="closeNewModal()" style="background:#2a2a2a;color:#aaa;border:1px solid #333;">取消</button>
+      <button onclick="createProject()" style="background:#fff;color:#000;">创建</button>
+    </div>
+  </div>
+</div>
+<script>
+const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+let _lic=null;
+async function wpCheckAuth(){
+  if(location.protocol==='file:'||location.hostname==='localhost'){_lic={credits:999,id:'test'};const el=document.getElementById('wp-credits');if(el)el.textContent='测试模式';return true;}
+  const code=localStorage.getItem('wp-license');if(!code){location.href='index.html';return false;}
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const d=await r.json();if(!d||!d[0]||!d[0].is_active){location.href='index.html';return false;}
+    const lic=d[0];if((lic.credits||0)<=0){location.href='index.html';return false;}
+    if(lic.expires_at&&new Date(lic.expires_at)<new Date()){location.href='index.html';return false;}
+    if(lic.duration_days&&lic.first_used_at){const exp=new Date(lic.first_used_at);exp.setDate(exp.getDate()+lic.duration_days);if(exp<new Date()){location.href='index.html';return false;}}
+    _lic=lic;wpUpdCredits();return true;
+  }catch(e){return true;}
+}
+function wpUpdCredits(){const el=document.getElementById('wp-credits');if(el&&_lic)el.textContent=`剩余 ${_lic.credits||0} 次`;}
+async function wpCheckExportQuota(){
+  if(location.protocol==='file:'||location.hostname==='localhost')return true;
+  if(!_lic){alert('请先登录');return false;}
+  if((_lic.credits||0)<=0){alert('导出次数已用完，请联系管理员充值');return false;}
+  try{
+    const newC=(_lic.credits||0)-1;
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${_lic.id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({credits:newC})});
+    const d=await r.json();if(d&&d[0])_lic=d[0];else _lic.credits=newC;wpUpdCredits();return true;
+  }catch(e){_lic.credits=Math.max(0,(_lic.credits||0)-1);wpUpdCredits();return true;}
+}
+function wpLogout(){localStorage.removeItem('wp-license');location.href='index.html';}
+
+// drawTextLS: letter-spacing for canvas
+function drawTextLS(ctx,text,cx,y,lsEm,align){
+  if(!text)return;
+  const m=ctx.font.match(/([\d.]+)px/);const fs=m?parseFloat(m[1]):16;const ls=lsEm*fs;
+  const chars=[...text];let tw=0;
+  chars.forEach((ch,i)=>{tw+=ctx.measureText(ch).width;if(i<chars.length-1)tw+=ls;});
+  let sx=align==='center'?cx-tw/2:align==='right'?cx-tw:cx;
+  chars.forEach((ch,i)=>{ctx.fillText(ch,sx,y);sx+=ctx.measureText(ch).width+(i<chars.length-1?ls:0);});
+}
+
+// IndexedDB
+const DB_NAME='wedding-venue2-v1',DB_VER=1,ST_P='projects',ST_I='images';
+let db=null;
+function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB_NAME,DB_VER);req.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(ST_P))d.createObjectStore(ST_P,{keyPath:'id'});if(!d.objectStoreNames.contains(ST_I))d.createObjectStore(ST_I);};req.onsuccess=e=>{db=e.target.result;res();};req.onerror=rej;});}
+const TX=(s,m='readonly')=>db.transaction(s,m).objectStore(s);
+const dbGet=(s,k)=>new Promise((r,j)=>{const q=TX(s).get(k);q.onsuccess=()=>r(q.result);q.onerror=j;});
+const dbPut=(s,v,k)=>new Promise((r,j)=>{const q=k!==undefined?TX(s,'readwrite').put(v,k):TX(s,'readwrite').put(v);q.onsuccess=r;q.onerror=j;});
+const dbDel=(s,k)=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=r;t.onerror=j;});
+const dbAll=(s)=>new Promise((r,j)=>{const q=TX(s).getAll();q.onsuccess=()=>r(q.result);q.onerror=j;});
+
+const FONTS=['Cormorant Garamond','Playfair Display','Dancing Script','Georgia','Times New Roman','Noto Serif SC','STSong','STKaiti','Noto Sans SC','PingFang SC','Microsoft YaHei','SimHei','STHeiti'];
+const WTS=[['300','细'],['400','常规'],['500','中'],['600','半粗'],['700','粗'],['900','超粗']];
+
+function defT(text,font,size,weight,color,x,y,align,ls){return{text,font,size,weight,color,x,y,align,ls};}
+function defProject(){return{
+  mainHPct:47, midHPct:14,
+  bgColor:'#f8f6f2',
+  circles:['#a03234','#dea370','#0f0f0f'],
+  circleSize:75, circleGap:98, circleX:66, circleY:100,
+  dividerColor:'#cccccc', dividerY:210, dividerX1:30, dividerX2:1170,
+  botGap:11, botPad:21, botRadius:22,
+  showLogo:true,
+  mainImg:{imgKey:null,px:50,py:50,zoom:1},
+  blImg:  {imgKey:null,px:50,py:50,zoom:1},
+  bmImg:  {imgKey:null,px:50,py:50,zoom:1},
+  brImg:  {imgKey:null,px:50,py:50,zoom:1},
+  logoImg:{imgKey:null,x:600,y:80,w:220,h:90},
+  title:   defT('鄞州店·蔷薇华庭',       'STSong',          50,'900','#1a1a1a',968, 813,'center',0.02),
+  subtitle:defT('可容纳400人',           'Times New Roman',  30,'700','#555555',1084,916,'center',0.06),
+  tagline: defT('ONE-STOP WEDDING VENUE','Noto Serif SC',   20,'500','#888888',29,  916,'left',  0.12),
+};}
+
+let projects=[],curId=null,selSlot='mainImg';
+const imgCache={};
+let dragging=false,dragSlot='',dragSX=0,dragSY=0,dragPX0=50,dragPY0=50;
+let _history=[],_hIdx=-1;
+
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const cur=()=>projects.find(p=>p.id===curId)||null;
+const ikey=(pid,slot)=>`${pid}-${slot}`;
+
+// History
+function pushH(){const p=cur();if(!p)return;_history=_history.slice(0,_hIdx+1);_history.push(JSON.stringify(p));if(_history.length>20)_history.shift();_hIdx=_history.length-1;}
+async function undo(){if(_hIdx<=0)return;_hIdx--;const p=JSON.parse(_history[_hIdx]);const i=projects.findIndex(x=>x.id===p.id);if(i>=0)projects[i]=p;await dbPut(ST_P,p);await renderPoster();renderRP();}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+
+// Storage
+async function loadAll(){projects=await dbAll(ST_P);projects.sort((a,b)=>b.at-a.at);}
+async function saveP(p){p.at=Date.now();await dbPut(ST_P,p);}
+async function saveImg(key,blob){await dbPut(ST_I,blob,key);if(imgCache[key])URL.revokeObjectURL(imgCache[key]);imgCache[key]=URL.createObjectURL(blob);}
+async function delImg(key){await dbDel(ST_I,key);if(imgCache[key]){URL.revokeObjectURL(imgCache[key]);delete imgCache[key];}}
+async function getURL(key){if(!key)return null;if(imgCache[key])return imgCache[key];const b=await dbGet(ST_I,key);if(!b)return null;imgCache[key]=URL.createObjectURL(b);return imgCache[key];}
+
+// Backup
+function exportJSON(){const p=cur();if(!p)return;const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(p.name||'project')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+function importJSON(){const fi=document.getElementById('json-in');fi.onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const p=JSON.parse(await file.text());p.id=uid();p.name=(p.name||'导入')+' (导入)';p.ct=p.at=Date.now();await saveP(p);projects.unshift(p);renderProjList();openProj(p.id);}catch{alert('JSON格式错误');}fi.value='';};fi.click();}
+
+// Modal
+function openNewModal(){document.getElementById('nm-name').value='';document.getElementById('new-modal').classList.add('open');setTimeout(()=>document.getElementById('nm-name').focus(),50);}
+function closeNewModal(){document.getElementById('new-modal').classList.remove('open');}
+async function createProject(){const name=document.getElementById('nm-name').value.trim()||'未命名';const p={id:uid(),name,ct:Date.now(),at:Date.now(),...defProject()};await saveP(p);projects.unshift(p);closeNewModal();renderProjList();openProj(p.id);}
+document.getElementById('nm-name').addEventListener('keydown',e=>{if(e.key==='Enter')createProject();});
+
+// Project list
+function renderProjList(){
+  const el=document.getElementById('proj-list');
+  if(!projects.length){el.innerHTML='<div style="font-size:10px;color:#333;padding:8px 4px;">暂无项目</div>';return;}
+  el.innerHTML=projects.map(p=>`<div class="proj-item${p.id===curId?' active':''}" onclick="openProj('${p.id}')">
+    <h3>${esc(p.name)}</h3><div class="meta">${new Date(p.at).toLocaleDateString('zh-CN')}</div>
+    <div class="proj-item-actions">
+      <button class="pa-btn" onclick="event.stopPropagation();renameProj('${p.id}')">改名</button>
+      <button class="pa-btn" onclick="event.stopPropagation();dupProj('${p.id}')">复制</button>
+      <button class="pa-btn del" onclick="event.stopPropagation();delProj('${p.id}')">删除</button>
+    </div></div>`).join('');
+}
+async function renameProj(id){const p=projects.find(x=>x.id===id);if(!p)return;const n=prompt('新名称：',p.name);if(!n||!n.trim())return;p.name=n.trim();await saveP(p);if(curId===id)document.getElementById('proj-name-in').value=p.name;renderProjList();}
+async function openProj(id){curId=id;selSlot='mainImg';const p=cur();if(!p)return;document.getElementById('proj-name-in').value=p.name;_history=[];_hIdx=-1;renderProjList();await renderPoster();renderRP();}
+async function dupProj(id){
+  const p=projects.find(x=>x.id===id);if(!p)return;
+  const nid=uid();const np={...JSON.parse(JSON.stringify(p)),id:nid,name:p.name+' 副本',ct:Date.now(),at:Date.now()};
+  for(const sl of['mainImg','blImg','bmImg','brImg','logoImg']){const ok=ikey(id,sl),nk=ikey(nid,sl);const b=await dbGet(ST_I,ok);if(b){await dbPut(ST_I,b,nk);np[sl].imgKey=nk;}}
+  await saveP(np);projects.unshift(np);renderProjList();
+}
+async function delProj(id){
+  if(!confirm('确认删除？'))return;
+  for(const sl of['mainImg','blImg','bmImg','brImg','logoImg'])await delImg(ikey(id,sl));
+  await dbDel(ST_P,id);projects=projects.filter(p=>p.id!==id);
+  if(curId===id){curId=null;document.getElementById('poster').innerHTML='';renderRP();}renderProjList();
+}
+async function onNameChange(){const p=cur();if(!p)return;p.name=document.getElementById('proj-name-in').value;await saveP(p);renderProjList();}
+
+// Poster size
+function pSize(){const a=document.getElementById('canvas-area');const aH=a.clientHeight-24,aW=a.clientWidth-24;let h,w;if(aH*.75<aW){h=Math.floor(aH);w=Math.floor(h*.75);}else{w=Math.floor(aW);h=Math.floor(w/.75);}return{w,h};}
+
+// Render poster
+async function renderPoster(){
+  const poster=document.getElementById('poster');
+  const p=cur();if(!p){poster.innerHTML='';poster.style.cssText='';return;}
+  const{w,h}=pSize();const sc=w/1200;
+  const mainH=Math.round(h*(p.mainHPct||42)/100);
+  const midH=Math.round(h*(p.midHPct||18)/100);
+  const botH=h-mainH-midH;
+  const gap=Math.round((p.botGap||8)*sc);
+  const pad=Math.round((p.botPad||0)*sc);
+  const br=Math.round((p.botRadius||6)*sc);
+  const imgW=Math.floor((w-pad*2-gap*2)/3);
+
+  const urls={mainImg:await getURL(p.mainImg.imgKey),blImg:await getURL(p.blImg.imgKey),bmImg:await getURL(p.bmImg.imgKey),brImg:await getURL(p.brImg.imgKey)};
+
+  const cirD=Math.round((p.circleSize||52)*sc);
+  const cirG=Math.round((p.circleGap||74)*sc);
+  const cirX=Math.round((p.circleX||80)*sc);
+  const cirY=Math.round((p.circleY||100)*sc);
+  const dvY=Math.round((p.dividerY||210)*sc);
+  const dvX1=Math.round((p.dividerX1||30)*sc);
+  const dvX2=Math.round((p.dividerX2||1170)*sc);
+
+  function tfs(t){return`font-family:'${t.font}',serif,sans-serif;font-size:${(t.size*sc).toFixed(1)}px;font-weight:${t.weight};color:${t.color};letter-spacing:${t.ls}em;white-space:nowrap;pointer-events:none;`;}
+  // Position within poster (absolute from poster top-left)
+  function tpos(t){
+    const lx=Math.round(t.x*sc);const ty=Math.round(t.y*sc);
+    let transform='';
+    if(t.align==='center')transform='translateX(-50%)';
+    else if(t.align==='right')transform='translateX(-100%)';
+    return`position:absolute;left:${lx}px;top:${ty}px;transform:${transform};`;
+  }
+
+  poster.style.cssText=`width:${w}px;height:${h}px;background:${p.bgColor||'#f8f6f2'};position:relative;overflow:hidden;flex-shrink:0;box-shadow:0 20px 60px rgba(0,0,0,.5);`;
+  // Logo
+  const logoX=Math.round((p.logoImg.x||600)*sc);
+  const logoY=Math.round((p.logoImg.y||80)*sc);
+  const logoW=Math.round((p.logoImg.w||220)*sc);
+  const logoH=Math.round((p.logoImg.h||90)*sc);
+  const logoUrl=p.showLogo!==false ? await getURL(p.logoImg.imgKey) : null;
+
+  poster.innerHTML=`
+    <!-- MAIN IMAGE -->
+    <div style="position:absolute;top:0;left:0;width:${w}px;height:${mainH}px;overflow:hidden;cursor:${urls.mainImg?'grab':'default'};" id="slot-mainImg" data-slot="mainImg">
+      ${urls.mainImg?`<img id="img-mainImg" src="${urls.mainImg}" draggable="false" style="position:absolute;pointer-events:none;">`
+        :`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#2a2a2a;color:#666;gap:8px;cursor:pointer;" onclick="uploadImg('mainImg')"><span style="font-size:28px;opacity:.4;">＋</span><span style="font-size:10px;letter-spacing:.1em;">点击上传主图</span></div>`}
+    </div>
+    <!-- MIDDLE (circles + divider only, no text) -->
+    <div style="position:absolute;top:${mainH}px;left:0;width:${w}px;height:${midH}px;background:${p.bgColor||'#f8f6f2'};">
+      ${p.circles.map((c,i)=>`<div style="position:absolute;left:${cirX+i*cirG-cirD/2}px;top:${cirY-cirD/2}px;width:${cirD}px;height:${cirD}px;border-radius:50%;background:${c};"></div>`).join('')}
+      <div style="position:absolute;left:${dvX1}px;top:${dvY}px;width:${dvX2-dvX1}px;height:1px;background:${p.dividerColor||'#cccccc'};"></div>
+    </div>
+    <!-- BOTTOM IMAGES -->
+    <div style="position:absolute;top:${mainH+midH}px;left:0;width:${w}px;height:${botH}px;display:flex;gap:${gap}px;padding:${pad}px ${pad}px ${pad}px;">
+      ${['blImg','bmImg','brImg'].map((sl,i)=>`<div style="width:${imgW}px;flex-shrink:0;height:${botH-pad}px;border-radius:${br}px;overflow:hidden;position:relative;cursor:${urls[sl]?'grab':'default'};" id="slot-${sl}" data-slot="${sl}">
+        ${urls[sl]?`<img id="img-${sl}" src="${urls[sl]}" draggable="false" style="position:absolute;pointer-events:none;">`
+          :`<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#e8e4de;color:#aaa;gap:5px;cursor:pointer;" onclick="uploadImg('${sl}')"><span style="font-size:20px;opacity:.4;">＋</span><span style="font-size:9px;letter-spacing:.1em;">${['左图','中图','右图'][i]}</span></div>`}
+      </div>`).join('')}
+    </div>
+    <!-- LOGO overlay -->
+    ${(p.showLogo!==false&&logoUrl)?`<img id="img-logoImg" src="${logoUrl}" draggable="false" style="position:absolute;left:${logoX-logoW/2}px;top:${logoY}px;width:${logoW}px;height:${logoH}px;object-fit:contain;pointer-events:none;z-index:5;">`:``}
+    <!-- Empty logo placeholder when showLogo but no image uploaded -->
+    ${(p.showLogo!==false&&!logoUrl)?`<div onclick="uploadImg('logoImg')" style="position:absolute;left:${logoX-logoW/2}px;top:${logoY}px;width:${logoW}px;height:${logoH}px;border:1px dashed rgba(255,255,255,.4);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;z-index:5;"><span style="font-size:14px;opacity:.5;">＋</span><span style="font-size:8px;color:rgba(255,255,255,.5);margin-top:2px;">上传Logo</span></div>`:``}
+    <!-- ALL TEXT ELEMENTS directly on poster (correct absolute coords) -->
+    <div id="txt-title" style="position:absolute;left:${Math.round(p.title.x*sc)}px;top:${Math.round(p.title.y*sc)}px;transform:${p.title.align==='center'?'translateX(-50%)':p.title.align==='right'?'translateX(-100%)':''};${tfs(p.title)}z-index:5;">${esc(p.title.text)}</div>
+    <div id="txt-subtitle" style="position:absolute;left:${Math.round(p.subtitle.x*sc)}px;top:${Math.round(p.subtitle.y*sc)}px;transform:${p.subtitle.align==='center'?'translateX(-50%)':p.subtitle.align==='right'?'translateX(-100%)':''};${tfs(p.subtitle)}z-index:5;">${esc(p.subtitle.text)}</div>
+    <div id="txt-tagline" style="position:absolute;left:${Math.round(p.tagline.x*sc)}px;top:${Math.round(p.tagline.y*sc)}px;transform:${p.tagline.align==='center'?'translateX(-50%)':p.tagline.align==='right'?'translateX(-100%)':''};${tfs(p.tagline)}z-index:5;">${esc(p.tagline.text)}</div>`;
+
+  for(const sl of['mainImg','blImg','bmImg','brImg']){
+    if(urls[sl]){const img=document.getElementById(`img-${sl}`);if(img){const fn=()=>applyT(sl,w,h,mainH,midH,botH,imgW,gap,pad,sc);if(img.complete&&img.naturalWidth)fn();else img.onload=fn;}}
+  }
+  // logoImg doesn't need applyT (fixed size via style)
+  poster.querySelectorAll('[data-slot]').forEach(el=>{el.addEventListener('mousedown',onMD);el.addEventListener('touchstart',onTS,{passive:false});});
+}
+
+function applyT(sl,w,h,mainH,midH,botH,imgW,gap,pad,sc){
+  const p=cur();if(!p)return;const s=p[sl];
+  const img=document.getElementById(`img-${sl}`);if(!img)return;
+  const c=document.getElementById(`slot-${sl}`);if(!c)return;
+  const cW=c.clientWidth,cH=c.clientHeight;if(!cW||!cH)return;
+  const nW=img.naturalWidth||cW,nH=img.naturalHeight||cH;
+  const base=Math.max(cW/nW,cH/nH)*(s.zoom||1);
+  const rW=nW*base,rH=nH*base;
+  img.style.width=rW+'px';img.style.height=rH+'px';
+  img.style.left=((s.px/100)*(cW-rW))+'px';img.style.top=((s.py/100)*(cH-rH))+'px';
+}
+
+function onMD(e){const sl=this.dataset.slot;const p=cur();if(!p||!p[sl].imgKey||e.button!==0)return;startDrag(sl,e.clientX,e.clientY);e.preventDefault();}
+function onTS(e){const sl=this.dataset.slot;const p=cur();if(!p||!p[sl].imgKey)return;startDrag(sl,e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();}
+function startDrag(sl,cx,cy){
+  dragging=true;dragSlot=sl;dragSX=cx;dragSY=cy;const s=cur()[sl];dragPX0=s.px;dragPY0=s.py;
+  const el=document.getElementById(`slot-${sl}`);if(el)el.style.cursor='grabbing';
+  // Auto-switch panel to show dragged slot
+  if(selSlot!==sl){selSlot=sl;renderRP();}
+}
+document.addEventListener('mousemove',e=>{if(dragging)doMove(e.clientX,e.clientY);});
+document.addEventListener('touchmove',e=>{if(dragging){doMove(e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();}},{passive:false});
+function doMove(cx,cy){
+  const p=cur();if(!p)return;const s=p[dragSlot];
+  const c=document.getElementById(`slot-${dragSlot}`);if(!c)return;
+  s.px=Math.max(0,Math.min(100,dragPX0-(cx-dragSX)/(c.clientWidth*(s.zoom||1))*100));
+  s.py=Math.max(0,Math.min(100,dragPY0-(cy-dragSY)/(c.clientHeight*(s.zoom||1))*100));
+  const img=document.getElementById(`img-${dragSlot}`);
+  if(img){img.style.left=((s.px/100)*(c.clientWidth-img.clientWidth))+'px';img.style.top=((s.py/100)*(c.clientHeight-img.clientHeight))+'px';}
+  if(selSlot===dragSlot){
+    updSl('sl-px','v-px',Math.round(s.px),'%');
+    updSl('sl-py','v-py',Math.round(s.py),'%');
+    // Also update number inputs
+    const npx=document.getElementById('ni-px'),npy=document.getElementById('ni-py');
+    if(npx)npx.value=Math.round(s.px);if(npy)npy.value=Math.round(s.py);
+  }
+}
+document.addEventListener('mouseup',endDrag);document.addEventListener('touchend',endDrag);
+async function endDrag(){if(!dragging)return;dragging=false;const el=document.getElementById(`slot-${dragSlot}`);if(el)el.style.cursor=cur()?.[dragSlot]?.imgKey?'grab':'default';dragSlot='';const p=cur();if(p){pushH();await saveP(p);}}
+function updSl(sid,vid,val,unit){const s=document.getElementById(sid),v=document.getElementById(vid);if(s)s.value=val;if(v)v.textContent=val+unit;}
+
+function uploadImg(sl){
+  const fi=document.getElementById('file-in');
+  fi.onchange=async e=>{const file=e.target.files[0];if(!file)return;const p=cur();if(!p)return;const key=ikey(curId,sl);await saveImg(key,file);p[sl].imgKey=key;p[sl].px=50;p[sl].py=50;p[sl].zoom=1;pushH();await saveP(p);await renderPoster();renderRP();fi.value='';};fi.click();
+}
+
+// Right panel
+function renderRP(){
+  const rp=document.getElementById('rp');const p=cur();
+  if(!p){rp.innerHTML='<div class="no-proj"><p>新建或选择项目</p></div>';return;}
+  const s=p[selSlot];
+  const fOpts=sel=>FONTS.map(f=>`<option value="${f}"${sel===f?' selected':''}>${f}</option>`).join('');
+  const wOpts=sel=>WTS.map(([w,l])=>`<option value="${w}"${sel===w?' selected':''}>${l} ${w}</option>`).join('');
+
+  function posBox(tk){
+    const t=p[tk];
+    return`<div class="pos-box">
+      <div class="pos-box-t">📐 位置（1200×1600px 坐标）</div>
+      <div class="pos-row"><label>X</label>
+        <input type="range" min="0" max="1200" step="1" value="${t.x}" class="pos-sl" oninput="setTPos('${tk}','x',+this.value);document.getElementById('ni-${tk}x').value=this.value">
+        <input id="ni-${tk}x" type="number" min="0" max="1200" value="${t.x}" class="rp-num-w" oninput="setTPos('${tk}','x',+this.value);this.previousElementSibling.value=this.value">
+      </div>
+      <div class="pos-row"><label>Y</label>
+        <input type="range" min="0" max="1600" step="1" value="${t.y}" class="pos-sl" oninput="setTPos('${tk}','y',+this.value);document.getElementById('ni-${tk}y').value=this.value">
+        <input id="ni-${tk}y" type="number" min="0" max="1600" value="${t.y}" class="rp-num-w" oninput="setTPos('${tk}','y',+this.value);this.previousElementSibling.value=this.value">
+      </div>
+      <div class="rp-lbl">对齐</div>
+      <select class="rp-select" onchange="setTStyle('${tk}','align',this.value)">
+        <option value="left"${t.align==='left'?' selected':''}>左对齐</option>
+        <option value="center"${t.align==='center'?' selected':''}>居中</option>
+        <option value="right"${t.align==='right'?' selected':''}>右对齐</option>
+      </select>
+    </div>`;
+  }
+
+  function txtCtrl(label,tk){
+    const t=p[tk];
+    return`<div class="rp-sec">
+      <div class="rp-sec-t">${label}</div>
+      <div class="rp-lbl">文字内容</div>
+      <input class="rp-input" type="text" value="${esc(t.text)}" oninput="setTField('${tk}',this.value)">
+      <div class="rp-lbl">字体</div>
+      <select class="rp-select" onchange="setTStyle('${tk}','font',this.value)">${fOpts(t.font)}</select>
+      <div class="style-row">
+        <input class="rp-num" type="number" min="6" max="200" value="${t.size}" oninput="setTStyle('${tk}','size',+this.value)">
+        <span class="rp-unit">px</span>
+        <select class="rp-select-sm" onchange="setTStyle('${tk}','weight',this.value)">${wOpts(t.weight)}</select>
+        <div class="col-dot" style="background:${t.color};" onclick="document.getElementById('clr-${tk}').click()"></div>
+        <input id="clr-${tk}" type="color" value="${t.color}" style="display:none" onchange="setTStyle('${tk}','color',this.value);this.previousElementSibling.style.background=this.value">
+      </div>
+      <div class="rp-row"><label style="min-width:32px;">字间距</label><input type="range" min="0" max="0.5" step="0.01" value="${t.ls||0}" class="rp-slider" oninput="setTStyle('${tk}','ls',+this.value);document.getElementById('vls-${tk}').textContent=this.value+'em'"><span class="rp-val" id="vls-${tk}">${t.ls||0}em</span></div>
+      ${posBox(tk)}
+    </div>`;
+  }
+
+  rp.innerHTML=`
+    <div class="rp-title">图片区域</div>
+    <div class="slot-tabs">
+      ${[['mainImg','主图'],['logoImg','Logo'],['blImg','左图'],['bmImg','中图'],['brImg','右图']].map(([sl,lb])=>`<button class="slot-tab${selSlot===sl?' active':''}" onclick="selSl('${sl}')">${lb}</button>`).join('')}
+    </div>
+    ${selSlot==='logoImg'?`
+      <!-- showLogo toggle -->
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 9px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;margin-bottom:8px;">
+        <div onclick="toggleLogo()" style="width:36px;height:20px;border-radius:10px;background:${p.showLogo!==false?'#4ade80':'#333'};position:relative;cursor:pointer;flex-shrink:0;transition:background .2s;">
+          <div style="position:absolute;top:3px;left:${p.showLogo!==false?'19':'3'}px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s;"></div>
+        </div>
+        <span style="font-size:10px;color:${p.showLogo!==false?'#4ade80':'#666'};">${p.showLogo!==false?'✅ 显示Logo':'❌ 不显示Logo'}</span>
+      </div>
+      ${p.showLogo!==false?`
+        <div class="rp-btn-img" onclick="uploadImg('logoImg')">${p.logoImg.imgKey?'🔄 更换Logo图片':'＋ 上传Logo图片（PNG透明背景最佳）'}</div>
+        <div class="rp-lbl">宽度</div>
+        <div class="rp-row"><input type="range" min="50" max="600" value="${p.logoImg.w||220}" class="rp-slider" oninput="setLogoSize('w',+this.value);document.getElementById('ni-lw').value=this.value"><input id="ni-lw" type="number" min="50" max="600" value="${p.logoImg.w||220}" class="rp-num" oninput="setLogoSize('w',+this.value);this.previousElementSibling.value=this.value"><span class="rp-unit">px</span></div>
+        <div class="rp-lbl">高度</div>
+        <div class="rp-row"><input type="range" min="20" max="300" value="${p.logoImg.h||90}" class="rp-slider" oninput="setLogoSize('h',+this.value);document.getElementById('ni-lh').value=this.value"><input id="ni-lh" type="number" min="20" max="300" value="${p.logoImg.h||90}" class="rp-num" oninput="setLogoSize('h',+this.value);this.previousElementSibling.value=this.value"><span class="rp-unit">px</span></div>
+        <div class="rp-lbl">X位置（中心）</div>
+        <div class="rp-row"><input type="range" min="0" max="1200" value="${p.logoImg.x||600}" class="rp-slider" oninput="setLogoSize('x',+this.value);document.getElementById('ni-lx').value=this.value"><input id="ni-lx" type="number" min="0" max="1200" value="${p.logoImg.x||600}" class="rp-num" oninput="setLogoSize('x',+this.value);this.previousElementSibling.value=this.value"></div>
+        <div class="rp-lbl">Y位置（顶部）</div>
+        <div class="rp-row"><input type="range" min="0" max="600" value="${p.logoImg.y||80}" class="rp-slider" oninput="setLogoSize('y',+this.value);document.getElementById('ni-ly').value=this.value"><input id="ni-ly" type="number" min="0" max="600" value="${p.logoImg.y||80}" class="rp-num" oninput="setLogoSize('y',+this.value);this.previousElementSibling.value=this.value"></div>
+        ${p.logoImg.imgKey?`<button style="width:100%;padding:5px;margin-top:5px;border:1px solid #b00;border-radius:4px;background:none;color:#f44;font-size:9px;cursor:pointer;font-family:inherit;" onclick="removeLogo()">✕ 删除Logo图片</button>`:''}
+      `:`<div style="font-size:10px;color:#444;text-align:center;padding:16px 0;">Logo已隐藏，画面不显示任何Logo</div>`}
+    `:`<div class="rp-btn-img" onclick="uploadImg('${selSlot}')">${s.imgKey?'🔄 更换图片':'＋ 上传图片'}</div>
+    ${s.imgKey?`<div class="rp-drag-hint">画面上可直接拖动调整</div>
+      <div class="rp-row"><label>缩放</label>
+        <input id="sl-zoom" class="rp-slider" type="range" min="0.5" max="3" step="0.05" value="${s.zoom||1}" oninput="setIP('zoom',+this.value);document.getElementById('ni-zoom').value=Math.round(this.value*100)">
+        <input id="ni-zoom" type="number" min="50" max="300" value="${Math.round((s.zoom||1)*100)}" class="rp-num" oninput="setIP('zoom',this.value/100);this.previousElementSibling.value=this.value/100">
+        <span class="rp-unit">%</span>
+      </div>
+      <div class="rp-row"><label>横移</label>
+        <input id="sl-px" class="rp-slider" type="range" min="0" max="100" step="1" value="${s.px}" oninput="setIP('px',+this.value);document.getElementById('ni-px').value=this.value">
+        <input id="ni-px" type="number" min="0" max="100" value="${Math.round(s.px)}" class="rp-num" oninput="setIP('px',+this.value);this.previousElementSibling.value=this.value">
+        <span class="rp-unit">%</span>
+      </div>
+      <div class="rp-row"><label>纵移</label>
+        <input id="sl-py" class="rp-slider" type="range" min="0" max="100" step="1" value="${s.py}" oninput="setIP('py',+this.value);document.getElementById('ni-py').value=this.value">
+        <input id="ni-py" type="number" min="0" max="100" value="${Math.round(s.py)}" class="rp-num" oninput="setIP('py',+this.value);this.previousElementSibling.value=this.value">
+        <span class="rp-unit">%</span>
+      </div>`:''}
+    `}
+
+    <div class="rp-sec">
+      <div class="rp-sec-t">色块圆圈</div>
+      ${p.circles.map((c,i)=>`<div class="circle-row">
+        <div class="circle-sw" style="background:${c};" onclick="document.getElementById('circ-${i}').click()"></div>
+        <input id="circ-${i}" type="color" value="${c}" style="display:none" onchange="setCircle(${i},this.value);this.previousElementSibling.style.background=this.value">
+        <span style="font-size:9px;color:#555;">圆圈 ${i+1}　${c}</span>
+      </div>`).join('')}
+      <div class="rp-row"><label style="min-width:28px;">直径</label><input type="range" min="20" max="120" value="${p.circleSize||52}" class="rp-slider" oninput="setLayout('circleSize',+this.value);document.getElementById('v-cd').textContent=this.value+'px'"><span class="rp-val" id="v-cd">${p.circleSize||52}px</span></div>
+      <div class="rp-row"><label style="min-width:28px;">X起点</label><input type="range" min="20" max="400" value="${p.circleX||80}" class="rp-slider" oninput="setLayout('circleX',+this.value);document.getElementById('v-cx').textContent=this.value"><span class="rp-val" id="v-cx">${p.circleX||80}</span></div>
+      <div class="rp-row"><label style="min-width:28px;">Y位置</label><input type="range" min="10" max="380" value="${p.circleY||100}" class="rp-slider" oninput="setLayout('circleY',+this.value);document.getElementById('v-cy').textContent=this.value"><span class="rp-val" id="v-cy">${p.circleY||100}</span></div>
+      <div class="rp-row"><label style="min-width:28px;">间距</label><input type="range" min="40" max="150" value="${p.circleGap||74}" class="rp-slider" oninput="setLayout('circleGap',+this.value);document.getElementById('v-cg').textContent=this.value"><span class="rp-val" id="v-cg">${p.circleGap||74}</span></div>
+    </div>
+
+    ${txtCtrl('① 主标题','title')}
+    ${txtCtrl('② 副标题','subtitle')}
+    ${txtCtrl('③ 英文标语','tagline')}
+
+    <div class="rp-sec">
+      <div class="rp-sec-t">版式设置</div>
+      <div style="font-size:9px;color:#555;margin-bottom:6px;">剩余 ${100-(p.mainHPct||42)-(p.midHPct||18)}% = 底部三图区</div>
+      <div class="rp-row"><label>主图%</label>
+        <input class="rp-slider" type="range" min="25" max="65" value="${p.mainHPct||42}" oninput="setLayoutSync('mainHPct',+this.value,'ni-mh')">
+        <input id="ni-mh" type="number" min="25" max="65" value="${p.mainHPct||42}" class="rp-num" oninput="setLayoutSync('mainHPct',+this.value,'ni-mh')">
+        <span class="rp-unit">%</span>
+      </div>
+      <div class="rp-row"><label>中间%</label>
+        <input class="rp-slider" type="range" min="10" max="35" value="${p.midHPct||18}" oninput="setLayoutSync('midHPct',+this.value,'ni-mid')">
+        <input id="ni-mid" type="number" min="10" max="35" value="${p.midHPct||18}" class="rp-num" oninput="setLayoutSync('midHPct',+this.value,'ni-mid')">
+        <span class="rp-unit">%</span>
+      </div>
+      <div class="rp-row"><label>两侧留白</label>
+        <input class="rp-slider" type="range" min="0" max="60" value="${p.botPad||16}" oninput="setLayoutSync('botPad',+this.value,'ni-bp')">
+        <input id="ni-bp" type="number" min="0" max="60" value="${p.botPad||16}" class="rp-num" oninput="setLayoutSync('botPad',+this.value,'ni-bp')">
+        <span class="rp-unit">px</span>
+      </div>
+      <div class="rp-row"><label>图片间隔</label>
+        <input class="rp-slider" type="range" min="0" max="30" value="${p.botGap||8}" oninput="setLayoutSync('botGap',+this.value,'ni-bg')">
+        <input id="ni-bg" type="number" min="0" max="30" value="${p.botGap||8}" class="rp-num" oninput="setLayoutSync('botGap',+this.value,'ni-bg')">
+        <span class="rp-unit">px</span>
+      </div>
+      <div class="rp-row"><label>圆角</label>
+        <input class="rp-slider" type="range" min="0" max="40" value="${p.botRadius||6}" oninput="setLayoutSync('botRadius',+this.value,'ni-brd')">
+        <input id="ni-brd" type="number" min="0" max="40" value="${p.botRadius||6}" class="rp-num" oninput="setLayoutSync('botRadius',+this.value,'ni-brd')">
+        <span class="rp-unit">px</span>
+      </div>
+      <div class="rp-lbl">分割线 Y位置</div>
+      <div class="rp-row"><label></label><input type="range" min="50" max="380" value="${p.dividerY||210}" class="rp-slider" oninput="setLayout('dividerY',+this.value);document.getElementById('v-dy').textContent=this.value"><span class="rp-val" id="v-dy">${p.dividerY||210}</span></div>
+      <div style="display:flex;gap:7px;align-items:center;margin-bottom:4px;margin-top:3px;">
+        <div class="col-dot" style="background:${p.dividerColor||'#cccccc'};" onclick="document.getElementById('clr-div').click()"></div>
+        <input id="clr-div" type="color" value="${p.dividerColor||'#cccccc'}" style="display:none" onchange="setLayout('dividerColor',this.value);this.previousElementSibling.style.background=this.value">
+        <span style="font-size:9px;color:#444;">分割线颜色</span>
+      </div>
+      <div style="display:flex;gap:7px;align-items:center;">
+        <div class="col-dot" style="background:${p.bgColor||'#f8f6f2'};" onclick="document.getElementById('clr-bg').click()"></div>
+        <input id="clr-bg" type="color" value="${p.bgColor||'#f8f6f2'}" style="display:none" onchange="setLayout('bgColor',this.value);this.previousElementSibling.style.background=this.value">
+        <span style="font-size:9px;color:#444;">背景色</span>
+      </div>
+    </div>
+
+    <div class="rp-sec">
+      <div class="rp-sec-t">项目备份</div>
+      <div class="backup-row">
+        <button class="bk-btn" onclick="exportJSON()">⬇ 导出备份 JSON</button>
+        <button class="bk-btn" onclick="importJSON()">⬆ 导入备份</button>
+      </div>
+    </div>`;
+}
+
+function selSl(sl){selSlot=sl;renderRP();}
+
+async function setIP(key,val){const p=cur();if(!p)return;p[selSlot][key]=val;const{w,h}=pSize();const sc=w/1200;const mainH=Math.round(h*(p.mainHPct||42)/100);const midH=Math.round(h*(p.midHPct||18)/100);const botH=h-mainH-midH;const gap=Math.round((p.botGap||8)*sc);const pad=Math.round((p.botPad||0)*sc);const imgW=Math.floor((w-pad*2-gap*2)/3);applyT(selSlot,w,h,mainH,midH,botH,imgW,gap,pad,sc);await saveP(p);}
+
+async function setTField(tk,val){const p=cur();if(!p)return;pushH();p[tk].text=val;const el=document.getElementById(`txt-${tk}`);if(el)el.textContent=val;await saveP(p);}
+async function setTStyle(tk,prop,val){
+  const p=cur();if(!p)return;pushH();p[tk][prop]=val;
+  const el=document.getElementById(`txt-${tk}`);
+  if(el){
+    const{w}=pSize();const sc=w/1200;
+    if(prop==='font')el.style.fontFamily=`'${val}',serif,sans-serif`;
+    if(prop==='size')el.style.fontSize=(val*sc)+'px';
+    if(prop==='weight')el.style.fontWeight=val;
+    if(prop==='color')el.style.color=val;
+    if(prop==='ls')el.style.letterSpacing=val+'em';
+    if(prop==='align'){
+      let t='';if(val==='center')t='translateX(-50%)';else if(val==='right')t='translateX(-100%)';
+      el.style.transform=t;
+    }
+  }
+  await saveP(p);
+}
+async function setTPos(tk,axis,val){const p=cur();if(!p)return;pushH();p[tk][axis]=val;await saveP(p);await renderPoster();}
+async function setCircle(i,val){const p=cur();if(!p)return;pushH();p.circles[i]=val;await saveP(p);await renderPoster();}
+async function setLayout(key,val){const p=cur();if(!p)return;pushH();p[key]=val;await saveP(p);await renderPoster();}
+async function setLayoutSync(key,val,inputId){
+  // sync slider and number input
+  const el=document.getElementById(inputId);if(el)el.value=val;
+  // also sync the range sibling
+  const parent=el?.parentElement;
+  if(parent){const range=parent.querySelector('input[type="range"]');if(range)range.value=val;}
+  await setLayout(key,val);
+}
+
+// Logo helpers
+async function toggleLogo(){const p=cur();if(!p)return;pushH();p.showLogo=!(p.showLogo!==false);await saveP(p);await renderPoster();renderRP();}
+async function setLogoSize(prop,val){const p=cur();if(!p)return;pushH();p.logoImg[prop]=val;await saveP(p);await renderPoster();}
+async function removeLogo(){const p=cur();if(!p)return;if(!confirm('删除Logo图片？将恢复显示文字Logo'))return;await delImg(ikey(curId,'logoImg'));p.logoImg.imgKey=null;pushH();await saveP(p);await renderPoster();renderRP();}
+
+// Export PNG
+async function exportPNG(){
+  const p=cur();if(!p)return;
+  if(!await wpCheckExportQuota())return;
+  const btn=document.getElementById('export-btn');btn.textContent='生成中…';btn.disabled=true;
+  try{
+    await document.fonts.ready;
+    const W=1200,H=1600;
+    const mainH=Math.round(H*(p.mainHPct||42)/100);
+    const midH=Math.round(H*(p.midHPct||18)/100);
+    const botH=H-mainH-midH;
+    const gap=p.botGap||8;const pad=p.botPad||0;const br=p.botRadius||6;
+    const imgW=Math.floor((W-pad*2-gap*2)/3);
+
+    const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+    const ctx=canvas.getContext('2d');
+
+    ctx.fillStyle=p.bgColor||'#f8f6f2';ctx.fillRect(0,0,W,H);
+
+    async function loadImg(key){const url=await getURL(key);if(!url)return null;return new Promise(res=>{const img=new Image();img.onload=()=>res(img);img.onerror=()=>res(null);img.src=url;});}
+    const[mainImg,blImg,bmImg,brImg]=await Promise.all([loadImg(p.mainImg.imgKey),loadImg(p.blImg.imgKey),loadImg(p.bmImg.imgKey),loadImg(p.brImg.imgKey)]);
+
+    function drawSlot(img,s,x,y,w,h,radius){
+      if(!img)return;ctx.save();
+      if(radius>0){ctx.beginPath();ctx.roundRect(x,y,w,h,radius);ctx.clip();}else{ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();}
+      const zoom=s.zoom||1;const base=Math.max(w/img.naturalWidth,h/img.naturalHeight)*zoom;
+      const rW=img.naturalWidth*base,rH=img.naturalHeight*base;
+      ctx.drawImage(img,x+(s.px/100)*(w-rW),y+(s.py/100)*(h-rH),rW,rH);ctx.restore();
+    }
+
+    // ① Main image
+    drawSlot(mainImg,p.mainImg,0,0,W,mainH,0);
+
+    // ② Logo image (if showLogo and uploaded)
+    function drawT(t){
+      if(!t||!t.text)return;
+      ctx.save();ctx.font=`${t.weight} ${t.size}px '${t.font}',serif,sans-serif`;
+      ctx.fillStyle=t.color;ctx.textBaseline='top';
+      drawTextLS(ctx,t.text,t.x,t.y,t.ls||0,t.align||'center');
+      ctx.restore();
+    }
+    if(p.showLogo!==false){
+      const logoImgEl=await loadImg(p.logoImg.imgKey);
+      if(logoImgEl){
+        const lw=p.logoImg.w||220,lh=p.logoImg.h||90,lx=p.logoImg.x||600,ly=p.logoImg.y||80;
+        ctx.drawImage(logoImgEl,lx-lw/2,ly,lw,lh);
+      }
+    }
+
+    // ③ Middle section
+    ctx.fillStyle=p.bgColor||'#f8f6f2';ctx.fillRect(0,mainH,W,midH);
+
+    // Circles
+    const cirD=p.circleSize||52,cirG=p.circleGap||74,cirX=p.circleX||80,cirY=mainH+(p.circleY||100);
+    p.circles.forEach((c,i)=>{ctx.beginPath();ctx.arc(cirX+i*cirG,cirY,cirD/2,0,Math.PI*2);ctx.fillStyle=c;ctx.fill();});
+
+    // Divider
+    ctx.beginPath();ctx.moveTo(p.dividerX1||30,mainH+(p.dividerY||210));ctx.lineTo(p.dividerX2||1170,mainH+(p.dividerY||210));
+    ctx.strokeStyle=p.dividerColor||'#cccccc';ctx.lineWidth=1;ctx.stroke();
+
+    // Title/subtitle/tagline (y is absolute from top of poster in 1200×1600 space)
+    drawT(p.title);drawT(p.subtitle);drawT(p.tagline);
+
+    // ④ Bottom 3 images
+    const botTop=mainH+midH;
+    drawSlot(blImg,p.blImg,pad,botTop,imgW,botH-pad,br);
+    drawSlot(bmImg,p.bmImg,pad+imgW+gap,botTop,imgW,botH-pad,br);
+    drawSlot(brImg,p.brImg,pad+imgW*2+gap*2,botTop,imgW,botH-pad,br);
+
+    canvas.toBlob(blob=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.download=`${p.name||'poster'}_1200x1600.png`;a.href=url;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);},'image/png');
+  }catch(err){console.error(err);alert('导出失败，请重试');}
+  finally{btn.textContent='↓ 导出 PNG';btn.disabled=false;}
+}
+
+window.addEventListener('resize',()=>{if(curId)renderPoster();});
+(async()=>{await wpCheckAuth();await openDB();await loadAll();renderProjList();})();
+</script>
+</body>
+</html>
