@@ -257,19 +257,20 @@ const COL_NAMES=[
   {zh:'婚纱礼服',en:'WEDDING DRESS'},
   {zh:'四大金刚',en:'THE FOUR GREAT VAJRAS'},
 ];
-function defCol(i){return{zh:COL_NAMES[i]?.zh||'标题'+(i+1),en:COL_NAMES[i]?.en||'TITLE '+(i+1),imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1,zhFont:'Noto Serif SC',enFont:'Cormorant Garamond',zhSize:20,enSize:11,zhColor:'#ffffff',enColor:'rgba(255,255,255,0.75)',gradH:55,gradColor:'rgba(0,0,0,0.85)'};}
+function defCol(i){return{zh:COL_NAMES[i]?.zh||'标题'+(i+1),en:COL_NAMES[i]?.en||'TITLE '+(i+1),imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1,zhFont:'Noto Serif SC',enFont:'Cormorant Garamond',zhSize:22,enSize:18,zhColor:'#ffffff',enColor:'rgba(255,255,255,0.75)',gradH:55,gradColor:'rgba(0,0,0,0.85)'};}
+// zhSize: 22px（图1） enSize: 18px（图1）
 function defHdr(){return{
   watermark:'wedding',wmFont:'Cormorant Garamond',wmSize:38,wmItalic:true,bgColor:'#eeece6',
   mainZh:  {text:'宁波一站式婚礼场地',
              font:'Noto Serif SC',     size:90, weight:'700', color:'#1a1a1a', x:600, y:140, align:'center', ls:0.03},
   subEn:   {text:'I LOVE THERE THINGS  THE SUN THE MOON AND YOU\nTHE MOON IS FOR THE NIGHT AND YOU FOREVER',
              font:'Cormorant Garamond',size:18, weight:'300', color:'#888888', x:600, y:282, align:'center', ls:0.13},
-  brandEn: {text:'BRIDE ELYSEE',
-             font:'Cormorant Garamond',size:25, weight:'700', color:'#1a1a1a', x:600, y:330, align:'center', ls:0.28},
+  brandEn: {text:'TENGTOU HOTEL',
+             font:'Cormorant Garamond',size:25, weight:'700', color:'#1a1a1a', x:600, y:342, align:'center', ls:0.28},
   brandZh: {text:'滕头中东欧宴会酒店',
              font:'PingFang SC',       size:40, weight:'700', color:'#1a1a1a', x:600, y:387, align:'center', ls:0.18},
   brandSub:{text:'免场布费｜5K帝王蟹套餐｜无预制菜｜赠送甜品台、酒水畅饮',
-             font:'Times New Roman',   size:28, weight:'700', color:'#555555', x:600, y:456, align:'center', ls:0.12},
+             font:'Noto Serif SC',     size:28, weight:'700', color:'#555555', x:600, y:456, align:'center', ls:0.12},
 };}
 function defProj(name,n){return{id:uid(),name,ct:Date.now(),at:Date.now(),cols:n,header:defHdr(),strips:Array.from({length:n},(_,i)=>defCol(i))};}
 
