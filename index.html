@@ -4,10 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>婚礼海报设计工具</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Noto+Serif+SC:wght@300;400;700&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Noto+Serif+SC:wght@300;400;700&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Noto+Serif+SC:wght@300;400;700&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet"></noscript>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0a0a0a;color:#fff;min-height:100vh;}
+/* ── 过渡动画 ── */
+.screen{transition:opacity .25s ease;will-change:opacity;}
+.screen.hidden{opacity:0;pointer-events:none;position:absolute;top:0;left:0;width:100%;}
 #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;background:linear-gradient(135deg,#0a0a0a 0%,#1a1208 100%);}
 .login-box{background:#111;border:1px solid #2a2a2a;border-radius:16px;padding:48px 40px;width:100%;max-width:400px;text-align:center;}
 .login-logo{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;letter-spacing:.12em;color:#c8a96a;margin-bottom:6px;}
@@ -15,36 +21,39 @@ body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0a0a0a;color:#f
 .login-label{font-size:11px;color:#888;text-align:left;margin-bottom:6px;}
 .login-input{width:100%;padding:12px 14px;background:#0a0a0a;border:1px solid #333;border-radius:8px;color:#fff;font-size:14px;font-family:inherit;outline:none;letter-spacing:.05em;margin-bottom:14px;}
 .login-input:focus{border-color:#c8a96a;}
-.login-btn{width:100%;padding:13px;background:#c8a96a;color:#0a0a0a;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.05em;}
+.login-btn{width:100%;padding:13px;background:#c8a96a;color:#0a0a0a;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.05em;transition:background .15s;}
 .login-btn:hover{background:#d4b87a;}
 .login-btn:disabled{background:#3a3020;color:#665a3a;cursor:default;}
 .login-err{font-size:12px;color:#e05a5a;margin-top:10px;min-height:18px;}
 .login-hint{font-size:10px;color:#444;margin-top:20px;line-height:1.6;}
-#home-screen{display:none;min-height:100vh;}
+#home-screen{display:flex;flex-direction:column;min-height:100vh;}
 .header{padding:22px 40px;border-bottom:1px solid #1e1e1e;display:flex;align-items:center;justify-content:space-between;}
 .header-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;letter-spacing:.12em;color:#c8a96a;}
 .header-right{display:flex;align-items:center;gap:12px;font-size:11px;color:#555;}
 .credits-badge{background:#1e1e1e;padding:4px 12px;border-radius:4px;color:#c8a96a;font-size:11px;}
-.logout-btn{padding:5px 14px;border:1px solid #2a2a2a;border-radius:5px;background:none;color:#666;font-size:11px;cursor:pointer;font-family:inherit;}
+.logout-btn{padding:5px 14px;border:1px solid #2a2a2a;border-radius:5px;background:none;color:#666;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s;}
 .logout-btn:hover{border-color:#555;color:#aaa;}
 .home-body{padding:40px;}
 .page-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;letter-spacing:.06em;color:#ddd;margin-bottom:6px;}
 .page-desc{font-size:12px;color:#555;margin-bottom:36px;}
-.tpl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;}
-.tpl-card{background:#111;border:1px solid #2a2a2a;border-radius:14px;overflow:hidden;cursor:pointer;transition:all .25s;text-decoration:none;display:block;}
+.tpl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;}
+.tpl-card{background:#111;border:1px solid #2a2a2a;border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s;text-decoration:none;display:block;}
 .tpl-card:hover{border-color:#c8a96a;transform:translateY(-4px);box-shadow:0 16px 48px rgba(200,169,106,.15);}
-.tpl-preview{aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:#0a0a0a;}
-.tpl-preview img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
+.tpl-preview{aspect-ratio:3/4;position:relative;overflow:hidden;background:#0a0a0a;}
+.tpl-preview img{width:100%;height:100%;object-fit:cover;transition:transform .3s ease;display:block;}
 .tpl-card:hover .tpl-preview img{transform:scale(1.04);}
 .tpl-info{padding:14px 16px;border-top:1px solid #1e1e1e;}
 .tpl-name{font-size:14px;font-weight:500;color:#ddd;margin-bottom:3px;}
 .tpl-desc{font-size:11px;color:#555;line-height:1.5;}
 .tpl-tag{display:inline-block;padding:2px 8px;background:#1e1e1e;border-radius:3px;font-size:9px;color:#888;margin-top:5px;letter-spacing:.05em;}
+/* 骨架屏 */
+.skeleton{background:linear-gradient(90deg,#1a1a1a 25%,#222 50%,#1a1a1a 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:14px;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style>
 </head>
 <body>
 
-<div id="login-screen">
+<div id="login-screen" class="screen">
   <div class="login-box">
     <div class="login-logo">WEDDING POSTER</div>
     <div class="login-sub">婚礼海报设计工具</div>
@@ -56,7 +65,7 @@ body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0a0a0a;color:#f
   </div>
 </div>
 
-<div id="home-screen">
+<div id="home-screen" class="screen hidden">
   <div class="header">
     <div class="header-logo">WEDDING POSTER</div>
     <div class="header-right">
@@ -75,19 +84,43 @@ body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0a0a0a;color:#f
 <script>
 const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+const SB_HDR={headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}};
 
-// ══ 模板列表 — 从 Supabase 读取 ════════════════════════
+// ── 屏幕切换（淡入淡出，无闪烁）──────────────────────────
+function showScreen(id){
+  ['login-screen','home-screen'].forEach(s=>{
+    const el=document.getElementById(s);
+    if(s===id){el.classList.remove('hidden');}
+    else{el.classList.add('hidden');}
+  });
+}
+
+// ── 骨架屏占位 ────────────────────────────────────────────
+function showSkeletons(n=6){
+  const grid=document.getElementById('tpl-grid');
+  grid.innerHTML=Array(n).fill(0).map(()=>`
+    <div class="skeleton" style="aspect-ratio:3/4;border-radius:14px;"></div>`).join('');
+}
+
+// ── 模板列表（带本地缓存，5分钟有效）────────────────────
 async function loadTemplates(){
+  const CACHE_KEY='wp_tpl_cache', CACHE_TTL=5*60*1000;
+  const cached=localStorage.getItem(CACHE_KEY);
+  if(cached){
+    try{
+      const {ts,data}=JSON.parse(cached);
+      if(Date.now()-ts<CACHE_TTL){renderTemplates(data);return;}
+    }catch(e){}
+  }
+  showSkeletons();
   try{
-    const r=await fetch(`${SB_URL}/rest/v1/templates?is_active=eq.true&order=sort_order.asc&select=*`,{
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
-    });
+    const r=await fetch(`${SB_URL}/rest/v1/templates?is_active=eq.true&order=sort_order.asc&select=*`,SB_HDR);
     if(!r.ok)throw new Error('HTTP '+r.status);
-    const templates=await r.json();
-    if(!templates||!templates.length)throw new Error('empty');
-    renderTemplates(templates);
+    const data=await r.json();
+    if(!data||!data.length)throw new Error('empty');
+    localStorage.setItem(CACHE_KEY,JSON.stringify({ts:Date.now(),data}));
+    renderTemplates(data);
   }catch(e){
-    console.warn('模板加载失败',e);
     document.getElementById('tpl-grid').innerHTML='<div style="color:#e05a5a;font-size:12px;">模板加载失败，请刷新重试</div>';
   }
 }
@@ -98,7 +131,9 @@ function renderTemplates(templates){
   grid.innerHTML=templates.map(t=>`
     <a class="tpl-card" href="${t.url}">
       <div class="tpl-preview">
-        ${t.img&&t.img.length>10?`<img src="${t.img}">`:`<div style="color:#333;font-size:12px;">${t.name}</div>`}
+        ${t.img&&t.img.length>10
+          ?`<img src="${t.img}" loading="lazy" decoding="async" alt="${t.name}">`
+          :`<div style="color:#333;font-size:12px;">${t.name}</div>`}
       </div>
       <div class="tpl-info">
         <div class="tpl-name">${t.name}</div>
@@ -110,14 +145,14 @@ function renderTemplates(templates){
 
 let currentLic=null;
 
-// ══ Login ══════════════════════════════════════════════════════
+// ── 登录 ──────────────────────────────────────────────────
 async function doLogin(){
   const code=document.getElementById('login-input').value.trim().toUpperCase();
   if(!code){setErr('请输入卡密');return;}
   const btn=document.getElementById('login-btn');
   btn.textContent='验证中…';btn.disabled=true;setErr('');
   try{
-    const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,SB_HDR);
     const d=await r.json();
     if(!d||!d[0]){setErr('卡密不存在');return;}
     const lic=d[0];
@@ -129,45 +164,108 @@ async function doLogin(){
     }
     if((lic.credits||0)<=0){setErr('导出次数已用完，请联系管理员充值');return;}
     if(!lic.first_used_at){
-      await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${lic.id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({first_used_at:new Date().toISOString()})});
+      fetch(`${SB_URL}/rest/v1/licenses?id=eq.${lic.id}`,{method:'PATCH',headers:{...SB_HDR.headers,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({first_used_at:new Date().toISOString()})});
       lic.first_used_at=new Date().toISOString();
     }
-    currentLic=lic;localStorage.setItem('wp-license',code);enterHome();
+    currentLic=lic;
+    localStorage.setItem('wp-license',code);
+    // 缓存 license 避免下次页面加载再请求
+    localStorage.setItem('wp-lic-cache',JSON.stringify({ts:Date.now(),lic}));
+    enterHome();
   }catch(e){setErr('网络错误，请重试');}
   finally{btn.textContent='进入系统';btn.disabled=false;}
 }
 function setErr(msg){document.getElementById('login-err').textContent=msg;}
 
+// ── 校验已保存卡密（优先用本地缓存，后台静默刷新）─────
 async function checkSaved(){
-  const code=localStorage.getItem('wp-license');if(!code)return false;
+  const code=localStorage.getItem('wp-license');
+  if(!code)return false;
+
+  // 先尝试本地缓存（2分钟内有效），快速进入首页
+  const raw=localStorage.getItem('wp-lic-cache');
+  if(raw){
+    try{
+      const {ts,lic}=JSON.parse(raw);
+      if(Date.now()-ts<2*60*1000&&lic.is_active&&(lic.credits||0)>0&&lic.code===code){
+        currentLic=lic;
+        // 后台静默刷新
+        refreshLicInBackground(code);
+        return true;
+      }
+    }catch(e){}
+  }
+
+  // 缓存过期，正常请求
   try{
-    const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,SB_HDR);
     const d=await r.json();
     if(!d||!d[0]||!d[0].is_active||(d[0].credits||0)<=0)return false;
     const lic=d[0];
     if(lic.expires_at&&new Date(lic.expires_at)<new Date())return false;
     if(lic.duration_days&&lic.first_used_at){const exp=new Date(lic.first_used_at);exp.setDate(exp.getDate()+lic.duration_days);if(exp<new Date())return false;}
-    currentLic=lic;return true;
+    currentLic=lic;
+    localStorage.setItem('wp-lic-cache',JSON.stringify({ts:Date.now(),lic}));
+    return true;
   }catch(e){return false;}
 }
 
-function doLogout(){
-  if(!confirm('确认退出？'))return;
-  localStorage.removeItem('wp-license');currentLic=null;
-  document.getElementById('home-screen').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('login-input').value='';
+function refreshLicInBackground(code){
+  fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,SB_HDR)
+    .then(r=>r.json()).then(d=>{
+      if(d&&d[0]){
+        currentLic=d[0];
+        localStorage.setItem('wp-lic-cache',JSON.stringify({ts:Date.now(),lic:d[0]}));
+        document.getElementById('wp-credits').textContent=`剩余 ${d[0].credits||0} 次`;
+      }
+    }).catch(()=>{});
 }
 
+// ── 退出（无系统弹窗，直接退出）──────────────────────────
+function doLogout(){
+  localStorage.removeItem('wp-license');
+  localStorage.removeItem('wp-lic-cache');
+  localStorage.removeItem('wp_tpl_cache');
+  currentLic=null;
+  document.getElementById('login-input').value='';
+  setErr('');
+  showScreen('login-screen');
+}
+
+// ── 进入首页 ──────────────────────────────────────────────
 function enterHome(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('home-screen').style.display='block';
   document.getElementById('user-code').textContent=currentLic?.code||localStorage.getItem('wp-license')||'';
   document.getElementById('wp-credits').textContent=`剩余 ${currentLic?.credits||0} 次`;
+  showScreen('home-screen');
   loadTemplates();
 }
 
-(async()=>{const ok=await checkSaved();if(ok)enterHome();})();
+// ── 初始化：同步检查缓存，避免闪登录页 ────────────────
+(async()=>{
+  // 先同步读本地缓存，有效则直接显示首页（无闪烁）
+  const code=localStorage.getItem('wp-license');
+  const raw=localStorage.getItem('wp-lic-cache');
+  let fastPass=false;
+  if(code&&raw){
+    try{
+      const {ts,lic}=JSON.parse(raw);
+      if(Date.now()-ts<2*60*1000&&lic.is_active&&(lic.credits||0)>0&&lic.code===code){
+        currentLic=lic;
+        fastPass=true;
+      }
+    }catch(e){}
+  }
+  if(fastPass){
+    // 有缓存：直接进首页，后台静默刷新
+    enterHome();
+    refreshLicInBackground(code);
+  }else{
+    // 无缓存：显示登录页，后台验证
+    showScreen('login-screen');
+    const ok=await checkSaved();
+    if(ok)enterHome();
+  }
+})();
 </script>
 </body>
 </html>
