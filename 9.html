@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>双图分割版 - 婚礼场馆展示</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500&family=Playfair+Display:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0e0e0e;color:#fff;height:100vh;overflow:hidden;display:flex;padding-top:40px;}
+.psb{width:186px;flex-shrink:0;background:#161616;border-right:1px solid #222;display:flex;flex-direction:column;}
+.psb-head{padding:12px 12px 8px;border-bottom:1px solid #222;}
+.psb-head h2{font-size:12px;font-weight:500;color:#ddd;}
+.psb-head p{font-size:9px;color:#444;margin-top:2px;}
+.psb-new{margin:8px 10px;padding:6px;background:#1c1c1c;border:1px dashed #2e2e2e;border-radius:5px;color:#666;font-size:10px;cursor:pointer;text-align:center;}
+.psb-new:hover{border-color:#555;color:#bbb;}
+.proj-list{flex:1;overflow-y:auto;padding:4px 7px;}
+.proj-item{padding:7px 9px;border-radius:5px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;}
+.proj-item:hover{background:#1c1c1c;}
+.proj-item.active{background:#1c1c1c;border-color:#2e2e2e;}
+.proj-item h3{font-size:11px;font-weight:400;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.proj-item .meta{font-size:9px;color:#444;margin-top:2px;}
+.proj-item-actions{display:flex;gap:3px;margin-top:4px;}
+.pa-btn{padding:2px 6px;background:none;border:1px solid #222;border-radius:3px;color:#555;font-size:9px;cursor:pointer;font-family:inherit;}
+.pa-btn:hover{border-color:#555;color:#aaa;}
+.pa-btn.del:hover{border-color:#b00;color:#f44;}
+.editor{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:44px;background:#161616;border-bottom:1px solid #222;display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;}
+.proj-name-in{background:none;border:none;outline:none;color:#fff;font-size:13px;font-weight:500;font-family:inherit;flex:1;max-width:240px;}
+.proj-name-in::placeholder{color:#333;}
+.sp{flex:1;}
+.tbtn-export{padding:6px 16px;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;background:#c8392b;color:#fff;}
+.tbtn-export:hover{background:#a02d22;}
+.tbtn-export:disabled{background:#6a1f17;cursor:default;}
+.body{display:flex;flex:1;overflow:hidden;}
+.canvas-area{flex:1;background:#0f0f0f;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.rp{width:256px;flex-shrink:0;background:#161616;border-left:1px solid #222;overflow-y:auto;padding:10px 10px 24px;}
+.rp::-webkit-scrollbar{width:3px;}.rp::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px;}
+.rp-title{font-size:9px;font-weight:600;color:#555;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px;}
+.rp-sec{margin-top:10px;padding-top:9px;border-top:1px solid #1e1e1e;}
+.rp-sec-t{font-size:9px;color:#444;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+.rp-lbl{font-size:9px;color:#555;margin-bottom:2px;margin-top:5px;}
+.rp-input{width:100%;padding:5px 7px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;margin-bottom:3px;}
+.rp-input:focus{border-color:#444;}
+.rp-select{width:100%;padding:4px 6px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;margin-bottom:3px;}
+.rp-select-sm{flex:1;padding:3px 4px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;}
+.rp-num{width:52px;padding:4px 5px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;}
+.rp-num:focus{border-color:#444;}
+.rp-unit{font-size:9px;color:#444;white-space:nowrap;}
+.col-dot{width:22px;height:22px;border-radius:3px;border:1px solid #333;cursor:pointer;flex-shrink:0;}
+.col-dot:hover{border-color:#666;}
+.rp-row{display:flex;gap:5px;align-items:center;margin-bottom:4px;}
+.rp-row label{font-size:9px;color:#555;min-width:22px;flex-shrink:0;}
+.rp-slider{flex:1;accent-color:#c8392b;cursor:pointer;}
+.rp-val{font-size:9px;color:#555;min-width:28px;text-align:right;}
+.rp-btn-img{width:100%;padding:6px;border:1px dashed #2a2a2a;border-radius:4px;background:none;color:#666;font-size:10px;cursor:pointer;font-family:inherit;display:block;text-align:center;margin-bottom:2px;}
+.rp-btn-img:hover{border-color:#555;color:#aaa;}
+.rp-drag-hint{font-size:9px;color:#333;text-align:center;margin-bottom:3px;}
+.style-row{display:flex;gap:4px;align-items:center;margin-bottom:4px;}
+.pos-box{background:#141414;border:1px solid #222;border-radius:5px;padding:6px 7px;margin-top:5px;}
+.pos-box-t{font-size:9px;color:#c8a96a;margin-bottom:5px;}
+.pos-row{display:flex;gap:4px;align-items:center;margin-bottom:4px;}
+.pos-row label{font-size:9px;color:#444;min-width:12px;}
+.pos-sl{flex:1;accent-color:#c8a96a;}
+.slot-tabs{display:flex;gap:3px;margin-bottom:7px;}
+.slot-tab{flex:1;padding:4px 2px;border:1px solid #222;border-radius:4px;background:none;color:#555;font-size:9px;cursor:pointer;font-family:inherit;text-align:center;}
+.slot-tab.active{background:#222;color:#ddd;border-color:#444;}
+.toggle-row{display:flex;align-items:center;gap:8px;padding:7px 9px;background:#1a1a1a;border:1px solid #222;border-radius:6px;margin-bottom:7px;cursor:pointer;}
+.toggle-knob{width:34px;height:18px;border-radius:9px;position:relative;flex-shrink:0;transition:background .2s;}
+.toggle-knob-dot{position:absolute;top:3px;width:12px;height:12px;border-radius:50%;background:#fff;transition:left .2s;}
+.bk-btn{flex:1;padding:5px 4px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:9px;cursor:pointer;font-family:inherit;}
+.bk-btn:hover{border-color:#555;color:#aaa;}
+.no-proj{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#2a2a2a;}
+.no-proj p{font-size:12px;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;}
+.ov.open{display:flex;}
+.modal{background:#1c1c1c;border:1px solid #2e2e2e;border-radius:10px;padding:22px;width:300px;}
+.modal h3{font-size:14px;font-weight:500;margin-bottom:16px;color:#ddd;}
+.modal-lbl{font-size:10px;color:#777;margin-bottom:4px;}
+.modal-in{width:100%;padding:8px 10px;background:#111;border:1px solid #2e2e2e;border-radius:5px;color:#fff;font-size:13px;font-family:inherit;outline:none;margin-bottom:16px;}
+.modal-in:focus{border-color:#555;}
+.modal-actions{display:flex;gap:8px;}
+.modal-actions button{flex:1;padding:8px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
+</style>
+</head>
+<body>
+<div style="height:40px;background:#0a0a0a;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;padding:0 14px;gap:10px;position:fixed;top:0;left:0;right:0;z-index:100;">
+  <a href="index.html" style="font-size:18px;color:#555;text-decoration:none;line-height:1;">←</a>
+  <span style="font-size:11px;color:#444;">双图分割版</span>
+  <div style="flex:1;"></div>
+  <span id="wp-credits" style="background:#1a1a1a;padding:3px 10px;border-radius:4px;font-size:11px;color:#c8a96a;"></span>
+  <button onclick="wpLogout()" style="padding:4px 12px;border:1px solid #222;border-radius:4px;background:none;color:#555;font-size:11px;cursor:pointer;font-family:inherit;">退出</button>
+</div>
+<div class="psb">
+  <div class="psb-head"><h2>项目</h2><p>Ctrl+Z 撤销 · 自动保存</p></div>
+  <div class="psb-new" onclick="openNewModal()">＋ 新建项目</div>
+  <div class="proj-list" id="proj-list"><div style="font-size:10px;color:#333;padding:8px 4px;">加载中…</div></div>
+</div>
+<div class="editor">
+  <div class="topbar">
+    <input class="proj-name-in" id="proj-name-in" type="text" placeholder="项目名称" oninput="onNameChange()">
+    <div class="sp"></div>
+    <button class="tbtn-export" id="export-btn" onclick="exportPNG()">↓ 导出 PNG 1200×1600</button>
+  </div>
+  <div class="body">
+    <div class="canvas-area" id="canvas-area"><div id="poster"></div></div>
+    <div class="rp" id="rp"><div class="no-proj"><p>新建或选择项目</p></div></div>
+  </div>
+</div>
+<input type="file" id="file-in" accept="image/*" style="display:none">
+<input type="file" id="logo-in" accept="image/png,image/webp,image/svg+xml" style="display:none">
+<input type="file" id="json-in" accept=".json" style="display:none">
+<div class="ov" id="new-modal">
+  <div class="modal">
+    <h3>新建项目</h3>
+    <div class="modal-lbl">项目名称</div>
+    <input class="modal-in" id="nm-name" type="text" placeholder="未命名">
+    <div class="modal-actions">
+      <button onclick="closeNewModal()" style="background:#2a2a2a;color:#aaa;border:1px solid #333;">取消</button>
+      <button onclick="createProject()" style="background:#fff;color:#000;">创建</button>
+    </div>
+  </div>
+</div>
+<script>
+// ═══ AUTH ═════════════════════════════════════════════════════════
+const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+let _lic=null;
+async function wpCheckAuth(){
+  if(location.protocol==='file:'||location.hostname==='localhost'){_lic={credits:999,id:'test'};const el=document.getElementById('wp-credits');if(el)el.textContent='测试模式';return true;}
+  const code=localStorage.getItem('wp-license');if(!code){location.href='index.html';return false;}
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const d=await r.json();if(!d||!d[0]||!d[0].is_active){location.href='index.html';return false;}
+    const lic=d[0];if((lic.credits||0)<=0){location.href='index.html';return false;}
+    if(lic.expires_at&&new Date(lic.expires_at)<new Date()){location.href='index.html';return false;}
+    if(lic.duration_days&&lic.first_used_at){const exp=new Date(lic.first_used_at);exp.setDate(exp.getDate()+lic.duration_days);if(exp<new Date()){location.href='index.html';return false;}}
+    _lic=lic;wpUpdCredits();return true;
+  }catch(e){return true;}
+}
+function wpUpdCredits(){const el=document.getElementById('wp-credits');if(el&&_lic)el.textContent=`剩余 ${_lic.credits||0} 次`;}
+async function wpCheckExportQuota(){
+  if(location.protocol==='file:'||location.hostname==='localhost')return true;
+  if(!_lic){alert('请先登录');return false;}
+  if((_lic.credits||0)<=0){alert('导出次数已用完');return false;}
+  try{
+    const newC=(_lic.credits||0)-1;
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${_lic.id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({credits:newC})});
+    const d=await r.json();if(d&&d[0])_lic=d[0];else _lic.credits=newC;wpUpdCredits();return true;
+  }catch(e){_lic.credits=Math.max(0,(_lic.credits||0)-1);wpUpdCredits();return true;}
+}
+function wpLogout(){localStorage.removeItem('wp-license');location.href='index.html';}
+
+// drawTextLS
+function drawTextLS(ctx,text,cx,y,lsEm,align){
+  if(!text)return;
+  const m=ctx.font.match(/([\d.]+)px/);const fs=m?parseFloat(m[1]):16;const ls=lsEm*fs;
+  const chars=[...text];let tw=0;
+  chars.forEach((ch,i)=>{tw+=ctx.measureText(ch).width;if(i<chars.length-1)tw+=ls;});
+  let sx=align==='center'?cx-tw/2:align==='right'?cx-tw:cx;
+  chars.forEach((ch,i)=>{ctx.fillText(ch,sx,y);sx+=ctx.measureText(ch).width+(i<chars.length-1?ls:0);});
+}
+
+// ═══ IndexedDB ════════════════════════════════════════════════════
+const DB_NAME='wedding-split-v1',DB_VER=1;
+let db=null;
+function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB_NAME,DB_VER);req.onupgradeneeded=e=>{const d=e.target.result;['P','I'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,s==='P'?{keyPath:'id'}:undefined);});};req.onsuccess=e=>{db=e.target.result;res();};req.onerror=rej;});}
+const TX=(s,m='readonly')=>db.transaction(s,m).objectStore(s);
+const dbGet=(s,k)=>new Promise((r,j)=>{const q=TX(s).get(k);q.onsuccess=()=>r(q.result);q.onerror=j;});
+const dbPut=(s,v,k)=>new Promise((r,j)=>{const q=k!==undefined?TX(s,'readwrite').put(v,k):TX(s,'readwrite').put(v);q.onsuccess=r;q.onerror=j;});
+const dbDel=(s,k)=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=r;t.onerror=j;});
+const dbAll=(s)=>new Promise((r,j)=>{const q=TX(s).getAll();q.onsuccess=()=>r(q.result);q.onerror=j;});
+
+// ═══ Defaults ═════════════════════════════════════════════════════
+const FONTS=['Cormorant Garamond','Playfair Display','Georgia','Times New Roman','Noto Serif SC','STSong','STKaiti','Noto Sans SC','PingFang SC','Microsoft YaHei','SimHei','STHeiti','Arial'];
+const WTS=[['300','细'],['400','常规'],['500','中'],['600','半粗'],['700','粗'],['900','超粗']];
+
+function defT(text,font,size,weight,color,x,y,align,ls){return{text,font,size,weight,color,x,y,align,ls};}
+
+function defProject(){return{
+  topHPct:50,           // 上图占比%
+  splitGap:0,           // 分割线厚度px（0=无）
+  splitColor:'#000000',
+  topImg:  {imgKey:null,px:50,py:50,zoom:1},
+  botImg:  {imgKey:null,px:50,py:50,zoom:1},
+  showLogo:true,
+  logoImg: {imgKey:null,x:600,y:1500,w:260,h:100},
+  // 文字项（Y = 文字垂直中心，对应 1200×1600 导出空间）
+  centerTitle: defT('BLOOM ART CENTER','Cormorant Garamond',83,'400','#ffffff',600,795,'center',0.02),
+  subTitle:    defT('','Cormorant Garamond',28,'300','#ffffff',600,860,'center',0.10),
+  brandZh:     defT('','Noto Serif SC',26,'400','#ffffff',600,910,'center',0.15),
+};}
+
+// ═══ State ════════════════════════════════════════════════════════
+let projects=[],curId=null,selSlot='topImg';
+const imgCache={};
+let dragging=false,dragSlot='',dragSX=0,dragSY=0,dragPX0=50,dragPY0=50;
+let _hist=[],_hIdx=-1;
+
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const cur=()=>projects.find(p=>p.id===curId)||null;
+const ikey=(pid,slot)=>`${pid}-${slot}`;
+
+// ═══ History ══════════════════════════════════════════════════════
+function pushH(){const p=cur();if(!p)return;_hist=_hist.slice(0,_hIdx+1);_hist.push(JSON.stringify(p));if(_hist.length>20)_hist.shift();_hIdx=_hist.length-1;}
+async function undo(){if(_hIdx<=0)return;_hIdx--;const p=JSON.parse(_hist[_hIdx]);const i=projects.findIndex(x=>x.id===p.id);if(i>=0)projects[i]=p;await dbPut('P',p);await renderPoster();renderRP();}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+
+// ═══ Storage ══════════════════════════════════════════════════════
+async function loadAll(){projects=await dbAll('P');projects.sort((a,b)=>b.at-a.at);}
+async function saveP(p){p.at=Date.now();await dbPut('P',p);}
+async function saveImg(key,blob){await dbPut('I',blob,key);if(imgCache[key])URL.revokeObjectURL(imgCache[key]);imgCache[key]=URL.createObjectURL(blob);}
+async function delImg(key){await dbDel('I',key);if(imgCache[key]){URL.revokeObjectURL(imgCache[key]);delete imgCache[key];}}
+async function getURL(key){if(!key)return null;if(imgCache[key])return imgCache[key];const b=await dbGet('I',key);if(!b)return null;imgCache[key]=URL.createObjectURL(b);return imgCache[key];}
+
+// ═══ Backup ═══════════════════════════════════════════════════════
+function exportJSON(){const p=cur();if(!p)return;const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(p.name||'project')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+function importJSON(){const fi=document.getElementById('json-in');fi.onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const p=JSON.parse(await file.text());p.id=uid();p.name=(p.name||'导入')+' (导入)';p.ct=p.at=Date.now();await saveP(p);projects.unshift(p);renderProjList();openProj(p.id);}catch{alert('JSON格式错误');}fi.value='';};fi.click();}
+
+// ═══ Modal ════════════════════════════════════════════════════════
+function openNewModal(){document.getElementById('nm-name').value='';document.getElementById('new-modal').classList.add('open');setTimeout(()=>document.getElementById('nm-name').focus(),50);}
+function closeNewModal(){document.getElementById('new-modal').classList.remove('open');}
+async function createProject(){
+  const name=document.getElementById('nm-name').value.trim()||'未命名';
+  const p={id:uid(),name,ct:Date.now(),at:Date.now(),...defProject()};
+  await saveP(p);projects.unshift(p);closeNewModal();renderProjList();openProj(p.id);
+}
+document.getElementById('nm-name').addEventListener('keydown',e=>{if(e.key==='Enter')createProject();});
+
+// ═══ Project List ═════════════════════════════════════════════════
+function renderProjList(){
+  const el=document.getElementById('proj-list');
+  if(!projects.length){el.innerHTML='<div style="font-size:10px;color:#333;padding:8px 4px;">暂无项目</div>';return;}
+  el.innerHTML=projects.map(p=>`<div class="proj-item${p.id===curId?' active':''}" onclick="openProj('${p.id}')">
+    <h3>${esc(p.name)}</h3><div class="meta">${new Date(p.at).toLocaleDateString('zh-CN')}</div>
+    <div class="proj-item-actions">
+      <button class="pa-btn" onclick="event.stopPropagation();renameProj('${p.id}')">改名</button>
+      <button class="pa-btn" onclick="event.stopPropagation();dupProj('${p.id}')">复制</button>
+      <button class="pa-btn del" onclick="event.stopPropagation();delProj('${p.id}')">删除</button>
+    </div></div>`).join('');
+}
+async function renameProj(id){const p=projects.find(x=>x.id===id);if(!p)return;const n=prompt('新名称：',p.name);if(!n||!n.trim())return;p.name=n.trim();await saveP(p);if(curId===id)document.getElementById('proj-name-in').value=p.name;renderProjList();}
+async function openProj(id){curId=id;selSlot='topImg';const p=cur();if(!p)return;document.getElementById('proj-name-in').value=p.name;_hist=[];_hIdx=-1;renderProjList();await renderPoster();renderRP();}
+async function dupProj(id){
+  const p=projects.find(x=>x.id===id);if(!p)return;
+  const nid=uid();const np={...JSON.parse(JSON.stringify(p)),id:nid,name:p.name+' 副本',ct:Date.now(),at:Date.now()};
+  for(const sl of['topImg','botImg','logoImg']){const ok=ikey(id,sl),nk=ikey(nid,sl);const b=await dbGet('I',ok);if(b){await dbPut('I',b,nk);np[sl].imgKey=nk;}}
+  await saveP(np);projects.unshift(np);renderProjList();
+}
+async function delProj(id){
+  if(!confirm('确认删除？'))return;
+  for(const sl of['topImg','botImg','logoImg'])await delImg(ikey(id,sl));
+  await dbDel('P',id);projects=projects.filter(p=>p.id!==id);
+  if(curId===id){curId=null;document.getElementById('poster').innerHTML='';renderRP();}renderProjList();
+}
+async function onNameChange(){const p=cur();if(!p)return;p.name=document.getElementById('proj-name-in').value;await saveP(p);renderProjList();}
+
+// ═══ Poster Size ══════════════════════════════════════════════════
+function pSize(){const a=document.getElementById('canvas-area');const aH=a.clientHeight-24,aW=a.clientWidth-24;let h,w;if(aH*.75<aW){h=Math.floor(aH);w=Math.floor(h*.75);}else{w=Math.floor(aW);h=Math.floor(w/.75);}return{w,h};}
+
+// ═══ Render Poster ════════════════════════════════════════════════
+async function renderPoster(){
+  const poster=document.getElementById('poster');
+  const p=cur();if(!p){poster.innerHTML='';poster.style.cssText='';return;}
+  const{w,h}=pSize();const sc=w/1200;
+  const topH=Math.round(h*(p.topHPct||50)/100);
+  const botH=h-topH;
+  const gap=Math.round((p.splitGap||0)*sc);
+
+  const topUrl=await getURL(p.topImg.imgKey);
+  const botUrl=await getURL(p.botImg.imgKey);
+  const logoUrl=p.showLogo!==false?await getURL(p.logoImg.imgKey):null;
+
+  poster.style.cssText=`width:${w}px;height:${h}px;position:relative;overflow:hidden;flex-shrink:0;box-shadow:0 20px 60px rgba(0,0,0,.6);background:#111;`;
+
+  function imgSlot(slot,url,top,height,label){
+    return`<div id="slot-${slot}" data-slot="${slot}" style="position:absolute;left:0;top:${top}px;width:${w}px;height:${height}px;overflow:hidden;cursor:${url?'grab':'default'};">
+      ${url
+        ?`<img id="img-${slot}" src="${url}" draggable="false" style="position:absolute;pointer-events:none;">`
+        :`<div onclick="uploadImg('${slot}')" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1a1a;color:#444;gap:6px;cursor:pointer;"><span style="font-size:24px;opacity:.4;">＋</span><span style="font-size:10px;letter-spacing:.1em;">${label}</span></div>`}
+    </div>`;
+  }
+
+  function txtEl(key,t){
+    if(!t||!t.text)return'';
+    const lx=Math.round(t.x*sc),ty=Math.round(t.y*sc);
+    // Y = middle of text; X transform for alignment
+    const trX=t.align==='center'?'translateX(-50%) translateY(-50%)':t.align==='right'?'translateX(-100%) translateY(-50%)':'translateY(-50%)';
+    return`<div id="txt-${key}" style="position:absolute;left:${lx}px;top:${ty}px;transform:${trX};white-space:nowrap;pointer-events:none;font-family:'${t.font}',serif,sans-serif;font-size:${Math.round(t.size*sc)}px;font-weight:${t.weight};color:${t.color};letter-spacing:${t.ls}em;">${esc(t.text)}</div>`;
+  }
+
+  const logoX=Math.round((p.logoImg.x||600)*sc);
+  const logoY=Math.round((p.logoImg.y||1500)*sc);
+  const logoW=Math.round((p.logoImg.w||260)*sc);
+  const logoH=Math.round((p.logoImg.h||100)*sc);
+
+  poster.innerHTML=
+    imgSlot('topImg',topUrl,0,topH-gap,'点击上传上方图片')+
+    (gap>0?`<div style="position:absolute;left:0;top:${topH-gap}px;width:${w}px;height:${gap}px;background:${p.splitColor||'#000'};"></div>`:'')+
+    imgSlot('botImg',botUrl,topH,botH,'点击上传下方图片')+
+    // Text overlays (directly on poster root, no overflow:hidden parent)
+    txtEl('centerTitle',p.centerTitle)+
+    txtEl('subTitle',p.subTitle)+
+    txtEl('brandZh',p.brandZh)+
+    // Logo
+    (p.showLogo!==false&&logoUrl
+      ?`<img id="img-logoImg" src="${logoUrl}" style="position:absolute;left:${logoX-logoW/2}px;top:${logoY-logoH/2}px;width:${logoW}px;height:${logoH}px;object-fit:contain;pointer-events:none;">`
+      :(p.showLogo!==false&&!logoUrl
+        ?`<div onclick="uploadLogo()" style="position:absolute;left:${logoX-logoW/2}px;top:${logoY-logoH/2}px;width:${logoW}px;height:${logoH}px;border:1px dashed rgba(255,255,255,.3);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font-size:9px;color:rgba(255,255,255,.4);">＋ 上传Logo</span></div>`
+        :''));
+
+  // Apply image transforms
+  for(const sl of['topImg','botImg']){
+    const url=sl==='topImg'?topUrl:botUrl;
+    if(url){const img=document.getElementById(`img-${sl}`);if(img){const fn=()=>applyT(sl);if(img.complete&&img.naturalWidth)fn();else img.onload=fn;}}
+  }
+
+  poster.querySelectorAll('[data-slot]').forEach(el=>{
+    el.addEventListener('mousedown',onMD);
+    el.addEventListener('touchstart',onTS,{passive:false});
+  });
+}
+
+function applyT(sl){
+  const p=cur();if(!p)return;const s=p[sl];
+  const img=document.getElementById(`img-${sl}`);if(!img)return;
+  const c=document.getElementById(`slot-${sl}`);if(!c)return;
+  const cW=c.clientWidth,cH=c.clientHeight;if(!cW||!cH)return;
+  const nW=img.naturalWidth||cW,nH=img.naturalHeight||cH;
+  const base=Math.max(cW/nW,cH/nH)*(s.zoom||1);
+  const rW=nW*base,rH=nH*base;
+  img.style.width=rW+'px';img.style.height=rH+'px';
+  img.style.left=((s.px/100)*(cW-rW))+'px';img.style.top=((s.py/100)*(cH-rH))+'px';
+}
+
+// ═══ Drag ═════════════════════════════════════════════════════════
+function onMD(e){const sl=this.dataset.slot;const p=cur();if(!p||!p[sl].imgKey||e.button!==0)return;startDrag(sl,e.clientX,e.clientY);e.preventDefault();}
+function onTS(e){const sl=this.dataset.slot;const p=cur();if(!p||!p[sl].imgKey)return;startDrag(sl,e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();}
+function startDrag(sl,cx,cy){
+  dragging=true;dragSlot=sl;dragSX=cx;dragSY=cy;
+  const s=cur()[sl];dragPX0=s.px;dragPY0=s.py;
+  const el=document.getElementById(`slot-${sl}`);if(el)el.style.cursor='grabbing';
+  if(selSlot!==sl){selSlot=sl;renderRP();}
+}
+document.addEventListener('mousemove',e=>{if(dragging)doMove(e.clientX,e.clientY);});
+document.addEventListener('touchmove',e=>{if(dragging){doMove(e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();}},{passive:false});
+function doMove(cx,cy){
+  const p=cur();if(!p)return;const s=p[dragSlot];
+  const c=document.getElementById(`slot-${dragSlot}`);if(!c)return;
+  s.px=Math.max(0,Math.min(100,dragPX0-(cx-dragSX)/(c.clientWidth*(s.zoom||1))*100));
+  s.py=Math.max(0,Math.min(100,dragPY0-(cy-dragSY)/(c.clientHeight*(s.zoom||1))*100));
+  const img=document.getElementById(`img-${dragSlot}`);
+  if(img){img.style.left=((s.px/100)*(c.clientWidth-img.clientWidth))+'px';img.style.top=((s.py/100)*(c.clientHeight-img.clientHeight))+'px';}
+  // Sync sliders
+  const sli=document.getElementById('sl-px'),sly=document.getElementById('sl-py');
+  const npi=document.getElementById('ni-px'),npy=document.getElementById('ni-py');
+  if(sli)sli.value=s.px;if(sly)sly.value=s.py;
+  if(npi)npi.value=Math.round(s.px);if(npy)npy.value=Math.round(s.py);
+  const vx=document.getElementById('v-px'),vy=document.getElementById('v-py');
+  if(vx)vx.textContent=Math.round(s.px)+'%';if(vy)vy.textContent=Math.round(s.py)+'%';
+}
+document.addEventListener('mouseup',endDrag);document.addEventListener('touchend',endDrag);
+async function endDrag(){if(!dragging)return;dragging=false;const el=document.getElementById(`slot-${dragSlot}`);if(el)el.style.cursor='grab';dragSlot='';const p=cur();if(p){pushH();await saveP(p);}}
+
+// ═══ Upload ═══════════════════════════════════════════════════════
+function uploadImg(sl){
+  const fi=document.getElementById('file-in');
+  fi.onchange=async e=>{const file=e.target.files[0];if(!file)return;const p=cur();if(!p)return;const key=ikey(curId,sl);await saveImg(key,file);p[sl].imgKey=key;p[sl].px=50;p[sl].py=50;p[sl].zoom=1;pushH();await saveP(p);await renderPoster();renderRP();fi.value='';};fi.click();
+}
+function uploadLogo(){
+  const li=document.getElementById('logo-in');
+  li.onchange=async e=>{const file=e.target.files[0];if(!file)return;const p=cur();if(!p)return;const key=ikey(curId,'logoImg');await saveImg(key,file);p.logoImg.imgKey=key;pushH();await saveP(p);await renderPoster();renderRP();li.value='';};li.click();
+}
+
+// ═══ setTxt: 实时更新文字元素 ════════════════════════════════════
+async function setTxt(tk,prop,val){
+  const p=cur();if(!p)return;pushH();p[tk][prop]=val;await saveP(p);
+  const el=document.getElementById('txt-'+tk);
+  if(el){
+    const t=p[tk];const{w}=pSize();const sc=w/1200;
+    if(prop==='text')el.textContent=val;
+    if(prop==='font')el.style.fontFamily=`'${val}',serif,sans-serif`;
+    if(prop==='size')el.style.fontSize=Math.round(val*sc)+'px';
+    if(prop==='weight')el.style.fontWeight=val;
+    if(prop==='color')el.style.color=val;
+    if(prop==='ls')el.style.letterSpacing=val+'em';
+    if(prop==='align'){el.style.transform=val==='center'?'translateX(-50%) translateY(-50%)':val==='right'?'translateX(-100%) translateY(-50%)':'translateY(-50%)';}
+    if(prop==='x')el.style.left=Math.round(val*sc)+'px';
+    if(prop==='y')el.style.top=Math.round(val*sc)+'px';
+  }else{await renderPoster();}
+}
+async function setLayout(key,val){const p=cur();if(!p)return;pushH();p[key]=val;await saveP(p);await renderPoster();}
+async function setLayoutSync(key,val,niId){
+  const ni=document.getElementById(niId);if(ni)ni.value=val;
+  const par=ni?.parentElement;if(par){const sl=par.querySelector('input[type=range]');if(sl)sl.value=val;}
+  await setLayout(key,val);
+}
+async function setIP(prop,val){const p=cur();if(!p)return;p[selSlot][prop]=val;applyT(selSlot);await saveP(p);}
+async function setLogoSize(prop,val){const p=cur();if(!p)return;pushH();p.logoImg[prop]=val;await saveP(p);await renderPoster();}
+async function toggleLogo(){const p=cur();if(!p)return;pushH();p.showLogo=!(p.showLogo!==false);await saveP(p);await renderPoster();renderRP();}
+async function removeLogo(){const p=cur();if(!p||!confirm('删除Logo图片？'))return;await delImg(ikey(curId,'logoImg'));p.logoImg.imgKey=null;pushH();await saveP(p);await renderPoster();renderRP();}
+
+// ═══ Right Panel ══════════════════════════════════════════════════
+function renderRP(){
+  const rp=document.getElementById('rp');const p=cur();
+  if(!p){rp.innerHTML='<div class="no-proj"><p>新建或选择项目</p></div>';return;}
+  const s=p[selSlot]||p.topImg;
+  const fOpts=sel=>FONTS.map(f=>`<option value="${f}"${sel===f?' selected':''}>${f}</option>`).join('');
+  const wOpts=sel=>WTS.map(([v,l])=>`<option value="${v}"${sel===v?' selected':''}>${l} ${v}</option>`).join('');
+
+  function txtCtrl(label,tk){
+    const t=p[tk];if(!t)return'';
+    const aOpts=['left:左','center:居中','right:右'].map(a=>{const[v,l]=a.split(':');return`<option value="${v}"${t.align===v?' selected':''}>${l}</option>`;}).join('');
+    const toHex=c=>{if(!c||c.startsWith('#'))return c||'#ffffff';const m=c.match(/[\d.]+/g);if(!m||m.length<3)return '#ffffff';return '#'+[m[0],m[1],m[2]].map(x=>Math.round(+x).toString(16).padStart(2,'0')).join('');};
+    return`<div class="rp-sec">
+      <div class="rp-sec-t">${label}</div>
+      <input class="rp-input" type="text" value="${esc(t.text)}" oninput="setTxt('${tk}','text',this.value)" placeholder="留空不显示">
+      <div class="rp-lbl">字体</div><select class="rp-select" onchange="setTxt('${tk}','font',this.value)">${fOpts(t.font)}</select>
+      <div class="style-row">
+        <input class="rp-num" type="number" min="8" max="300" value="${t.size}" oninput="setTxt('${tk}','size',+this.value)">
+        <span class="rp-unit">px</span>
+        <select class="rp-select-sm" onchange="setTxt('${tk}','weight',this.value)">${wOpts(t.weight)}</select>
+        <div class="col-dot" style="background:${toHex(t.color)};" onclick="document.getElementById('clr-${tk}').click()"></div>
+        <input id="clr-${tk}" type="color" value="${toHex(t.color)}" style="display:none" onchange="setTxt('${tk}','color',this.value);this.previousElementSibling.style.background=this.value">
+      </div>
+      <div class="rp-row"><label>对齐</label><select class="rp-select-sm" onchange="setTxt('${tk}','align',this.value)">${aOpts}</select>
+        <label style="margin-left:4px;">间距</label><input type="range" min="0" max="0.5" step="0.01" value="${t.ls}" class="rp-slider" style="width:60px;" oninput="setTxt('${tk}','ls',+this.value);document.getElementById('vls-${tk}').textContent=this.value"><span class="rp-val" id="vls-${tk}">${t.ls}</span>
+      </div>
+      <div class="pos-box">
+        <div class="pos-box-t">📐 位置（1200×1600px）</div>
+        <div class="pos-row"><label>X</label>
+          <input type="range" min="0" max="1200" value="${t.x}" class="pos-sl" oninput="setTxt('${tk}','x',+this.value);document.getElementById('ni-${tk}x').value=this.value">
+          <input id="ni-${tk}x" type="number" min="0" max="1200" value="${t.x}" class="rp-num" oninput="setTxt('${tk}','x',+this.value);this.previousElementSibling.value=this.value">
+        </div>
+        <div class="pos-row"><label>Y</label>
+          <input type="range" min="0" max="1600" value="${t.y}" class="pos-sl" oninput="setTxt('${tk}','y',+this.value);document.getElementById('ni-${tk}y').value=this.value">
+          <input id="ni-${tk}y" type="number" min="0" max="1600" value="${t.y}" class="rp-num" oninput="setTxt('${tk}','y',+this.value);this.previousElementSibling.value=this.value">
+        </div>
+      </div>
+    </div>`;
+  }
+
+  rp.innerHTML=`
+    <div class="rp-title">图片区域</div>
+    <div class="slot-tabs">
+      <button class="slot-tab${selSlot==='topImg'?' active':''}" onclick="selSl('topImg')">上方图</button>
+      <button class="slot-tab${selSlot==='botImg'?' active':''}" onclick="selSl('botImg')">下方图</button>
+    </div>
+    <div class="rp-btn-img" onclick="uploadImg('${selSlot}')">${s.imgKey?'🔄 更换图片':'＋ 上传图片'}</div>
+    ${s.imgKey?`<div class="rp-drag-hint">画面上直接拖动调整</div>
+      <div class="rp-row"><label>缩放</label>
+        <input id="sl-zoom" class="rp-slider" type="range" min="0.5" max="3" step="0.05" value="${s.zoom||1}" oninput="setIP('zoom',+this.value);document.getElementById('ni-zoom').value=Math.round(this.value*100)">
+        <input id="ni-zoom" type="number" min="50" max="300" value="${Math.round((s.zoom||1)*100)}" class="rp-num" oninput="setIP('zoom',this.value/100);this.previousElementSibling.value=this.value/100">
+        <span class="rp-unit">%</span>
+      </div>
+      <div class="rp-row"><label>横</label>
+        <input id="sl-px" class="rp-slider" type="range" min="0" max="100" step="1" value="${s.px}" oninput="setIP('px',+this.value);document.getElementById('ni-px').value=this.value">
+        <input id="ni-px" type="number" min="0" max="100" value="${Math.round(s.px)}" class="rp-num" oninput="setIP('px',+this.value);this.previousElementSibling.value=this.value">
+        <span id="v-px" class="rp-unit">${Math.round(s.px)}%</span>
+      </div>
+      <div class="rp-row"><label>纵</label>
+        <input id="sl-py" class="rp-slider" type="range" min="0" max="100" step="1" value="${s.py}" oninput="setIP('py',+this.value);document.getElementById('ni-py').value=this.value">
+        <input id="ni-py" type="number" min="0" max="100" value="${Math.round(s.py)}" class="rp-num" oninput="setIP('py',+this.value);this.previousElementSibling.value=this.value">
+        <span id="v-py" class="rp-unit">${Math.round(s.py)}%</span>
+      </div>`:''}
+
+    <div class="rp-sec">
+      <div class="rp-sec-t">版式</div>
+      <div class="rp-row"><label>上图%</label>
+        <input class="rp-slider" type="range" min="20" max="80" value="${p.topHPct||50}" oninput="setLayoutSync('topHPct',+this.value,'ni-tph')">
+        <input id="ni-tph" type="number" min="20" max="80" value="${p.topHPct||50}" class="rp-num" oninput="setLayoutSync('topHPct',+this.value,'ni-tph')">
+        <span class="rp-unit">%</span>
+      </div>
+      <div class="rp-row"><label>分割线</label>
+        <input class="rp-slider" type="range" min="0" max="20" value="${p.splitGap||0}" oninput="setLayoutSync('splitGap',+this.value,'ni-sg')">
+        <input id="ni-sg" type="number" min="0" max="20" value="${p.splitGap||0}" class="rp-num" oninput="setLayoutSync('splitGap',+this.value,'ni-sg')">
+        <span class="rp-unit">px</span>
+      </div>
+      ${(p.splitGap||0)>0?`<div style="display:flex;gap:7px;align-items:center;margin-top:2px;margin-bottom:4px;">
+        <div class="col-dot" style="background:${p.splitColor||'#000'};" onclick="document.getElementById('clr-split').click()"></div>
+        <input id="clr-split" type="color" value="${p.splitColor||'#000000'}" style="display:none" onchange="setLayout('splitColor',this.value);this.previousElementSibling.style.background=this.value">
+        <span style="font-size:9px;color:#444;">分割线颜色</span>
+      </div>`:''}
+    </div>
+
+    ${txtCtrl('① 中心大标题','centerTitle')}
+    ${txtCtrl('② 副标题','subTitle')}
+    ${txtCtrl('③ 中文名称','brandZh')}
+
+    <div class="rp-sec">
+      <div class="rp-sec-t">Logo</div>
+      <div class="toggle-row" onclick="toggleLogo()">
+        <div class="toggle-knob" style="background:${p.showLogo!==false?'#4ade80':'#333'};">
+          <div class="toggle-knob-dot" style="left:${p.showLogo!==false?'19':'3'}px;"></div>
+        </div>
+        <span style="font-size:10px;color:${p.showLogo!==false?'#4ade80':'#555'};">${p.showLogo!==false?'显示 Logo':'隐藏 Logo'}</span>
+      </div>
+      ${p.showLogo!==false?`
+        <div class="rp-btn-img" onclick="uploadLogo()">${p.logoImg.imgKey?'🔄 更换Logo（PNG透明背景最佳）':'＋ 上传Logo图片'}</div>
+        <div class="rp-row"><label>宽</label>
+          <input class="rp-slider" type="range" min="50" max="600" value="${p.logoImg.w||260}" oninput="setLogoSize('w',+this.value);document.getElementById('ni-lw').value=this.value">
+          <input id="ni-lw" type="number" min="50" max="600" value="${p.logoImg.w||260}" class="rp-num" oninput="setLogoSize('w',+this.value);this.previousElementSibling.value=this.value">
+          <span class="rp-unit">px</span>
+        </div>
+        <div class="rp-row"><label>高</label>
+          <input class="rp-slider" type="range" min="20" max="300" value="${p.logoImg.h||100}" oninput="setLogoSize('h',+this.value);document.getElementById('ni-lh').value=this.value">
+          <input id="ni-lh" type="number" min="20" max="300" value="${p.logoImg.h||100}" class="rp-num" oninput="setLogoSize('h',+this.value);this.previousElementSibling.value=this.value">
+          <span class="rp-unit">px</span>
+        </div>
+        <div class="rp-row"><label>X</label>
+          <input class="rp-slider" type="range" min="0" max="1200" value="${p.logoImg.x||600}" oninput="setLogoSize('x',+this.value);document.getElementById('ni-lx').value=this.value">
+          <input id="ni-lx" type="number" min="0" max="1200" value="${p.logoImg.x||600}" class="rp-num" oninput="setLogoSize('x',+this.value);this.previousElementSibling.value=this.value">
+        </div>
+        <div class="rp-row"><label>Y</label>
+          <input class="rp-slider" type="range" min="0" max="1600" value="${p.logoImg.y||1500}" oninput="setLogoSize('y',+this.value);document.getElementById('ni-ly').value=this.value">
+          <input id="ni-ly" type="number" min="0" max="1600" value="${p.logoImg.y||1500}" class="rp-num" oninput="setLogoSize('y',+this.value);this.previousElementSibling.value=this.value">
+        </div>
+        ${p.logoImg.imgKey?`<button onclick="removeLogo()" style="width:100%;padding:5px;margin-top:4px;border:1px solid #b00;border-radius:4px;background:none;color:#f44;font-size:9px;cursor:pointer;font-family:inherit;">✕ 删除Logo</button>`:''}
+      `:`<div style="font-size:10px;color:#333;text-align:center;padding:12px 0;">Logo已隐藏</div>`}
+    </div>
+
+    <div class="rp-sec">
+      <div class="rp-sec-t">备份</div>
+      <div style="display:flex;gap:5px;">
+        <button class="bk-btn" onclick="exportJSON()">⬇ 导出备份 JSON</button>
+        <button class="bk-btn" onclick="importJSON()">⬆ 导入备份</button>
+      </div>
+    </div>`;
+}
+
+function selSl(sl){selSlot=sl;renderRP();}
+
+// ═══ Export PNG ═══════════════════════════════════════════════════
+async function exportPNG(){
+  const p=cur();if(!p)return;
+  if(!await wpCheckExportQuota())return;
+  const btn=document.getElementById('export-btn');btn.textContent='生成中…';btn.disabled=true;
+  try{
+    await document.fonts.ready;
+    const W=1200,H=1600;
+    const topH=Math.round(H*(p.topHPct||50)/100);
+    const botH=H-topH;
+    const gap=p.splitGap||0;
+
+    const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+    const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#111';ctx.fillRect(0,0,W,H);
+
+    async function loadImg(key){const url=await getURL(key);if(!url)return null;return new Promise(res=>{const img=new Image();img.onload=()=>res(img);img.onerror=()=>res(null);img.src=url;});}
+
+    function drawSlot(img,s,x,y,cW,cH){
+      if(!img)return;ctx.save();ctx.beginPath();ctx.rect(x,y,cW,cH);ctx.clip();
+      const zoom=s.zoom||1;const base=Math.max(cW/img.naturalWidth,cH/img.naturalHeight)*zoom;
+      const rW=img.naturalWidth*base,rH=img.naturalHeight*base;
+      ctx.drawImage(img,x+(s.px/100)*(cW-rW),y+(s.py/100)*(cH-rH),rW,rH);ctx.restore();
+    }
+
+    const[topImg,botImg,logoImg]=await Promise.all([loadImg(p.topImg.imgKey),loadImg(p.botImg.imgKey),loadImg(p.logoImg.imgKey)]);
+    drawSlot(topImg,p.topImg,0,0,W,topH-gap);
+    if(gap>0){ctx.fillStyle=p.splitColor||'#000';ctx.fillRect(0,topH-gap,W,gap);}
+    drawSlot(botImg,p.botImg,0,topH,W,botH);
+
+    // Text elements - Y 坐标 = 文字垂直中心（与预览一致）
+    function drawTxt(t){
+      if(!t||!t.text)return;
+      ctx.save();
+      ctx.font=`${t.weight} ${t.size}px '${t.font}',serif,sans-serif`;
+      ctx.fillStyle=t.color;ctx.textBaseline='middle';
+      drawTextLS(ctx,t.text,t.x,t.y,t.ls||0,t.align||'center');
+      ctx.restore();
+    }
+    ['centerTitle','subTitle','brandZh'].forEach(tk=>drawTxt(p[tk]));
+
+    // Logo
+    if(p.showLogo!==false&&logoImg){
+      const lw=p.logoImg.w||260,lh=p.logoImg.h||100,lx=p.logoImg.x||600,ly=p.logoImg.y||1500;
+      ctx.drawImage(logoImg,lx-lw/2,ly-lh/2,lw,lh);
+    }
+
+    canvas.toBlob(blob=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.download=`${p.name||'poster'}_1200x1600.png`;a.href=url;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);},'image/png');
+  }catch(err){console.error(err);alert('导出失败，请重试');}
+  finally{btn.textContent='↓ 导出 PNG 1200×1600';btn.disabled=false;}
+}
+
+// ═══ Init ═════════════════════════════════════════════════════════
+window.addEventListener('resize',()=>{if(curId)renderPoster();});
+(async()=>{await wpCheckAuth();await openDB();await loadAll();renderProjList();})();
+</script>
+</body>
+</html>
