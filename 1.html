@@ -104,7 +104,7 @@ body{background:#1a1a1a;font-family:system-ui,sans-serif;display:flex;height:100
 
 
 <div class="psb">
-  <div class="psb-head"><h2>项目</h2><p>自动保存 · IndexedDB</p></div>
+  <div class="psb-head"><h2>项目</h2><p>Ctrl+Z 撤销 · 自动保存</p></div>
   <div class="psb-new" onclick="openModal()">＋ 新建项目</div>
   <div class="proj-list" id="proj-list"><div style="font-size:10px;color:#444;padding:8px 4px;">加载中…</div></div>
 </div>
@@ -128,6 +128,7 @@ body{background:#1a1a1a;font-family:system-ui,sans-serif;display:flex;height:100
 </div>
 
 <input type="file" id="fi" accept="image/*" style="display:none">
+<input type="file" id="json-fi" accept=".json" style="display:none">
 
 <div class="ov" id="modal">
   <div class="modal">
@@ -184,6 +185,16 @@ async function wpCheckExportQuota(){
   }catch(e){_lic.credits=Math.max(0,(_lic.credits||0)-1);wpUpdCredits();return true;}
 }
 function wpLogout(){localStorage.removeItem('wp-license');location.href='index.html';}
+
+// ── History (Ctrl+Z) ──────────────────────────────────────────────
+let _hist=[],_hIdx=-1;
+function pushH(){const p=cur();if(!p)return;_hist=_hist.slice(0,_hIdx+1);_hist.push(JSON.stringify(p));if(_hist.length>20)_hist.shift();_hIdx=_hist.length-1;}
+async function undoH(){if(_hIdx<=0)return;_hIdx--;const p=JSON.parse(_hist[_hIdx]);const i=projects.findIndex(x=>x.id===p.id);if(i>=0)projects[i]=p;await dbP('P',p);await renderPoster();renderRP();}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undoH();}});
+
+// ── Backup JSON ───────────────────────────────────────────────────
+function exportJSON(){const p=cur();if(!p)return;const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(p.name||'project')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+function importJSON(){const fi=document.getElementById('json-fi');fi.onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const p=JSON.parse(await file.text());p.id=uid();p.name=(p.name||'导入')+' (导入)';p.ct=p.at=Date.now();await dbP('P',p);projects.unshift(p);renderList();openProj(p.id);}catch{alert('JSON格式错误');}fi.value='';};fi.click();}
 
 // Draw text with letter-spacing (canvas doesn't support it natively)
 // letterSpacingEm: em units e.g. 0.18 means 0.18em
@@ -248,18 +259,17 @@ const COL_NAMES=[
 ];
 function defCol(i){return{zh:COL_NAMES[i]?.zh||'标题'+(i+1),en:COL_NAMES[i]?.en||'TITLE '+(i+1),imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1,zhFont:'Noto Serif SC',enFont:'Cormorant Garamond',zhSize:20,enSize:11,zhColor:'#ffffff',enColor:'rgba(255,255,255,0.75)',gradH:55,gradColor:'rgba(0,0,0,0.85)'};}
 function defHdr(){return{
-  mainZh:'宁波一站式婚礼场地',
-  subEn:'I LOVE THERE THINGS  THE SUN THE MOON AND YOU THE SUN IS FOR THE DAY\nTHE MOON IS FOR THE NIGHT AND YOU FOREVER',
-  brandEn:'BRIDE ELYSEE',brandZh:'花嫁丽舍',brandSub:'BRIDE ELYSEE',
-  watermark:'wedding',wmFont:'Cormorant Garamond',wmSize:55,wmItalic:true,bgColor:'#eeece6',
-  mainZhSize:52,mainZhWeight:'700',mainZhFont:'Noto Serif SC',
-  subEnSize:10,subEnWeight:'300',subEnFont:'Cormorant Garamond',
-  brandEnSize:25,brandEnWeight:'700',brandEnFont:'Cormorant Garamond',
-  brandZhSize:35,brandZhWeight:'900',brandZhFont:'STSong',
-  brandSubSize:23,brandSubWeight:'500',brandSubFont:'Noto Serif SC',
-  blkMainY:25,blkMainX:0,
-  blkSubY:51,blkSubX:0,
-  blkBrandY:70,blkBrandX:0,
+  watermark:'wedding',wmFont:'Cormorant Garamond',wmSize:38,wmItalic:true,bgColor:'#eeece6',
+  mainZh:  {text:'宁波一站式婚礼场地',
+             font:'Noto Serif SC',     size:90, weight:'700', color:'#1a1a1a', x:600, y:140, align:'center', ls:0.03},
+  subEn:   {text:'I LOVE THERE THINGS  THE SUN THE MOON AND YOU\nTHE MOON IS FOR THE NIGHT AND YOU FOREVER',
+             font:'Cormorant Garamond',size:18, weight:'300', color:'#888888', x:600, y:282, align:'center', ls:0.13},
+  brandEn: {text:'BRIDE ELYSEE',
+             font:'Cormorant Garamond',size:25, weight:'700', color:'#1a1a1a', x:600, y:330, align:'center', ls:0.28},
+  brandZh: {text:'滕头中东欧宴会酒店',
+             font:'PingFang SC',       size:40, weight:'700', color:'#1a1a1a', x:600, y:387, align:'center', ls:0.18},
+  brandSub:{text:'免场布费｜5K帝王蟹套餐｜无预制菜｜赠送甜品台、酒水畅饮',
+             font:'Times New Roman',   size:28, weight:'700', color:'#555555', x:600, y:456, align:'center', ls:0.12},
 };}
 function defProj(name,n){return{id:uid(),name,ct:Date.now(),at:Date.now(),cols:n,header:defHdr(),strips:Array.from({length:n},(_,i)=>defCol(i))};}
 
@@ -354,31 +364,25 @@ async function renderPoster(){
   const urls=await Promise.all(p.strips.slice(0,n).map(s=>getURL(s.imgKey)));
 
   // Block positions: Y% of topH = center of block; X = px offset from center
-  const bMY=Math.round(topH*(hdr.blkMainY||22)/100);
-  const bMX=Math.round((hdr.blkMainX||0)*sc);
-  const bSY=Math.round(topH*(hdr.blkSubY||44)/100);
-  const bSX=Math.round((hdr.blkSubX||0)*sc);
-  const bBY=Math.round(topH*(hdr.blkBrandY||70)/100);
-  const bBX=Math.round((hdr.blkBrandX||0)*sc);
+  // Helper: render one text item absolutely on poster (coords in 1200×1600 space)
+  function renderTxtEl(key,t){
+    if(!t||!t.text)return'';
+    const lx=Math.round(t.x*sc);
+    const ty=Math.round(t.y*sc);
+    const transform=t.align==='center'?'translateX(-50%)':t.align==='right'?'translateX(-100%)':'';
+    // subEn 用 pre 保留手动换行；其他 nowrap 不自动折行
+    const ws=key==='subEn'?'pre':'nowrap';
+    return`<div id="txt-${key}" style="position:absolute;left:${lx}px;top:${ty}px;transform:${transform};white-space:${ws};line-height:1.8;pointer-events:none;font-family:'${t.font}',serif,sans-serif;font-size:${Math.round(t.size*sc)}px;font-weight:${t.weight};color:${t.color};letter-spacing:${t.ls}em;">${esc(t.text)}</div>`;
+  }
 
   poster.innerHTML=`
   <div id="top-sec" style="height:${topH}px;background:${hdr.bgColor||'#eeece6'};position:relative;overflow:hidden;">
-    <!-- Watermark -->
     <div class="wm-txt" style="font-size:${wmSz}px;font-family:'${hdr.wmFont||'Cormorant Garamond'}',serif;font-style:${hdr.wmItalic!==false?'italic':'normal'};bottom:${Math.round(topH*0.02)}px;">${esc(hdr.watermark||'wedding')}</div>
-    <!-- Block 1: 主标题 -->
-    <div id="blk-main" style="position:absolute;left:0;right:0;top:${bMY}px;transform:translateY(-50%) translateX(${bMX}px);text-align:center;">
-      <div style="font-family:'${hdr.mainZhFont||'Noto Serif SC'}',serif;font-size:${Math.round((hdr.mainZhSize||52)*sc)}px;font-weight:${hdr.mainZhWeight||700};color:#1a1a1a;letter-spacing:.03em;">${esc(hdr.mainZh)}</div>
-    </div>
-    <!-- Block 2: 英文副标题 -->
-    <div id="blk-sub" style="position:absolute;left:0;right:0;top:${bSY}px;transform:translateY(-50%) translateX(${bSX}px);text-align:center;">
-      <div style="font-family:'${hdr.subEnFont||hdr.brandEnFont||'Cormorant Garamond'}',serif;font-size:${Math.round((hdr.subEnSize||10)*sc)}px;font-weight:${hdr.subEnWeight||300};color:#777;letter-spacing:.1em;white-space:pre-line;line-height:1.8;">${esc(hdr.subEn)}</div>
-    </div>
-    <!-- Block 3: 品牌信息 -->
-    <div id="blk-brand" style="position:absolute;left:0;right:0;top:${bBY}px;transform:translateY(-50%) translateX(${bBX}px);text-align:center;display:flex;flex-direction:column;align-items:center;gap:${Math.round(2*sc)}px;">
-      ${hdr.brandEn&&hdr.brandEn.trim()?`<div style="font-family:'${hdr.brandEnFont||'Cormorant Garamond'}',serif;font-size:${Math.round((hdr.brandEnSize||16)*sc)}px;font-weight:${hdr.brandEnWeight||400};color:#1a1a1a;letter-spacing:.28em;text-transform:uppercase;">${esc(hdr.brandEn)}</div>`:''}
-      ${hdr.brandZh&&hdr.brandZh.trim()?`<div style="font-family:'${hdr.brandZhFont||'Noto Serif SC'}',serif;font-size:${Math.round((hdr.brandZhSize||18)*sc)}px;font-weight:${hdr.brandZhWeight||400};color:#1a1a1a;letter-spacing:.18em;">${esc(hdr.brandZh)}</div>`:''}
-      ${hdr.brandSub&&hdr.brandSub.trim()?`<div style="font-family:'${hdr.brandSubFont||hdr.brandEnFont||'Cormorant Garamond'}',serif;font-size:${Math.round((hdr.brandSubSize||10)*sc)}px;font-weight:${hdr.brandSubWeight||300};color:#888;letter-spacing:.2em;text-transform:uppercase;">${esc(hdr.brandSub)}</div>`:''}
-    </div>
+    ${renderTxtEl('mainZh',hdr.mainZh)}
+    ${renderTxtEl('subEn',hdr.subEn)}
+    ${renderTxtEl('brandEn',hdr.brandEn)}
+    ${renderTxtEl('brandZh',hdr.brandZh)}
+    ${renderTxtEl('brandSub',hdr.brandSub)}
   </div>
   <div id="cols-wrap" class="cols-wrap" style="height:${colsH}px;padding:0 ${padX}px 0;gap:${gap}px;background:${hdr.bgColor||'#eeece6'};">
     ${p.strips.slice(0,n).map((s,i)=>{
@@ -430,7 +434,10 @@ function updColImg(i){
 // ── Drag ──────────────────────────────────────────────────────────
 function onMD(e){const i=+this.dataset.i;const p=cur();if(!p||!p.strips[i].imgKey||e.button!==0)return;startDrag(i,e.clientX,e.clientY);e.preventDefault();}
 function onTS(e){const i=+this.dataset.i;const p=cur();if(!p||!p.strips[i].imgKey)return;const t=e.touches[0];startDrag(i,t.clientX,t.clientY);e.preventDefault();}
-function startDrag(i,cx,cy){drag={on:true,col:i,sx:cx,sy:cy,px0:cur().strips[i].px,py0:cur().strips[i].py};}
+function startDrag(i,cx,cy){
+  drag={on:true,col:i,sx:cx,sy:cy,px0:cur().strips[i].px,py0:cur().strips[i].py};
+  if(selCol!==i){selCol=i;renderRP();}
+}
 document.addEventListener('mousemove',e=>{if(drag.on)doMove(e.clientX,e.clientY);});
 document.addEventListener('touchmove',e=>{if(drag.on){doMove(e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();}},{passive:false});
 function doMove(cx,cy){
@@ -452,6 +459,8 @@ function doMove(cx,cy){
     const px=document.getElementById('sl-px'),py=document.getElementById('sl-py');
     if(px){px.value=s.px;document.getElementById('v-px').textContent=Math.round(s.px)+'%';}
     if(py){py.value=s.py;document.getElementById('v-py').textContent=Math.round(s.py)+'%';}
+    const npx=document.getElementById('ni-img-px'),npy=document.getElementById('ni-img-py');
+    if(npx)npx.value=Math.round(s.px);if(npy)npy.value=Math.round(s.py);
   }
 }
 document.addEventListener('mouseup',endDrag);document.addEventListener('touchend',endDrag);
@@ -522,112 +531,49 @@ function renderRP(){
     <input type="color" value="${toHex(s.enColor||'rgba(255,255,255,0.75)')}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;margin-bottom:3px;" onchange="setLabelStyle(${selCol},'enColor',this.value)">
   </div>
 
+  ${['mainZh','subEn','brandEn','brandZh','brandSub'].map((tk,ti)=>{
+    const labels=['① 主标题','② 英文副标题','③ 品牌英文','④ 品牌中文','⑤ 品牌副文'];
+    const t=hdr[tk];if(!t)return'';
+    const wOpts=['300:细','400:常规','500:中等','700:粗','900:超粗'].map(w=>{const[v,l]=w.split(':');return`<option value="${v}" ${t.weight===v?'selected':''}>${l} ${v}</option>`;}).join('');
+    const aOpts=['left:左对齐','center:居中','right:右对齐'].map(a=>{const[v,l]=a.split(':');return`<option value="${v}" ${t.align===v?'selected':''}>${l}</option>`;}).join('');
+    const isMulti=tk==='subEn';
+    return`
   <div class="rp-sec">
-    <div class="rp-sec-t">① 顶部主标题</div>
-    <input class="fi" type="text" value="${esc(hdr.mainZh)}" oninput="setH('mainZh',this.value)">
-    <div class="rp-lbl">字体</div><select class="fsel" onchange="setH('mainZhFont',this.value)">${fOpts(hdr.mainZhFont||'Noto Serif SC')}</select>
-    <div class="row"><label>字号</label><input class="fnum" type="number" min="10" max="120" value="${hdr.mainZhSize||52}" oninput="setHN('mainZhSize',+this.value)"><span class="funit">px</span></div>
-    <div class="rp-lbl">字重</div><select class="fsel" onchange="setH('mainZhWeight',this.value)">
-      <option value="300" ${hdr.mainZhWeight==='300'?'selected':''}>细 300</option>
-      <option value="400" ${hdr.mainZhWeight==='400'?'selected':''}>常规 400</option>
-      <option value="500" ${hdr.mainZhWeight==='500'?'selected':''}>中等 500</option>
-      <option value="700" ${(!hdr.mainZhWeight||hdr.mainZhWeight==='700')?'selected':''}>粗 700</option>
-      <option value="900" ${hdr.mainZhWeight==='900'?'selected':''}>超粗 900</option>
-    </select>
-    <div style="background:#141414;border:1px solid #2a2a2a;border-radius:5px;padding:7px 8px;margin-top:6px;">
-      <div style="font-size:9px;color:#c8a96a;margin-bottom:6px;letter-spacing:.3px;">📐 位置调整</div>
-      <div style="font-size:9px;color:#555;margin-bottom:3px;">纵向（% 距顶）</div>
-      <div style="display:flex;gap:5px;align-items:center;margin-bottom:5px;">
-        <input type="range" min="5" max="95" step="1" value="${hdr.blkMainY||25}" style="flex:1;accent-color:#c8a96a;" oninput="setHN('hdr.blkMainY',+this.value);document.getElementById('ni-hdr.blkMainY').value=this.value">
-        <input id="ni-hdr.blkMainY" type="number" min="5" max="95" value="${hdr.blkMainY||25}" style="width:44px;padding:3px 5px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;" oninput="setHN('hdr.blkMainY',+this.value);this.previousElementSibling.value=this.value">
-        <span style="font-size:9px;color:#444;">%</span>
+    <div class="rp-sec-t">${labels[ti]}</div>
+    ${isMulti
+      ?`<textarea class="fi" rows="3" style="resize:none;" oninput="setTxt('${tk}','text',this.value)">${esc(t.text)}</textarea>`
+      :`<input class="fi" type="text" value="${esc(t.text)}" oninput="setTxt('${tk}','text',this.value)">`}
+    <div class="rp-lbl">字体</div><select class="fsel" onchange="setTxt('${tk}','font',this.value)">${fOpts(t.font)}</select>
+    <div class="row">
+      <label>字号</label><input class="fnum" type="number" min="6" max="150" value="${t.size}" oninput="setTxt('${tk}','size',+this.value)"><span class="funit">px</span>
+      <label style="margin-left:4px;">重</label><select style="flex:1;padding:3px 4px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:4px;color:#ddd;font-size:10px;font-family:inherit;outline:none;" onchange="setTxt('${tk}','weight',this.value)">${wOpts}</select>
+    </div>
+    <div class="row">
+      <label>颜色</label>
+      <input type="color" value="${toHex(t.color)}" style="width:32px;height:22px;border:1px solid #2a2a2a;border-radius:3px;background:#0a0a0a;cursor:pointer;padding:1px;" onchange="setTxt('${tk}','color',this.value)">
+      <label style="margin-left:4px;">对齐</label>
+      <select style="flex:1;padding:3px 4px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:4px;color:#ddd;font-size:10px;font-family:inherit;outline:none;" onchange="setTxt('${tk}','align',this.value)">${aOpts}</select>
+    </div>
+    <div class="row">
+      <label>字间距</label>
+      <input class="fslider" type="range" min="0" max="0.5" step="0.01" value="${t.ls||0}" oninput="setTxt('${tk}','ls',+this.value);document.getElementById('v-ls-${tk}').textContent=this.value+'em'">
+      <span class="fval" id="v-ls-${tk}">${t.ls||0}em</span>
+    </div>
+    <div style="background:#141414;border:1px solid #2a2a2a;border-radius:5px;padding:7px 8px;margin-top:4px;">
+      <div style="font-size:9px;color:#c8a96a;margin-bottom:5px;">📐 位置（1200×1600 px）</div>
+      <div style="display:flex;gap:4px;align-items:center;margin-bottom:4px;">
+        <span style="font-size:9px;color:#555;min-width:10px;">X</span>
+        <input type="range" min="0" max="1200" step="1" value="${t.x}" style="flex:1;accent-color:#c8a96a;" oninput="setTxt('${tk}','x',+this.value);document.getElementById('ni-${tk}-x').value=this.value">
+        <input id="ni-${tk}-x" type="number" min="0" max="1200" value="${t.x}" style="width:52px;padding:3px 5px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;" oninput="setTxt('${tk}','x',+this.value);this.previousElementSibling.value=this.value">
       </div>
-      <div style="font-size:9px;color:#555;margin-bottom:3px;">横向（px 偏移）</div>
-      <div style="display:flex;gap:5px;align-items:center;">
-        <input type="range" min="-500" max="500" step="1" value="${hdr.blkMainX||0}" style="flex:1;accent-color:#c8a96a;" oninput="setHN('hdr.blkMainX',+this.value);document.getElementById('ni-hdr.blkMainX').value=this.value">
-        <input id="ni-hdr.blkMainX" type="number" min="-500" max="500" value="${hdr.blkMainX||0}" style="width:44px;padding:3px 5px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;" oninput="setHN('hdr.blkMainX',+this.value);this.previousElementSibling.value=this.value">
-        <span style="font-size:9px;color:#444;">px</span>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <span style="font-size:9px;color:#555;min-width:10px;">Y</span>
+        <input type="range" min="0" max="560" step="1" value="${t.y}" style="flex:1;accent-color:#c8a96a;" oninput="setTxt('${tk}','y',+this.value);document.getElementById('ni-${tk}-y').value=this.value">
+        <input id="ni-${tk}-y" type="number" min="0" max="560" value="${t.y}" style="width:52px;padding:3px 5px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;" oninput="setTxt('${tk}','y',+this.value);this.previousElementSibling.value=this.value">
       </div>
     </div>
-  </div>
-
-  <div class="rp-sec">
-    <div class="rp-sec-t">② 英文副标题</div>
-    <textarea class="fi" rows="3" style="resize:none;" oninput="setH('subEn',this.value)">${esc(hdr.subEn)}</textarea>
-    <div class="rp-lbl">字体</div><select class="fsel" onchange="setH('subEnFont',this.value)">${fOpts(hdr.subEnFont||'Cormorant Garamond')}</select>
-    <div class="row"><label>字号</label><input class="fnum" type="number" min="6" max="40" value="${hdr.subEnSize||10}" oninput="setHN('subEnSize',+this.value)"><span class="funit">px</span></div>
-    <div class="rp-lbl">字重</div><select class="fsel" onchange="setH('subEnWeight',this.value)">
-      <option value="300" ${(!hdr.subEnWeight||hdr.subEnWeight==='300')?'selected':''}>细 300</option>
-      <option value="400" ${hdr.subEnWeight==='400'?'selected':''}>常规 400</option>
-      <option value="500" ${hdr.subEnWeight==='500'?'selected':''}>中等 500</option>
-      <option value="700" ${hdr.subEnWeight==='700'?'selected':''}>粗 700</option>
-      <option value="900" ${hdr.subEnWeight==='900'?'selected':''}>超粗 900</option>
-    </select>
-    <div style="background:#141414;border:1px solid #2a2a2a;border-radius:5px;padding:7px 8px;margin-top:6px;">
-      <div style="font-size:9px;color:#c8a96a;margin-bottom:6px;letter-spacing:.3px;">📐 位置调整</div>
-      <div style="font-size:9px;color:#555;margin-bottom:3px;">纵向（% 距顶）</div>
-      <div style="display:flex;gap:5px;align-items:center;margin-bottom:5px;">
-        <input type="range" min="5" max="95" step="1" value="${hdr.blkSubY||48}" style="flex:1;accent-color:#c8a96a;" oninput="setHN('hdr.blkSubY',+this.value);document.getElementById('ni-hdr.blkSubY').value=this.value">
-        <input id="ni-hdr.blkSubY" type="number" min="5" max="95" value="${hdr.blkSubY||48}" style="width:44px;padding:3px 5px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;" oninput="setHN('hdr.blkSubY',+this.value);this.previousElementSibling.value=this.value">
-        <span style="font-size:9px;color:#444;">%</span>
-      </div>
-      <div style="font-size:9px;color:#555;margin-bottom:3px;">横向（px 偏移）</div>
-      <div style="display:flex;gap:5px;align-items:center;">
-        <input type="range" min="-500" max="500" step="1" value="${hdr.blkSubX||0}" style="flex:1;accent-color:#c8a96a;" oninput="setHN('hdr.blkSubX',+this.value);document.getElementById('ni-hdr.blkSubX').value=this.value">
-        <input id="ni-hdr.blkSubX" type="number" min="-500" max="500" value="${hdr.blkSubX||0}" style="width:44px;padding:3px 5px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;" oninput="setHN('hdr.blkSubX',+this.value);this.previousElementSibling.value=this.value">
-        <span style="font-size:9px;color:#444;">px</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="rp-sec">
-    <div class="rp-sec-t">③ 品牌信息</div>
-    <div class="rp-lbl">英文大字</div><input class="fi" type="text" value="${esc(hdr.brandEn)}" oninput="setH('brandEn',this.value)">
-    <div class="rp-lbl">字体</div><select class="fsel" onchange="setH('brandEnFont',this.value)">${fOpts(hdr.brandEnFont||'Cormorant Garamond')}</select>
-    <div class="row"><label>字号</label><input class="fnum" type="number" min="6" max="80" value="${hdr.brandEnSize||16}" oninput="setHN('brandEnSize',+this.value)"><span class="funit">px</span></div>
-    <div class="rp-lbl">字重</div><select class="fsel" onchange="setH('brandEnWeight',this.value)">
-      <option value="300" ${hdr.brandEnWeight==='300'?'selected':''}>细 300</option>
-      <option value="400" ${(!hdr.brandEnWeight||hdr.brandEnWeight==='400')?'selected':''}>常规 400</option>
-      <option value="500" ${hdr.brandEnWeight==='500'?'selected':''}>中等 500</option>
-      <option value="700" ${hdr.brandEnWeight==='700'?'selected':''}>粗 700</option>
-      <option value="900" ${hdr.brandEnWeight==='900'?'selected':''}>超粗 900</option>
-    </select>
-    <div class="rp-lbl">中文名</div><input class="fi" type="text" value="${esc(hdr.brandZh)}" oninput="setH('brandZh',this.value)">
-    <div class="rp-lbl">字体</div><select class="fsel" onchange="setH('brandZhFont',this.value)">${fOpts(hdr.brandZhFont||'Noto Serif SC')}</select>
-    <div class="row"><label>字号</label><input class="fnum" type="number" min="6" max="80" value="${hdr.brandZhSize||18}" oninput="setHN('brandZhSize',+this.value)"><span class="funit">px</span></div>
-    <div class="rp-lbl">字重</div><select class="fsel" onchange="setH('brandZhWeight',this.value)">
-      <option value="300" ${hdr.brandZhWeight==='300'?'selected':''}>细 300</option>
-      <option value="400" ${(!hdr.brandZhWeight||hdr.brandZhWeight==='400')?'selected':''}>常规 400</option>
-      <option value="500" ${hdr.brandZhWeight==='500'?'selected':''}>中等 500</option>
-      <option value="700" ${hdr.brandZhWeight==='700'?'selected':''}>粗 700</option>
-      <option value="900" ${hdr.brandZhWeight==='900'?'selected':''}>超粗 900</option>
-    </select>
-    <div class="rp-lbl">英文小字</div><input class="fi" type="text" value="${esc(hdr.brandSub)}" oninput="setH('brandSub',this.value)">
-    <div class="rp-lbl">字体</div><select class="fsel" onchange="setH('brandSubFont',this.value)">${fOpts(hdr.brandSubFont||'Cormorant Garamond')}</select>
-    <div class="row"><label>字号</label><input class="fnum" type="number" min="6" max="40" value="${hdr.brandSubSize||10}" oninput="setHN('brandSubSize',+this.value)"><span class="funit">px</span></div>
-    <div class="rp-lbl">字重</div><select class="fsel" onchange="setH('brandSubWeight',this.value)">
-      <option value="300" ${(!hdr.brandSubWeight||hdr.brandSubWeight==='300')?'selected':''}>细 300</option>
-      <option value="400" ${hdr.brandSubWeight==='400'?'selected':''}>常规 400</option>
-      <option value="500" ${hdr.brandSubWeight==='500'?'selected':''}>中等 500</option>
-      <option value="700" ${hdr.brandSubWeight==='700'?'selected':''}>粗 700</option>
-      <option value="900" ${hdr.brandSubWeight==='900'?'selected':''}>超粗 900</option>
-    </select>
-    <div style="background:#141414;border:1px solid #2a2a2a;border-radius:5px;padding:7px 8px;margin-top:6px;">
-      <div style="font-size:9px;color:#c8a96a;margin-bottom:6px;letter-spacing:.3px;">📐 位置调整</div>
-      <div style="font-size:9px;color:#555;margin-bottom:3px;">纵向（% 距顶）</div>
-      <div style="display:flex;gap:5px;align-items:center;margin-bottom:5px;">
-        <input type="range" min="5" max="95" step="1" value="${hdr.blkBrandY||72}" style="flex:1;accent-color:#c8a96a;" oninput="setHN('hdr.blkBrandY',+this.value);document.getElementById('ni-hdr.blkBrandY').value=this.value">
-        <input id="ni-hdr.blkBrandY" type="number" min="5" max="95" value="${hdr.blkBrandY||72}" style="width:44px;padding:3px 5px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;" oninput="setHN('hdr.blkBrandY',+this.value);this.previousElementSibling.value=this.value">
-        <span style="font-size:9px;color:#444;">%</span>
-      </div>
-      <div style="font-size:9px;color:#555;margin-bottom:3px;">横向（px 偏移）</div>
-      <div style="display:flex;gap:5px;align-items:center;">
-        <input type="range" min="-500" max="500" step="1" value="${hdr.blkBrandX||0}" style="flex:1;accent-color:#c8a96a;" oninput="setHN('hdr.blkBrandX',+this.value);document.getElementById('ni-hdr.blkBrandX').value=this.value">
-        <input id="ni-hdr.blkBrandX" type="number" min="-500" max="500" value="${hdr.blkBrandX||0}" style="width:44px;padding:3px 5px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;" oninput="setHN('hdr.blkBrandX',+this.value);this.previousElementSibling.value=this.value">
-        <span style="font-size:9px;color:#444;">px</span>
-      </div>
-    </div>
-  </div>
+  </div>`;
+  }).join('')}
 
   <div class="rp-sec">
     <div class="rp-sec-t">水印文字</div>
@@ -643,10 +589,43 @@ function renderRP(){
   <div class="rp-sec">
     <div class="rp-sec-t">背景色</div>
     <input type="color" value="${hdr.bgColor||'#eeece6'}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;" onchange="setBg(this.value)">
+  </div>
+  <div class="rp-sec">
+    <div class="rp-sec-t">项目备份</div>
+    <div style="display:flex;gap:5px;">
+      <button onclick="exportJSON()" style="flex:1;padding:5px 4px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:9px;cursor:pointer;font-family:inherit;">⬇ 导出备份 JSON</button>
+      <button onclick="importJSON()" style="flex:1;padding:5px 4px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:9px;cursor:pointer;font-family:inherit;">⬆ 导入备份</button>
+    </div>
   </div>`;
 }
 
 function selC(i){selCol=i;renderRP();}
+
+// 修改独立文字项：实时更新 DOM + 存储
+async function setTxt(tk,prop,val){
+  const p=cur();if(!p)return;
+  pushH();
+  p.header[tk][prop]=val;
+  await save(p);
+  // 实时更新 DOM（不整体重渲）
+  const el=document.getElementById('txt-'+tk);
+  if(el){
+    const t=p.header[tk];
+    const{w}=pSize();const sc=w/1200;
+    if(prop==='text')el.textContent=val;
+    if(prop==='font')el.style.fontFamily=`'${val}',serif,sans-serif`;
+    if(prop==='size')el.style.fontSize=Math.round(val*sc)+'px';
+    if(prop==='weight')el.style.fontWeight=val;
+    if(prop==='color')el.style.color=val;
+    if(prop==='ls')el.style.letterSpacing=val+'em';
+    if(prop==='align'){
+      let tr=val==='center'?'translateX(-50%)':val==='right'?'translateX(-100%)':'';
+      el.style.transform=tr;
+    }
+    if(prop==='x'){el.style.left=Math.round(val*sc)+'px';}
+    if(prop==='y'){el.style.top=Math.round(val*sc)+'px';}
+  }
+}
 
 async function setS(i,k,v){const p=cur();if(!p)return;p.strips[i][k]=v;await save(p);}
 
@@ -691,8 +670,8 @@ async function setGradColor(i,hex){
   const n=p.cols;for(let j=0;j<n;j++){const g=document.querySelector(`#col-${j} .arch-grad`);if(g)g.style.background=`linear-gradient(to bottom,rgba(0,0,0,0) 0%,${p.strips[j].gradColor||rgba} 100%)`;}
 }
 
-async function setH(k,v){const p=cur();if(!p)return;p.header[k]=v;await save(p);await renderPoster();}
-async function setHN(k,v){const p=cur();if(!p)return;p.header[k]=v;await save(p);await renderPoster();}
+async function setH(k,v){const p=cur();if(!p)return;pushH();p.header[k]=v;await save(p);await renderPoster();}
+async function setHN(k,v){const p=cur();if(!p)return;pushH();p.header[k]=v;await save(p);await renderPoster();}
 async function setBg(v){const p=cur();if(!p)return;p.header.bgColor=v;await save(p);document.getElementById('poster').style.background=v;const ts=document.getElementById('top-sec');if(ts)ts.style.background=v;const cw=document.getElementById('cols-wrap');if(cw)cw.style.background=v;}
 
 // ── Upload ────────────────────────────────────────────────────────
@@ -739,48 +718,24 @@ async function exportPNG(){
   ctx.fillStyle='rgba(0,0,0,0.07)';ctx.textAlign='center';ctx.textBaseline='bottom';
   ctx.fillText(hdr.watermark||'wedding',W/2,topH*0.98);ctx.restore();
 
-  // ── Header text blocks — letter-spacing via drawTextLS, matches preview exactly ──
-  const ecx=W/2;
-  ctx.textBaseline='middle';
-
-  // Block 1: 主标题  letter-spacing .03em
-  const mainZhSz=hdr.mainZhSize||52;
-  const eBMY=Math.round(topH*(hdr.blkMainY||25)/100);
-  const eBMX=hdr.blkMainX||0;
-  ctx.font=`${hdr.mainZhWeight||700} ${mainZhSz}px "${hdr.mainZhFont||'Noto Serif SC'}",serif`;
-  ctx.fillStyle='#1a1a1a';
-  drawTextLS(ctx,hdr.mainZh,ecx+eBMX,eBMY,0.03,'center');
-
-  // Block 2: 英文副标题  letter-spacing .1em
-  const subEnSz=hdr.subEnSize||10;
-  const eBSY=Math.round(topH*(hdr.blkSubY||48)/100);
-  const eBSX=hdr.blkSubX||0;
-  ctx.font=`${hdr.subEnWeight||300} ${subEnSz}px "${hdr.subEnFont||hdr.brandEnFont||'Cormorant Garamond'}",serif`;
-  ctx.fillStyle='#777';
-  const subs=(hdr.subEn||'').split('\n');
-  const lineH2=Math.round(subEnSz*1.8);
-  const totalSubH=(subs.length-1)*lineH2;
-  subs.forEach((l,li)=>{drawTextLS(ctx,l,ecx+eBSX,eBSY-totalSubH/2+li*lineH2,0.1,'center');});
-
-  // Block 3: 品牌信息 — skip empty lines (match preview flex collapse)
-  const brandEnSz=hdr.brandEnSize||16;
-  const brandZhSz=hdr.brandZhSize||18;
-  const brandSubSz=hdr.brandSubSize||10;
-  const eBBY=Math.round(topH*(hdr.blkBrandY||72)/100);
-  const eBBX=hdr.blkBrandX||0;
-  const brandGap=6;
-  const brandLines=[];
-  if(hdr.brandEn&&hdr.brandEn.trim())brandLines.push({text:(hdr.brandEn||'').toUpperCase(),sz:brandEnSz,w:hdr.brandEnWeight||400,f:hdr.brandEnFont||'Cormorant Garamond',c:'#1a1a1a',ls:0.28});
-  if(hdr.brandZh&&hdr.brandZh.trim())brandLines.push({text:hdr.brandZh,sz:brandZhSz,w:hdr.brandZhWeight||400,f:hdr.brandZhFont||'Noto Serif SC',c:'#1a1a1a',ls:0.18});
-  if(hdr.brandSub&&hdr.brandSub.trim())brandLines.push({text:(hdr.brandSub||'').toUpperCase(),sz:brandSubSz,w:hdr.brandSubWeight||300,f:hdr.brandSubFont||hdr.brandEnFont||'Cormorant Garamond',c:'#888',ls:0.2});
-  const brandTotalH2=brandLines.reduce((acc,l,i)=>acc+l.sz+(i<brandLines.length-1?brandGap:0),0);
-  let ebty=eBBY-brandTotalH2/2+brandLines[0]?.sz/2||0;
-  brandLines.forEach((l,i)=>{
-    ctx.font=`${l.w} ${l.sz}px "${l.f}",serif`;
-    ctx.fillStyle=l.c;
-    drawTextLS(ctx,l.text,ecx+eBBX,ebty,l.ls,'center');
-    ebty+=l.sz+brandGap;
-  });
+  // ── 独立文字项 export：与预览 1:1 对应 ──
+  ctx.textBaseline='top';
+  function drawTxt(t){
+    if(!t||!t.text)return;
+    ctx.save();
+    ctx.font=`${t.weight} ${t.size}px '${t.font}',serif,sans-serif`;
+    ctx.fillStyle=t.color;
+    // 多行处理（subEn 含 \n）
+    const lines=t.text.split('\n');
+    const lineH=Math.round(t.size*1.8);
+    const totalH=(lines.length-1)*lineH;
+    lines.forEach((line,li)=>{
+      const cy=t.y+li*lineH;
+      drawTextLS(ctx,line,t.x,cy,t.ls||0,t.align||'center');
+    });
+    ctx.restore();
+  }
+  ['mainZh','subEn','brandEn','brandZh','brandSub'].forEach(tk=>drawTxt(hdr[tk]));
 
   // Columns
   for(let i=0;i<n;i++){
@@ -846,5 +801,3 @@ openDB().then(async()=>{await wpCheckAuth();await loadAll();renderList();});
 </script>
 </body>
 </html>
- 
- 
