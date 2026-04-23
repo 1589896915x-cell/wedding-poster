@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>档期告急版 - 婚礼海报</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700;900&family=Noto+Sans+SC:wght@400;500;700;900&family=Cormorant+Garamond:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0e0e0e;color:#fff;height:100vh;overflow:hidden;display:flex;padding-top:40px;}
+.psb{width:186px;flex-shrink:0;background:#161616;border-right:1px solid #222;display:flex;flex-direction:column;}
+.psb-head{padding:12px 12px 8px;border-bottom:1px solid #222;}
+.psb-head h2{font-size:12px;font-weight:500;color:#ddd;}
+.psb-head p{font-size:9px;color:#444;margin-top:2px;}
+.psb-new{margin:8px 10px;padding:6px;background:#1c1c1c;border:1px dashed #2e2e2e;border-radius:5px;color:#666;font-size:10px;cursor:pointer;text-align:center;}
+.psb-new:hover{border-color:#555;color:#bbb;}
+.proj-list{flex:1;overflow-y:auto;padding:4px 7px;}
+.proj-item{padding:7px 9px;border-radius:5px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;}
+.proj-item:hover{background:#1c1c1c;}
+.proj-item.active{background:#1c1c1c;border-color:#2e2e2e;}
+.proj-item h3{font-size:11px;font-weight:400;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.proj-item .meta{font-size:9px;color:#444;margin-top:2px;}
+.proj-item-actions{display:flex;gap:3px;margin-top:4px;}
+.pa-btn{padding:2px 6px;background:none;border:1px solid #222;border-radius:3px;color:#555;font-size:9px;cursor:pointer;font-family:inherit;}
+.pa-btn:hover{border-color:#555;color:#aaa;}
+.pa-btn.del:hover{border-color:#b00;color:#f44;}
+.editor{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:44px;background:#161616;border-bottom:1px solid #222;display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;}
+.proj-name-in{background:none;border:none;outline:none;color:#fff;font-size:13px;font-weight:500;font-family:inherit;flex:1;max-width:240px;}
+.proj-name-in::placeholder{color:#333;}
+.sp{flex:1;}
+.tbtn-export{padding:6px 16px;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;background:#c8392b;color:#fff;}
+.tbtn-export:hover{background:#a02d22;}
+.tbtn-export:disabled{background:#6a1f17;cursor:default;}
+.body{display:flex;flex:1;overflow:hidden;}
+.canvas-area{flex:1;background:#0a0a0a;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.rp{width:260px;flex-shrink:0;background:#161616;border-left:1px solid #222;overflow-y:auto;padding:10px 10px 24px;}
+.rp::-webkit-scrollbar{width:3px;}.rp::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px;}
+.rp-sec{margin-top:10px;padding-top:9px;border-top:1px solid #1e1e1e;}
+.rp-sec-t{font-size:9px;color:#444;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+.rp-lbl{font-size:9px;color:#555;margin-bottom:2px;margin-top:5px;}
+.rp-input{width:100%;padding:5px 7px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;margin-bottom:3px;}
+.rp-input:focus{border-color:#444;}
+.rp-select{width:100%;padding:4px 6px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;margin-bottom:3px;}
+.rp-select-sm{flex:1;padding:3px 4px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;}
+.rp-num{width:52px;padding:4px 5px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;}
+.rp-unit{font-size:9px;color:#444;white-space:nowrap;}
+.col-dot{width:22px;height:22px;border-radius:3px;border:1px solid #333;cursor:pointer;flex-shrink:0;}
+.col-dot:hover{border-color:#666;}
+.rp-row{display:flex;gap:5px;align-items:center;margin-bottom:4px;}
+.rp-row label{font-size:9px;color:#555;min-width:22px;flex-shrink:0;}
+.rp-slider{flex:1;accent-color:#c8392b;cursor:pointer;}
+.rp-val{font-size:9px;color:#555;min-width:28px;text-align:right;}
+.style-row{display:flex;gap:4px;align-items:center;margin-bottom:4px;}
+.rp-btn-img{width:100%;padding:6px;border:1px dashed #2a2a2a;border-radius:4px;background:none;color:#666;font-size:10px;cursor:pointer;font-family:inherit;text-align:center;margin-bottom:2px;}
+.rp-btn-img:hover{border-color:#555;color:#aaa;}
+.pos-box{background:#141414;border:1px solid #222;border-radius:5px;padding:6px 7px;margin-top:5px;}
+.pos-box-t{font-size:9px;color:#c8a96a;margin-bottom:5px;}
+.pos-row{display:flex;gap:4px;align-items:center;margin-bottom:4px;}
+.pos-row label{font-size:9px;color:#444;min-width:12px;}
+.pos-sl{flex:1;accent-color:#c8a96a;}
+.bk-row{display:flex;gap:5px;margin-top:6px;}
+.bk-btn{flex:1;padding:5px 4px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:9px;cursor:pointer;font-family:inherit;}
+.bk-btn:hover{border-color:#555;color:#aaa;}
+.no-proj{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#2a2a2a;}
+.no-proj p{font-size:12px;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;}
+.ov.open{display:flex;}
+.modal{background:#1c1c1c;border:1px solid #2e2e2e;border-radius:10px;padding:22px;width:300px;}
+.modal h3{font-size:14px;font-weight:500;margin-bottom:16px;color:#ddd;}
+.modal-lbl{font-size:10px;color:#777;margin-bottom:4px;}
+.modal-in{width:100%;padding:8px 10px;background:#111;border:1px solid #2e2e2e;border-radius:5px;color:#fff;font-size:13px;font-family:inherit;outline:none;margin-bottom:16px;}
+.modal-in:focus{border-color:#555;}
+.modal-actions{display:flex;gap:8px;}
+.modal-actions button{flex:1;padding:8px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
+</style>
+</head>
+<body>
+<div style="height:40px;background:#0a0a0a;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;padding:0 14px;gap:10px;position:fixed;top:0;left:0;right:0;z-index:100;">
+  <a href="index.html" style="font-size:18px;color:#555;text-decoration:none;line-height:1;">←</a>
+  <span style="font-size:11px;color:#444;">档期告急版</span>
+  <div style="flex:1;"></div>
+  <span id="wp-credits" style="background:#1a1a1a;padding:3px 10px;border-radius:4px;font-size:11px;color:#c8a96a;"></span>
+  <button onclick="wpLogout()" style="padding:4px 12px;border:1px solid #222;border-radius:4px;background:none;color:#555;font-size:11px;cursor:pointer;font-family:inherit;">退出</button>
+</div>
+<div class="psb">
+  <div class="psb-head"><h2>项目</h2><p>Ctrl+Z 撤销 · 自动保存</p></div>
+  <div class="psb-new" onclick="openNewModal()">＋ 新建项目</div>
+  <div class="proj-list" id="proj-list"><div style="font-size:10px;color:#333;padding:8px 4px;">加载中…</div></div>
+</div>
+<div class="editor">
+  <div class="topbar">
+    <input class="proj-name-in" id="proj-name-in" type="text" placeholder="项目名称" oninput="onNameChange()">
+    <div class="sp"></div>
+    <button class="tbtn-export" id="export-btn" onclick="exportPNG()">↓ 导出 PNG 1200×1600</button>
+  </div>
+  <div class="body">
+    <div class="canvas-area" id="canvas-area"><div id="poster-wrap"></div></div>
+    <div class="rp" id="rp"><div class="no-proj"><p>新建或选择项目</p></div></div>
+  </div>
+</div>
+<input type="file" id="file-in" accept="image/*" style="display:none">
+<input type="file" id="json-in" accept=".json" style="display:none">
+<div class="ov" id="new-modal">
+  <div class="modal">
+    <h3>新建项目</h3>
+    <div class="modal-lbl">项目名称</div>
+    <input class="modal-in" id="nm-name" type="text" placeholder="未命名">
+    <div class="modal-actions">
+      <button onclick="closeNewModal()" style="background:#2a2a2a;color:#aaa;border:1px solid #333;">取消</button>
+      <button onclick="createProject()" style="background:#fff;color:#000;">创建</button>
+    </div>
+  </div>
+</div>
+<script>
+// ═══ AUTH ═════════════════════════════════════════════════════════
+const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+let _lic=null;
+async function wpCheckAuth(){
+  if(location.protocol==='file:'||location.hostname==='localhost'){_lic={credits:999,id:'test'};const el=document.getElementById('wp-credits');if(el)el.textContent='测试模式';return true;}
+  const code=localStorage.getItem('wp-license');if(!code){location.href='index.html';return false;}
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const d=await r.json();if(!d||!d[0]||!d[0].is_active){location.href='index.html';return false;}
+    const lic=d[0];if((lic.credits||0)<=0){location.href='index.html';return false;}
+    if(lic.expires_at&&new Date(lic.expires_at)<new Date()){location.href='index.html';return false;}
+    _lic=lic;wpUpdCredits();return true;
+  }catch(e){return true;}
+}
+function wpUpdCredits(){const el=document.getElementById('wp-credits');if(el&&_lic)el.textContent=`剩余 ${_lic.credits||0} 次`;}
+async function wpCheckExportQuota(){
+  if(location.protocol==='file:'||location.hostname==='localhost')return true;
+  if(!_lic){alert('请先登录');return false;}
+  if((_lic.credits||0)<=0){alert('导出次数已用完');return false;}
+  try{
+    const newC=(_lic.credits||0)-1;
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${_lic.id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({credits:newC})});
+    const d=await r.json();if(d&&d[0])_lic=d[0];else _lic.credits=newC;wpUpdCredits();return true;
+  }catch(e){_lic.credits=Math.max(0,(_lic.credits||0)-1);wpUpdCredits();return true;}
+}
+function wpLogout(){localStorage.removeItem('wp-license');location.href='index.html';}
+
+// ═══ drawTextLS（规则2：内置 textBaseline='top'）══════════════════
+function drawTextLS(ctx,text,cx,y,lsEm,align){
+  if(!text)return;
+  ctx.textBaseline='top';
+  const m=ctx.font.match(/([\d.]+)px/);const fs=m?parseFloat(m[1]):16;const ls=lsEm*fs;
+  const chars=[...text];let tw=0;
+  chars.forEach((ch,i)=>{tw+=ctx.measureText(ch).width;if(i<chars.length-1)tw+=ls;});
+  let sx=align==='center'?cx-tw/2:align==='right'?cx-tw:cx;
+  chars.forEach((ch,i)=>{ctx.fillText(ch,sx,y);sx+=ctx.measureText(ch).width+(i<chars.length-1?ls:0);});
+}
+
+// ═══ iLay（规则5：共用图片裁切）══════════════════════════════════
+function iLay(nW,nH,cW,cH,zoom,px,py){
+  if(!nW||!nH)return{left:0,top:0,width:cW,height:cH};
+  const s=Math.max(cW/nW,cH/nH)*(zoom||1);
+  const rW=nW*s,rH=nH*s;
+  return{left:-((px||50)/100)*Math.max(0,rW-cW),top:-((py||50)/100)*Math.max(0,rH-cH),width:rW,height:rH};
+}
+
+// ═══ IndexedDB ════════════════════════════════════════════════════
+const DB_NAME='wedding-urgency-v1',DB_VER=1;
+let db=null;
+function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB_NAME,DB_VER);req.onupgradeneeded=e=>{const d=e.target.result;['P','I'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,s==='P'?{keyPath:'id'}:undefined);});};req.onsuccess=e=>{db=e.target.result;res();};req.onerror=rej;});}
+const TX=(s,m='readonly')=>db.transaction(s,m).objectStore(s);
+const dbGet=(s,k)=>new Promise((r,j)=>{const q=TX(s).get(k);q.onsuccess=()=>r(q.result);q.onerror=j;});
+const dbPut=(s,v,k)=>new Promise((r,j)=>{const q=k!==undefined?TX(s,'readwrite').put(v,k):TX(s,'readwrite').put(v);q.onsuccess=r;q.onerror=j;});
+const dbDel=(s,k)=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=r;t.onerror=j;});
+const dbAll=(s)=>new Promise((r,j)=>{const q=TX(s).getAll();q.onsuccess=()=>r(q.result);q.onerror=j;});
+
+// ═══ Defaults ═════════════════════════════════════════════════════
+const FONTS=['Noto Serif SC','Noto Sans SC','STSong','STKaiti','PingFang SC','Microsoft YaHei','SimHei','Cormorant Garamond','Playfair Display','Times New Roman'];
+const WTS=[['400','常规'],['500','中'],['700','粗'],['900','超粗']];
+
+function defT(text,font,size,weight,color,x,y,align,ls){return{text,font,size,weight,color,x,y,align,ls};}
+
+function defProject(){return{
+  bgImg:{imgKey:null,px:50,py:50,zoom:1,nW:0,nH:0},
+  // 顶部遮罩
+  overlayTopOn:true,overlayTopY:0,overlayTopH:301,overlayTopColor:'#000000',overlayTopAlpha:75,
+  // 底部遮罩
+  overlayBotOn:true,overlayBotY:1157,overlayBotH:508,overlayBotColor:'#000000',overlayBotAlpha:70,
+  // 标题
+  title:defT('滕头酒店26年档期告急','PingFang SC',100,'900','#ffffff',118,68,'left',0),
+  // 胶囊1（中间圆角）
+  badge1Text:'北仑婚宴｜一价全包｜无场布费',
+  badge1Font:'Noto Sans SC',badge1Size:45,badge1Weight:'500',badge1Color:'#ffffff',
+  badge1Grad1:'#8B5E1A',badge1Grad2:'#E8A83A',badge1Grad3:'#8B5E1A',
+  badge1X:600,badge1Y:210,badge1W:833,badge1H:100,badge1Radius:200,
+  // 价格大字
+  pricePrefix:defT('¥','Noto Sans SC',72,'900','#ffffff',55,1360,'left',0),
+  priceNum:   defT('5880','Noto Sans SC',180,'900','#ffffff',100,1300,'left',0),
+  priceSuffix:defT('起/桌','Noto Sans SC',56,'700','#ffffff',555,1406,'left',0),
+  // 胶囊2（右下角左箭头）
+  badge2Text:'4大宴会厅',
+  badge2Font:'Noto Sans SC',badge2Size:50,badge2Weight:'700',badge2Color:'#2d1500',
+  badge2Grad1:'#C8A050',badge2Grad2:'#E8C870',badge2Grad3:'#C8A050',
+  badge2X:782,badge2Y:1355,badge2W:347,badge2H:100,badge2Radius:6,
+};}
+
+// ═══ State ════════════════════════════════════════════════════════
+let projects=[],curId=null;
+const imgCache={};
+let _dragging=false,_dragSX=0,_dragSY=0,_dragPX=50,_dragPY=50;
+let _hist=[],_hIdx=-1;
+
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const cur=()=>projects.find(p=>p.id===curId)||null;
+const ikey=(pid,sl)=>`${pid}-${sl}`;
+
+// ═══ History ══════════════════════════════════════════════════════
+function pushH(){const p=cur();if(!p)return;_hist=_hist.slice(0,_hIdx+1);_hist.push(JSON.stringify(p));if(_hist.length>20)_hist.shift();_hIdx=_hist.length-1;}
+async function undo(){if(_hIdx<=0)return;_hIdx--;const p=JSON.parse(_hist[_hIdx]);const i=projects.findIndex(x=>x.id===p.id);if(i>=0)projects[i]=p;await dbPut('P',p);await renderPoster();renderRP();}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+
+// ═══ Storage ══════════════════════════════════════════════════════
+async function loadAll(){projects=await dbAll('P');projects.sort((a,b)=>b.at-a.at);}
+async function saveP(p){p.at=Date.now();await dbPut('P',p);}
+async function saveImg(key,blob){await dbPut('I',blob,key);if(imgCache[key])URL.revokeObjectURL(imgCache[key]);imgCache[key]=URL.createObjectURL(blob);}
+async function delImg(key){await dbDel('I',key);if(imgCache[key]){URL.revokeObjectURL(imgCache[key]);delete imgCache[key];}}
+async function getURL(key){if(!key)return null;if(imgCache[key])return imgCache[key];const b=await dbGet('I',key);if(!b)return null;imgCache[key]=URL.createObjectURL(b);return imgCache[key];}
+
+// Backup
+function exportJSON(){const p=cur();if(!p)return;const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(p.name||'project')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+function importJSON(){const fi=document.getElementById('json-in');fi.onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const p=JSON.parse(await file.text());p.id=uid();p.name=(p.name||'导入')+' (导入)';p.ct=p.at=Date.now();await saveP(p);projects.unshift(p);renderProjList();openProj(p.id);}catch{alert('JSON格式错误');}fi.value='';};fi.click();}
+
+// ═══ Modal ════════════════════════════════════════════════════════
+function openNewModal(){document.getElementById('nm-name').value='';document.getElementById('new-modal').classList.add('open');setTimeout(()=>document.getElementById('nm-name').focus(),50);}
+function closeNewModal(){document.getElementById('new-modal').classList.remove('open');}
+async function createProject(){
+  const name=document.getElementById('nm-name').value.trim()||'未命名';
+  const p={id:uid(),name,ct:Date.now(),at:Date.now(),...defProject()};
+  await saveP(p);projects.unshift(p);closeNewModal();renderProjList();openProj(p.id);
+}
+document.getElementById('nm-name').addEventListener('keydown',e=>{if(e.key==='Enter')createProject();});
+
+// ═══ Project List ═════════════════════════════════════════════════
+function renderProjList(){
+  const el=document.getElementById('proj-list');
+  if(!projects.length){el.innerHTML='<div style="font-size:10px;color:#333;padding:8px 4px;">暂无项目</div>';return;}
+  el.innerHTML=projects.map(p=>`<div class="proj-item${p.id===curId?' active':''}" onclick="openProj('${p.id}')">
+    <h3>${esc(p.name)}</h3><div class="meta">${new Date(p.at).toLocaleDateString('zh-CN')}</div>
+    <div class="proj-item-actions">
+      <button class="pa-btn" onclick="event.stopPropagation();renameProj('${p.id}')">改名</button>
+      <button class="pa-btn" onclick="event.stopPropagation();dupProj('${p.id}')">复制</button>
+      <button class="pa-btn del" onclick="event.stopPropagation();delProj('${p.id}')">删除</button>
+    </div></div>`).join('');
+}
+async function renameProj(id){const p=projects.find(x=>x.id===id);if(!p)return;const n=prompt('新名称：',p.name);if(!n||!n.trim())return;p.name=n.trim();await saveP(p);if(curId===id)document.getElementById('proj-name-in').value=p.name;renderProjList();}
+async function openProj(id){curId=id;const p=cur();if(!p)return;document.getElementById('proj-name-in').value=p.name;_hist=[];_hIdx=-1;renderProjList();await renderPoster();renderRP();}
+async function dupProj(id){
+  const p=projects.find(x=>x.id===id);if(!p)return;
+  const nid=uid();const np={...JSON.parse(JSON.stringify(p)),id:nid,name:p.name+' 副本',ct:Date.now(),at:Date.now()};
+  const ok=ikey(id,'bgImg'),nk=ikey(nid,'bgImg');const b=await dbGet('I',ok);if(b){await dbPut('I',b,nk);np.bgImg.imgKey=nk;}
+  await saveP(np);projects.unshift(np);renderProjList();
+}
+async function delProj(id){
+  if(!confirm('确认删除？'))return;
+  await delImg(ikey(id,'bgImg'));await dbDel('P',id);
+  projects=projects.filter(p=>p.id!==id);
+  if(curId===id){curId=null;document.getElementById('poster-wrap').innerHTML='';renderRP();}renderProjList();
+}
+async function onNameChange(){const p=cur();if(!p)return;p.name=document.getElementById('proj-name-in').value;await saveP(p);renderProjList();}
+
+// ═══ Poster Size ══════════════════════════════════════════════════
+function pSize(){const a=document.getElementById('canvas-area');const aH=a.clientHeight-24,aW=a.clientWidth-24;let h,w;if(aH*.75<aW){h=Math.floor(aH);w=Math.floor(h*.75);}else{w=Math.floor(aW);h=Math.floor(w/.75);}return{w,h};}
+
+// ═══ Load Images ══════════════════════════════════════════════════
+async function loadImgEl(key){
+  const url=await getURL(key);if(!url)return null;
+  return new Promise(res=>{const img=new Image();img.onload=()=>res(img);img.onerror=()=>res(null);img.src=url;});
+}
+
+// ═══ Core Draw Function（预览和导出共用）══════════════════════════
+async function drawPoster(ctx,W,H,p,bgImg){
+  const sc=W/1200;
+
+  // 背景（全铺图片或深色背景）
+  ctx.fillStyle='#1a1206';ctx.fillRect(0,0,W,H);
+  if(bgImg){
+    const l=iLay(bgImg.naturalWidth,bgImg.naturalHeight,W,H,p.bgImg.zoom,p.bgImg.px,p.bgImg.py);
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W,H);ctx.clip();
+    ctx.drawImage(bgImg,l.left,l.top,l.width,l.height);ctx.restore();
+  } else if(W<1200){
+    ctx.fillStyle='#2a1e0a';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#555';ctx.font=`${Math.round(13*sc)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('点击右侧"上传背景图"',W/2,H/2);ctx.textAlign='left';
+  }
+
+  // 遮罩层（顶部 + 底部，参数可调）
+  function drawOverlay(on,y,h,color,alpha){
+    if(!on)return;
+    const hex=color||'#000000';
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    const a=(alpha||0)/100;
+    const gy=Math.round(y*sc),gh=Math.round(h*sc);
+    // 顶部方向：从实色到透明；底部方向：从透明到实色
+    const isTop=(y===0||(p.overlayTopOn&&y===p.overlayTopY&&h===p.overlayTopH));
+    const grad=ctx.createLinearGradient(0,gy,0,gy+gh);
+    if(isTop){grad.addColorStop(0,`rgba(${r},${g},${b},${a})`);grad.addColorStop(1,`rgba(${r},${g},${b},0)`);}
+    else{grad.addColorStop(0,`rgba(${r},${g},${b},0)`);grad.addColorStop(1,`rgba(${r},${g},${b},${a})`);}
+    ctx.fillStyle=grad;ctx.fillRect(0,gy,W,gh);
+  }
+  drawOverlay(p.overlayTopOn,p.overlayTopY,p.overlayTopH,p.overlayTopColor,p.overlayTopAlpha);
+  drawOverlay(p.overlayBotOn,p.overlayBotY,p.overlayBotH,p.overlayBotColor,p.overlayBotAlpha);
+
+  // ── 胶囊绘制函数（独立宽高 + 三色渐变）──────────────────────
+  // arrow=false: 圆角胶囊，居中对齐，横向三色渐变
+  // arrow=true:  左箭头标签，从X开始向右，纵向三色渐变
+  function drawBadge(text,font,size,weight,textColor,g1,g2,g3,cx,cy,bwPx,bhPx,radius,arrow){
+    ctx.save();
+    const fs=Math.round(size*sc);
+    ctx.font=`${weight} ${fs}px '${font}',sans-serif`;
+    ctx.textBaseline='top';
+    const bw=Math.round(bwPx*sc);
+    const bh=Math.round(bhPx*sc);
+    const r=Math.round(radius*sc);
+
+    if(!arrow){
+      // ── 圆角胶囊（居中） ────────────────────────────────────
+      const bx=Math.round(cx*sc)-bw/2;
+      const by=Math.round(cy*sc);
+      // 横向三色渐变: g1→g2→g1
+      const grad=ctx.createLinearGradient(bx,0,bx+bw,0);
+      grad.addColorStop(0,g1);
+      grad.addColorStop(0.5,g2);
+      grad.addColorStop(1,g1);
+      ctx.beginPath();ctx.roundRect(bx,by,bw,bh,r);
+      ctx.fillStyle=grad;ctx.fill();
+      // 文字垂直居中
+      const ty=by+(bh-fs)/2;
+      ctx.fillStyle=textColor;
+      drawTextLS(ctx,text,bx+bw/2,ty,0,'center');
+    } else {
+      // ── 左箭头标签（从cx开始向右） ─────────────────────────
+      const aw=Math.round(36*sc);
+      const bx=Math.round(cx*sc);
+      const by=Math.round(cy*sc);
+      ctx.beginPath();
+      ctx.moveTo(bx+aw,by);
+      ctx.lineTo(bx+bw,by);
+      ctx.lineTo(bx+bw,by+bh);
+      ctx.lineTo(bx+aw,by+bh);
+      ctx.lineTo(bx,by+bh/2);
+      ctx.closePath();
+      // 纵向三色渐变: g1→g2→g3
+      const grad2=ctx.createLinearGradient(bx,by,bx,by+bh);
+      grad2.addColorStop(0,g1);
+      grad2.addColorStop(0.5,g2);
+      grad2.addColorStop(1,g3);
+      ctx.fillStyle=grad2;ctx.fill();
+      // 文字垂直居中（箭头区域内）
+      const tx=bx+aw+(bw-aw)/2;
+      const ty=by+(bh-fs)/2;
+      ctx.fillStyle=textColor;
+      drawTextLS(ctx,text,tx,ty,0,'center');
+    }
+    ctx.restore();
+  }
+
+  // ── 标题（规则6：直接用坐标，textBaseline内置在drawTextLS里）
+  function drawT(t){
+    if(!t||!t.text)return;
+    ctx.save();
+    ctx.font=`${t.weight} ${Math.round(t.size*sc)}px '${t.font}',serif,sans-serif`;
+    ctx.fillStyle=t.color;
+    // 文字阴影
+    ctx.shadowColor='rgba(0,0,0,0.6)';ctx.shadowBlur=Math.round(16*sc);
+    ctx.shadowOffsetX=Math.round(1*sc);ctx.shadowOffsetY=Math.round(2*sc);
+    drawTextLS(ctx,t.text,Math.round(t.x*sc),Math.round(t.y*sc),t.ls,t.align||'left');
+    ctx.shadowBlur=0;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;
+    ctx.restore();
+  }
+
+  drawT(p.title);
+
+  // 胶囊1（居中渐变胶囊）
+  drawBadge(p.badge1Text,p.badge1Font,p.badge1Size,p.badge1Weight,p.badge1Color,
+    p.badge1Grad1,p.badge1Grad2,p.badge1Grad3,
+    p.badge1X,p.badge1Y,p.badge1W,p.badge1H,p.badge1Radius,false);
+
+  // 价格
+  drawT(p.pricePrefix);
+  drawT(p.priceNum);
+  drawT(p.priceSuffix);
+
+  // 胶囊2（左箭头）
+  drawBadge(p.badge2Text,p.badge2Font,p.badge2Size,p.badge2Weight,p.badge2Color,
+    p.badge2Grad1,p.badge2Grad2,p.badge2Grad3,
+    p.badge2X,p.badge2Y,p.badge2W,p.badge2H,p.badge2Radius,true);
+}
+
+// ═══ Render Poster（预览用小 canvas）═════════════════════════════
+async function renderPoster(){
+  const wrap=document.getElementById('poster-wrap');
+  const p=cur();if(!p){wrap.innerHTML='';wrap.style.cssText='';return;}
+  const{w,h}=pSize();
+  let canvas=wrap.querySelector('canvas');
+  if(!canvas){
+    wrap.innerHTML='';canvas=document.createElement('canvas');
+    canvas.style.cssText='box-shadow:0 20px 60px rgba(0,0,0,.6);display:block;cursor:grab;';
+    wrap.appendChild(canvas);
+    canvas.addEventListener('mousedown',onMD);
+    canvas.addEventListener('touchstart',onTS,{passive:false});
+  }
+  wrap.style.cssText=`width:${w}px;height:${h}px;position:relative;flex-shrink:0;`;
+  canvas.width=w;canvas.height=h;
+  await document.fonts.ready;
+  const bgImg=await loadImgEl(p.bgImg.imgKey);
+  const ctx=canvas.getContext('2d');
+  await drawPoster(ctx,w,h,p,bgImg);
+}
+
+// ═══ Drag ═════════════════════════════════════════════════════════
+function onMD(e){const p=cur();if(!p||!p.bgImg.imgKey||e.button!==0)return;_dragging=true;_dragSX=e.clientX;_dragSY=e.clientY;_dragPX=p.bgImg.px;_dragPY=p.bgImg.py;e.target.style.cursor='grabbing';e.preventDefault();}
+function onTS(e){const p=cur();if(!p||!p.bgImg.imgKey)return;_dragging=true;_dragSX=e.touches[0].clientX;_dragSY=e.touches[0].clientY;_dragPX=p.bgImg.px;_dragPY=p.bgImg.py;e.preventDefault();}
+document.addEventListener('mousemove',async e=>{
+  if(!_dragging)return;const p=cur();if(!p)return;
+  const{w,h}=pSize();
+  p.bgImg.px=Math.max(0,Math.min(100,_dragPX-(e.clientX-_dragSX)/w*100));
+  p.bgImg.py=Math.max(0,Math.min(100,_dragPY-(e.clientY-_dragSY)/h*100));
+  const sli=document.getElementById('sl-px'),sly=document.getElementById('sl-py');
+  const npi=document.getElementById('ni-px'),npy=document.getElementById('ni-py');
+  if(sli)sli.value=p.bgImg.px;if(sly)sly.value=p.bgImg.py;
+  if(npi)npi.value=Math.round(p.bgImg.px);if(npy)npy.value=Math.round(p.bgImg.py);
+  await renderPoster();
+});
+document.addEventListener('touchmove',async e=>{
+  if(!_dragging)return;const p=cur();if(!p)return;
+  const{w}=pSize();
+  p.bgImg.px=Math.max(0,Math.min(100,_dragPX-(e.touches[0].clientX-_dragSX)/w*100));
+  p.bgImg.py=Math.max(0,Math.min(100,_dragPY-(e.touches[0].clientY-_dragSY)/w*100));
+  await renderPoster();
+},{passive:false});
+document.addEventListener('mouseup',async()=>{
+  if(!_dragging)return;_dragging=false;
+  const c=document.querySelector('#poster-wrap canvas');if(c)c.style.cursor='grab';
+  const p=cur();if(p){pushH();await saveP(p);}
+});
+document.addEventListener('touchend',async()=>{if(!_dragging)return;_dragging=false;const p=cur();if(p){pushH();await saveP(p);}});
+
+// ═══ Upload ═══════════════════════════════════════════════════════
+function uploadBg(){
+  const fi=document.getElementById('file-in');
+  fi.onchange=async e=>{
+    const file=e.target.files[0];if(!file)return;const p=cur();if(!p)return;
+    const img=new Image();const url=URL.createObjectURL(file);
+    img.onload=async()=>{
+      p.bgImg.nW=img.naturalWidth;p.bgImg.nH=img.naturalHeight;URL.revokeObjectURL(url);
+      const key=ikey(curId,'bgImg');await saveImg(key,file);p.bgImg.imgKey=key;
+      p.bgImg.px=50;p.bgImg.py=50;p.bgImg.zoom=1;
+      pushH();await saveP(p);await renderPoster();renderRP();
+    };img.src=url;fi.value='';
+  };fi.click();
+}
+
+// ═══ Right Panel ══════════════════════════════════════════════════
+function renderRP(){
+  const rp=document.getElementById('rp');const p=cur();
+  if(!p){rp.innerHTML='<div class="no-proj"><p>新建或选择项目</p></div>';return;}
+
+  const fOpts=sel=>FONTS.map(f=>`<option value="${f}"${sel===f?' selected':''}>${f}</option>`).join('');
+  const wOpts=sel=>WTS.map(([v,l])=>`<option value="${v}"${sel===v?' selected':''}>${l} ${v}</option>`).join('');
+
+  function txtCtrl(label,tk){
+    const t=p[tk];if(!t)return'';
+    const toHex=c=>{if(!c||c.startsWith('#'))return c||'#ffffff';const m=c.match(/[\d.]+/g);if(!m||m.length<3)return '#ffffff';return '#'+[m[0],m[1],m[2]].map(x=>Math.round(+x).toString(16).padStart(2,'0')).join('');};
+    return`<div class="rp-sec">
+      <div class="rp-sec-t">${label}</div>
+      <input class="rp-input" type="text" value="${esc(t.text)}" oninput="setTxt('${tk}','text',this.value)">
+      <div class="rp-lbl">字体</div><select class="rp-select" onchange="setTxt('${tk}','font',this.value)">${fOpts(t.font)}</select>
+      <div class="style-row">
+        <input class="rp-num" type="number" min="8" max="300" value="${t.size}" oninput="setTxt('${tk}','size',+this.value)">
+        <span class="rp-unit">px</span>
+        <select class="rp-select-sm" onchange="setTxt('${tk}','weight',this.value)">${wOpts(t.weight)}</select>
+        <div class="col-dot" style="background:${toHex(t.color)};" onclick="document.getElementById('clr-${tk}').click()"></div>
+        <input id="clr-${tk}" type="color" value="${toHex(t.color)}" style="display:none" onchange="setTxt('${tk}','color',this.value);this.previousElementSibling.style.background=this.value">
+      </div>
+      <div class="pos-box">
+        <div class="pos-box-t">📐 位置（1200×1600px）</div>
+        <div class="pos-row"><label>X</label>
+          <input type="range" min="0" max="1200" value="${t.x}" class="pos-sl" oninput="setTxt('${tk}','x',+this.value);document.getElementById('ni-${tk}x').value=this.value">
+          <input id="ni-${tk}x" type="number" value="${t.x}" class="rp-num" oninput="setTxt('${tk}','x',+this.value);this.previousElementSibling.value=this.value">
+        </div>
+        <div class="pos-row"><label>Y</label>
+          <input type="range" min="0" max="1600" value="${t.y}" class="pos-sl" oninput="setTxt('${tk}','y',+this.value);document.getElementById('ni-${tk}y').value=this.value">
+          <input id="ni-${tk}y" type="number" value="${t.y}" class="rp-num" oninput="setTxt('${tk}','y',+this.value);this.previousElementSibling.value=this.value">
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function badgeCtrl(label,prefix){
+    const toHex=c=>{if(!c||c.startsWith('#'))return c||'#ffffff';return c;};
+    return`<div class="rp-sec">
+      <div class="rp-sec-t">${label}</div>
+      <div class="rp-lbl">文字内容</div>
+      <input class="rp-input" type="text" value="${esc(p[prefix+'Text'])}" oninput="setP('${prefix}Text',this.value)">
+      <div class="rp-lbl">字体</div><select class="rp-select" onchange="setP('${prefix}Font',this.value)">${fOpts(p[prefix+'Font'])}</select>
+      <div class="style-row">
+        <input class="rp-num" type="number" min="8" max="120" value="${p[prefix+'Size']}" oninput="setPN('${prefix}Size',+this.value)">
+        <span class="rp-unit">px</span>
+        <select class="rp-select-sm" onchange="setP('${prefix}Weight',this.value)">${wOpts(p[prefix+'Weight'])}</select>
+        <div class="col-dot" style="background:${toHex(p[prefix+'Color'])};" onclick="document.getElementById('clr-${prefix}tc').click()"></div>
+        <input id="clr-${prefix}tc" type="color" value="${toHex(p[prefix+'Color'])}" style="display:none" onchange="setP('${prefix}Color',this.value);this.previousElementSibling.style.background=this.value">
+        <span class="rp-unit">字色</span>
+      </div>
+      <div class="rp-lbl">渐变颜色（左/暗 → 中/亮 → 右/暗）</div>
+      <div class="style-row">
+        <div class="col-dot" style="background:${toHex(p[prefix+'Grad1'])};" onclick="document.getElementById('clr-${prefix}g1').click()"></div>
+        <input id="clr-${prefix}g1" type="color" value="${toHex(p[prefix+'Grad1'])}" style="display:none" onchange="setP('${prefix}Grad1',this.value);this.previousElementSibling.style.background=this.value">
+        <div class="col-dot" style="background:${toHex(p[prefix+'Grad2'])};" onclick="document.getElementById('clr-${prefix}g2').click()"></div>
+        <input id="clr-${prefix}g2" type="color" value="${toHex(p[prefix+'Grad2'])}" style="display:none" onchange="setP('${prefix}Grad2',this.value);this.previousElementSibling.style.background=this.value">
+        <div class="col-dot" style="background:${toHex(p[prefix+'Grad3'])};" onclick="document.getElementById('clr-${prefix}g3').click()"></div>
+        <input id="clr-${prefix}g3" type="color" value="${toHex(p[prefix+'Grad3'])}" style="display:none" onchange="setP('${prefix}Grad3',this.value);this.previousElementSibling.style.background=this.value">
+        <span class="rp-unit" style="flex:1;">暗色 / 亮色 / 暗色</span>
+      </div>
+      <div class="pos-box">
+        <div class="pos-box-t">📐 位置 · 尺寸</div>
+        <div class="pos-row"><label>X</label>
+          <input type="range" min="0" max="1200" value="${p[prefix+'X']}" class="pos-sl" oninput="setPN('${prefix+'X'}',+this.value);document.getElementById('ni-${prefix}x').value=this.value">
+          <input id="ni-${prefix}x" type="number" value="${p[prefix+'X']}" class="rp-num" oninput="setPN('${prefix+'X'}',+this.value);this.previousElementSibling.value=this.value">
+        </div>
+        <div class="pos-row"><label>Y</label>
+          <input type="range" min="0" max="1600" value="${p[prefix+'Y']}" class="pos-sl" oninput="setPN('${prefix+'Y'}',+this.value);document.getElementById('ni-${prefix}y').value=this.value">
+          <input id="ni-${prefix}y" type="number" value="${p[prefix+'Y']}" class="rp-num" oninput="setPN('${prefix+'Y'}',+this.value);this.previousElementSibling.value=this.value">
+        </div>
+        <div class="pos-row"><label>宽度</label>
+          <input type="range" min="100" max="1100" value="${p[prefix+'W']}" class="pos-sl" oninput="setPN('${prefix+'W'}',+this.value);document.getElementById('ni-${prefix}w').value=this.value">
+          <input id="ni-${prefix}w" type="number" min="100" max="1100" value="${p[prefix+'W']}" class="rp-num" oninput="setPN('${prefix+'W'}',+this.value);this.previousElementSibling.value=this.value">
+          <span class="rp-unit">px</span>
+        </div>
+        <div class="pos-row"><label>高度</label>
+          <input type="range" min="40" max="300" value="${p[prefix+'H']}" class="pos-sl" oninput="setPN('${prefix+'H'}',+this.value);document.getElementById('ni-${prefix}h').value=this.value">
+          <input id="ni-${prefix}h" type="number" min="40" max="300" value="${p[prefix+'H']}" class="rp-num" oninput="setPN('${prefix+'H'}',+this.value);this.previousElementSibling.value=this.value">
+          <span class="rp-unit">px</span>
+        </div>
+        <div class="pos-row"><label>圆角</label>
+          <input type="range" min="0" max="200" value="${p[prefix+'Radius']}" class="pos-sl" oninput="setPN('${prefix+'Radius'}',+this.value);document.getElementById('ni-${prefix}r').value=this.value">
+          <input id="ni-${prefix}r" type="number" min="0" max="200" value="${p[prefix+'Radius']}" class="rp-num" oninput="setPN('${prefix+'Radius'}',+this.value);this.previousElementSibling.value=this.value">
+          <span class="rp-unit">px</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function toHex(col){return(!col||col.startsWith('#'))?col||'#000000':col;}
+
+  rp.innerHTML=`
+    <div class="rp-sec-t" style="margin-bottom:6px;">背景图片</div>
+    <div class="rp-btn-img" onclick="uploadBg()">${p.bgImg.imgKey?'🔄 更换背景图':'＋ 上传背景图（建议3:4竖图）'}</div>
+    ${p.bgImg.imgKey?`
+      <div class="rp-row" style="margin-top:4px;"><label>缩放</label>
+        <input id="sl-zoom" class="rp-slider" type="range" min="0.5" max="3" step="0.05" value="${p.bgImg.zoom||1}" oninput="setBgP('zoom',+this.value);document.getElementById('ni-zoom').value=Math.round(this.value*100)">
+        <input id="ni-zoom" type="number" min="50" max="300" value="${Math.round((p.bgImg.zoom||1)*100)}" class="rp-num" oninput="setBgP('zoom',this.value/100);this.previousElementSibling.value=this.value/100">
+        <span class="rp-unit">%</span>
+      </div>
+      <div class="rp-row"><label>横</label>
+        <input id="sl-px" class="rp-slider" type="range" min="0" max="100" step="1" value="${p.bgImg.px}" oninput="setBgP('px',+this.value);document.getElementById('ni-px').value=this.value">
+        <input id="ni-px" type="number" min="0" max="100" value="${Math.round(p.bgImg.px)}" class="rp-num" oninput="setBgP('px',+this.value);this.previousElementSibling.value=this.value">
+        <span class="rp-unit">%</span>
+      </div>
+      <div class="rp-row"><label>纵</label>
+        <input id="sl-py" class="rp-slider" type="range" min="0" max="100" step="1" value="${p.bgImg.py}" oninput="setBgP('py',+this.value);document.getElementById('ni-py').value=this.value">
+        <input id="ni-py" type="number" min="0" max="100" value="${Math.round(p.bgImg.py)}" class="rp-num" oninput="setBgP('py',+this.value);this.previousElementSibling.value=this.value">
+        <span class="rp-unit">%</span>
+      </div>`:''}
+
+    <div class="rp-sec">
+      <div class="rp-sec-t">顶部遮罩</div>
+      <div class="rp-row">
+        <label style="min-width:28px;">开关</label>
+        <div onclick="toggleOverlay('Top')" style="width:34px;height:18px;border-radius:9px;background:${p.overlayTopOn?'#4ade80':'#333'};position:relative;cursor:pointer;flex-shrink:0;">
+          <div style="position:absolute;top:3px;left:${p.overlayTopOn?'19':'3'}px;width:12px;height:12px;border-radius:50%;background:#fff;transition:left .15s;"></div>
+        </div>
+      </div>
+      ${p.overlayTopOn?`
+      <div class="rp-row"><label>颜色</label>
+        <div class="col-dot" style="background:${toHex(p.overlayTopColor)};" onclick="document.getElementById('clr-ot').click()"></div>
+        <input id="clr-ot" type="color" value="${toHex(p.overlayTopColor)}" style="display:none" onchange="setP('overlayTopColor',this.value);this.previousElementSibling.style.background=this.value">
+        <span class="rp-unit">不透明度</span>
+        <input type="number" min="0" max="100" value="${p.overlayTopAlpha||75}" class="rp-num" oninput="setPN('overlayTopAlpha',+this.value)">
+        <span class="rp-unit">%</span>
+      </div>
+      <div class="pos-row"><label>起点Y</label>
+        <input type="range" min="0" max="1600" value="${p.overlayTopY||0}" class="pos-sl" oninput="setPN('overlayTopY',+this.value);document.getElementById('ni-oty').value=this.value">
+        <input id="ni-oty" type="number" value="${p.overlayTopY||0}" class="rp-num" oninput="setPN('overlayTopY',+this.value);this.previousElementSibling.value=this.value">
+      </div>
+      <div class="pos-row"><label>高度</label>
+        <input type="range" min="50" max="1600" value="${p.overlayTopH||480}" class="pos-sl" oninput="setPN('overlayTopH',+this.value);document.getElementById('ni-oth').value=this.value">
+        <input id="ni-oth" type="number" value="${p.overlayTopH||480}" class="rp-num" oninput="setPN('overlayTopH',+this.value);this.previousElementSibling.value=this.value">
+      </div>`:''}
+    </div>
+    <div class="rp-sec">
+      <div class="rp-sec-t">底部遮罩</div>
+      <div class="rp-row">
+        <label style="min-width:28px;">开关</label>
+        <div onclick="toggleOverlay('Bot')" style="width:34px;height:18px;border-radius:9px;background:${p.overlayBotOn?'#4ade80':'#333'};position:relative;cursor:pointer;flex-shrink:0;">
+          <div style="position:absolute;top:3px;left:${p.overlayBotOn?'19':'3'}px;width:12px;height:12px;border-radius:50%;background:#fff;transition:left .15s;"></div>
+        </div>
+      </div>
+      ${p.overlayBotOn?`
+      <div class="rp-row"><label>颜色</label>
+        <div class="col-dot" style="background:${toHex(p.overlayBotColor)};" onclick="document.getElementById('clr-ob').click()"></div>
+        <input id="clr-ob" type="color" value="${toHex(p.overlayBotColor)}" style="display:none" onchange="setP('overlayBotColor',this.value);this.previousElementSibling.style.background=this.value">
+        <span class="rp-unit">不透明度</span>
+        <input type="number" min="0" max="100" value="${p.overlayBotAlpha||70}" class="rp-num" oninput="setPN('overlayBotAlpha',+this.value)">
+        <span class="rp-unit">%</span>
+      </div>
+      <div class="pos-row"><label>起点Y</label>
+        <input type="range" min="0" max="1600" value="${p.overlayBotY||960}" class="pos-sl" oninput="setPN('overlayBotY',+this.value);document.getElementById('ni-oby').value=this.value">
+        <input id="ni-oby" type="number" value="${p.overlayBotY||960}" class="rp-num" oninput="setPN('overlayBotY',+this.value);this.previousElementSibling.value=this.value">
+      </div>
+      <div class="pos-row"><label>高度</label>
+        <input type="range" min="50" max="1600" value="${p.overlayBotH||640}" class="pos-sl" oninput="setPN('overlayBotH',+this.value);document.getElementById('ni-obh').value=this.value">
+        <input id="ni-obh" type="number" value="${p.overlayBotH||640}" class="rp-num" oninput="setPN('overlayBotH',+this.value);this.previousElementSibling.value=this.value">
+      </div>`:''}
+    </div>
+    ${txtCtrl('① 标题大字','title')}
+    ${badgeCtrl('② 胶囊标签1（中间）','badge1')}
+    ${txtCtrl('③ 价格前缀（¥）','pricePrefix')}
+    ${txtCtrl('④ 价格数字','priceNum')}
+    ${txtCtrl('⑤ 价格后缀（起/桌）','priceSuffix')}
+    ${badgeCtrl('⑥ 胶囊标签2（右下箭头）','badge2')}
+
+    <div class="rp-sec">
+      <div class="rp-sec-t">项目备份</div>
+      <div class="bk-row">
+        <button class="bk-btn" onclick="exportJSON()">⬇ 导出备份</button>
+        <button class="bk-btn" onclick="importJSON()">⬆ 导入备份</button>
+      </div>
+    </div>`;
+}
+
+// ═══ Setters ══════════════════════════════════════════════════════
+async function toggleOverlay(side){
+  const p=cur();if(!p)return;pushH();
+  p['overlay'+side+'On']=!p['overlay'+side+'On'];
+  await saveP(p);await renderPoster();renderRP();
+}
+async function setTxt(tk,prop,val){const p=cur();if(!p)return;pushH();p[tk][prop]=val;await saveP(p);await renderPoster();}
+async function setP(key,val){const p=cur();if(!p)return;pushH();p[key]=val;await saveP(p);await renderPoster();}
+async function setPN(key,val){const p=cur();if(!p)return;pushH();p[key]=+val;await saveP(p);await renderPoster();}
+async function setBgP(key,val){const p=cur();if(!p)return;p.bgImg[key]=+val;await renderPoster();await saveP(p);}
+
+// ═══ Export PNG（规则1，4：fonts.ready + toBlob）═══════════════
+async function exportPNG(){
+  const p=cur();if(!p)return;
+  if(!await wpCheckExportQuota())return;
+  const btn=document.getElementById('export-btn');btn.textContent='生成中…';btn.disabled=true;
+  try{
+    await document.fonts.ready;
+    const bgImg=await loadImgEl(p.bgImg.imgKey);
+    const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=1600;
+    const ctx=canvas.getContext('2d');
+    await drawPoster(ctx,1200,1600,p,bgImg);
+    canvas.toBlob(blob=>{
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.download=`${p.name||'poster'}_1200x1600.png`;a.href=url;a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+    },'image/png');
+  }catch(err){console.error(err);alert('导出失败，请重试');}
+  finally{btn.textContent='↓ 导出 PNG 1200×1600';btn.disabled=false;}
+}
+
+window.addEventListener('resize',()=>{if(curId)renderPoster();});
+(async()=>{await wpCheckAuth();await openDB();await loadAll();renderProjList();})();
+</script>
+</body>
+</html>
