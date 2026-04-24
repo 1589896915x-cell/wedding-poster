@@ -117,6 +117,11 @@ body{background:#1a1a1a;font-family:system-ui,sans-serif;display:flex;height:100
 <div class="editor">
   <div class="topbar">
     <input class="proj-name-in" id="pname" type="text" placeholder="项目名称" oninput="onNameChange()">
+    <div id="col-switcher" style="display:none;gap:3px;background:#1a1a1a;padding:3px;border-radius:6px;border:1px solid #2a2a2a;">
+      <button id="btn-3col" onclick="setCols(3)" style="padding:3px 10px;border:none;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;background:none;color:#666;">3列</button>
+      <button id="btn-4col" onclick="setCols(4)" style="padding:3px 10px;border:none;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;background:none;color:#666;">4列</button>
+      <button id="btn-5col" onclick="setCols(5)" style="padding:3px 10px;border:none;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit;background:none;color:#666;">5列</button>
+    </div>
     <div class="sp"></div>
     <button class="tbtn tbtn-export" id="exp-btn" onclick="exportPNG()">↓ 导出 PNG 1200×1600</button>
   </div>
@@ -220,21 +225,19 @@ const FONTS=['Noto Serif SC','Noto Sans SC','Cormorant Garamond','Georgia','STSo
 function defCol(i){return{imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1};}
 function defProj(name){return{
   id:uid(),name,ct:Date.now(),at:Date.now(),
-  strips:[defCol(0),defCol(1),defCol(2),defCol(3)],
+  cols:4,
+  strips:[defCol(0),defCol(1),defCol(2),defCol(3),defCol(4)],
   logo:{imgKey:null,nW:0,nH:0},
   logoShow:true,
-  // Logo position & size
-  logoH:15,      // % of poster height
-  logoTop:3,     // % from top
-  // Center overlay
-  overlayTop:35,   // % from top
-  overlayH:30,     // % height
-  overlayOpacity:55, // 0-100
-  // Center text
-  line1:'在宁波',
+  logoH:15,
+  logoTop:3,
+  overlayTop:38,
+  overlayH:28,
+  overlayOpacity:47,
+  line1:'在北仑',
   line2:'不到7W办婚礼',
-  line1Size:52,
-  line2Size:68,
+  line1Size:100,
+  line2Size:120,
   textFont:'Noto Serif SC',
   textWeight:'700',
   textColor:'#ffffff',
@@ -272,18 +275,39 @@ function renderList(){
     </div>`).join('');
 }
 
-async function openProj(id){curId=id;selCol=0;const p=cur();if(!p)return;document.getElementById('pname').value=p.name;renderList();await renderPoster();renderRP();}
+async function openProj(id){
+  curId=id;selCol=0;const p=cur();if(!p)return;
+  document.getElementById('pname').value=p.name;
+  document.getElementById('col-switcher').style.display='flex';
+  updColBtns();renderList();await renderPoster();renderRP();
+}
+function updColBtns(){
+  const p=cur();if(!p)return;const n=p.cols||4;
+  [3,4,5].forEach(c=>{
+    const b=document.getElementById(`btn-${c}col`);
+    if(b){b.style.background=n===c?'#2a2a2a':'none';b.style.color=n===c?'#fff':'#666';}
+  });
+}
+async function setCols(n){
+  const p=cur();if(!p||p.cols===n)return;
+  if(!confirm(`切换为${n}列？已有图片数据保留。`))return;
+  p.cols=n;
+  while(p.strips.length<n)p.strips.push({imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1});
+  selCol=Math.min(selCol,n-1);
+  await save(p);updColBtns();await renderPoster();renderRP();
+}
 async function renameProj(id){const p=projects.find(x=>x.id===id);if(!p)return;const n=prompt('新名称：',p.name);if(!n||!n.trim())return;p.name=n.trim();await save(p);if(curId===id)document.getElementById('pname').value=p.name;renderList();}
 async function dupProj(id){
   const p=projects.find(x=>x.id===id);if(!p)return;const nid=uid();
   const np={...JSON.parse(JSON.stringify(p)),id:nid,name:p.name+' 副本',ct:Date.now(),at:Date.now()};
-  for(let i=0;i<4;i++){const ok=ik(id,i),nk=ik(nid,i);const b=await dbG('I',ok);if(b){await dbP('I',b,nk);np.strips[i].imgKey=nk;}}
+  const nc2=p.cols||4;for(let i=0;i<nc2;i++){const ok=ik(id,i),nk=ik(nid,i);const b=await dbG('I',ok);if(b){await dbP('I',b,nk);np.strips[i].imgKey=nk;}}
   const lb=await dbG('I',ilogo(id));if(lb){await dbP('I',lb,ilogo(nid));np.logo.imgKey=ilogo(nid);}
   await save(np);projects.unshift(np);renderList();
 }
 async function delProj(id){
   if(!confirm('确认删除？'))return;
-  for(let i=0;i<4;i++)await delImg(ik(id,i));await delImg(ilogo(id));
+  const pd=projects.find(x=>x.id===id);const ncd=pd?pd.cols||4:4;
+  for(let i=0;i<ncd;i++)await delImg(ik(id,i));await delImg(ilogo(id));
   await dbD('P',id);projects=projects.filter(p=>p.id!==id);
   if(curId===id){curId=null;document.getElementById('poster').innerHTML='';renderRP();}
   renderList();
@@ -307,10 +331,11 @@ async function renderPoster(){
   const{w,h}=pSize();const sc=w/1200;
   poster.style.cssText=`width:${w}px;height:${h}px;box-shadow:0 20px 60px rgba(0,0,0,.55);background:#000;`;
 
-  const urls=await Promise.all(p.strips.map(s=>getURL(s.imgKey)));
+  const n=p.cols||4;
+  const urls=await Promise.all(p.strips.slice(0,n).map(s=>getURL(s.imgKey)));
   const logoUrl=await getURL(p.logo?.imgKey);
 
-  const colW=Math.round(w/4);
+  const colW=Math.round(w/n);
   const overlayTop=Math.round(h*(p.overlayTop||35)/100);
   const overlayH=Math.round(h*(p.overlayH||30)/100);
   const logoH=Math.round(h*(p.logoH||15)/100);
@@ -322,7 +347,7 @@ async function renderPoster(){
   poster.innerHTML=`
   <!-- Strips -->
   <div class="strips-row">
-    ${p.strips.map((s,i)=>{
+    ${p.strips.slice(0,n).map((s,i)=>{
       const lout=imgLayout(s.nW,s.nH,colW,h,s.zoom,s.px,s.py);
       return `<div class="strip-col" id="sc-${i}" data-i="${i}" style="cursor:${s.imgKey?'grab':'pointer'};">
         ${urls[i]
@@ -357,7 +382,7 @@ async function renderPoster(){
 
 function updStripImg(i){
   const p=cur();if(!p)return;const s=p.strips[i];const img=document.getElementById(`simg-${i}`);if(!img)return;
-  const{w,h}=pSize();const colW=Math.round(w/4);
+  const{w,h}=pSize();const n=p.cols||4;const colW=Math.round(w/n);
   const lout=imgLayout(s.nW,s.nH,colW,h,s.zoom,s.px,s.py);
   img.style.width=lout.width+'px';img.style.height=lout.height+'px';img.style.left=lout.left+'px';img.style.top=lout.top+'px';
 }
@@ -368,7 +393,7 @@ function onTS(e){const i=+this.dataset.i;const p=cur();if(!p||!p.strips[i].imgKe
 document.addEventListener('mousemove',e=>{if(drag.on)doMove(e.clientX,e.clientY);});
 document.addEventListener('touchmove',e=>{if(drag.on){doMove(e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();}},{passive:false});
 function doMove(cx,cy){
-  const p=cur();if(!p)return;const{w,h}=pSize();const colW=Math.round(w/4);
+  const p=cur();if(!p)return;const{w,h}=pSize();const n=p.cols||4;const colW=Math.round(w/n);
   const s=p.strips[drag.col];
   const lout0=imgLayout(s.nW,s.nH,colW,h,s.zoom,drag.px0,drag.py0);
   const maxX=Math.max(0,lout0.width-colW),maxY=Math.max(0,lout0.height-h);
@@ -433,7 +458,7 @@ function renderRP(){
 
   <div class="rp-sec">
     <div class="rp-sec-t">图片条块</div>
-    <div class="col-tabs">${[0,1,2,3].map(i=>`<button class="col-tab ${i===selCol?'on':''}" onclick="selC(${i})">第${i+1}条</button>`).join('')}</div>
+    <div class="col-tabs">${Array.from({length:p.cols||4},(_,i)=>i).map(i=>`<button class="col-tab ${i===selCol?'on':''}" onclick="selC(${i})">第${i+1}条</button>`).join('')}</div>
     <div class="img-btn" data-upload onclick="uploadStrip(${selCol})">${s.imgKey?'更换图片':'上传图片'}</div>
       
     ${s.imgKey?`
@@ -513,14 +538,14 @@ async function exportPNG(){
   const p=cur();if(!p)return;
   if(!await wpCheckExportQuota())return;
   const btn=document.getElementById('exp-btn');btn.textContent='生成中…';btn.disabled=true;
-  const W=1200,H=1600,colW=Math.round(W/4);
+  const nc=p.cols||4;const W=1200,H=1600,colW=Math.round(W/nc);
   const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext('2d');
   ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
   await document.fonts.ready;
 
   // Draw strips
-  for(let i=0;i<4;i++){
+  for(let i=0;i<nc;i++){
     const s=p.strips[i];const url=await getURL(s.imgKey);
     if(url){
       await new Promise(res=>{
