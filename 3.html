@@ -222,6 +222,7 @@ function defProj(name){return{
   id:uid(),name,ct:Date.now(),at:Date.now(),
   strips:[defCol(0),defCol(1),defCol(2),defCol(3)],
   logo:{imgKey:null,nW:0,nH:0},
+  logoShow:true,
   // Logo position & size
   logoH:15,      // % of poster height
   logoTop:3,     // % from top
@@ -341,11 +342,11 @@ async function renderPoster(){
   </div>
 
   <!-- Logo -->
-  <div class="logo-area" style="top:${logoTop}px;height:${logoH}px;">
+  ${p.logoShow!==false?`<div class="logo-area" style="top:${logoTop}px;height:${logoH}px;">
     ${logoUrl
       ?`<img class="logo-img" id="logo-img" src="${logoUrl}" draggable="false" onclick="uploadLogo()" style="cursor:pointer;" title="点击替换Logo">`
       :`<div class="logo-placeholder" onclick="uploadLogo()"><div class="lp-icon">🏷</div><div class="lp-text">点击上传Logo</div></div>`}
-  </div>`;
+  </div>`:''}`;
 
   // Drag for strips
   poster.querySelectorAll('.strip-col').forEach(el=>{
@@ -396,6 +397,19 @@ function uploadStrip(i){
   };fi.click();
 }
 
+function toggleLogo(){
+  const p=cur();if(!p)return;
+  p.logoShow=p.logoShow===false?true:false;
+  save(p);reRender();renderPanel();
+}
+async function removeLogo(){
+  const p=cur();if(!p)return;
+  const key=`fs-logo-${curId}`;
+  try{await dbD('I',key);}catch(e){}
+  if(imgCache[key]){URL.revokeObjectURL(imgCache[key]);delete imgCache[key];}
+  p.logo={imgKey:null,nW:0,nH:0};
+  save(p);reRender();renderPanel();
+}
 function uploadLogo(){
   const fi=document.getElementById('fi-logo');
   fi.onchange=async e=>{
@@ -431,8 +445,14 @@ function renderRP(){
 
   <div class="rp-sec">
     <div class="rp-sec-t">Logo</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <span style="font-size:9px;color:#888;">显示Logo</span>
+      <button onclick="toggleLogo()" id="logo-tog" style="width:32px;height:18px;border-radius:9px;border:none;cursor:pointer;position:relative;background:${p.logoShow!==false?'#c8392b':'#2a2a2a'};transition:background .15s;">
+        <span style="position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:${p.logoShow!==false?'16px':'2px'};transition:left .15s;"></span>
+      </button>
+    </div>
     <div class="img-btn" onclick="uploadLogo()">${p.logo?.imgKey?'更换Logo':'上传Logo'}</div>
-      
+    ${p.logo?.imgKey?`<div class="img-btn" style="margin-top:4px;border-color:#c00;color:#f55;" onclick="removeLogo()">移除Logo</div>`:''}
     <div class="rp-lbl">距顶部</div>
     <div class="row"><input class="fslider" type="range" min="0" max="20" step="0.5" value="${p.logoTop||3}" oninput="setP('logoTop',+this.value);document.getElementById('v-lt').textContent=this.value+'%';reRender()"><span class="fval" id="v-lt">${p.logoTop||3}%</span></div>
     <div class="rp-lbl">Logo高度</div>
@@ -537,18 +557,20 @@ async function exportPNG(){
   ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;
 
   // Logo
-  const logoUrl=await getURL(p.logo?.imgKey);
-  if(logoUrl){
-    await new Promise(res=>{
-      const img=new Image();
-      img.onload=()=>{
-        const logoH=Math.round(H*(p.logoH||15)/100);
-        const logoTop=Math.round(H*(p.logoTop||3)/100);
-        const scale=Math.min(W*0.4/img.width,logoH/img.height);
-        const lw=img.width*scale,lh=img.height*scale;
-        ctx.drawImage(img,(W-lw)/2,logoTop+(logoH-lh)/2,lw,lh);res();
-      };img.src=logoUrl;
-    });
+  if(p.logoShow!==false){
+    const logoUrl=await getURL(p.logo?.imgKey);
+    if(logoUrl){
+      await new Promise(res=>{
+        const img=new Image();
+        img.onload=()=>{
+          const logoH=Math.round(H*(p.logoH||15)/100);
+          const logoTop=Math.round(H*(p.logoTop||3)/100);
+          const scale=Math.min(W*0.4/img.width,logoH/img.height);
+          const lw=img.width*scale,lh=img.height*scale;
+          ctx.drawImage(img,(W-lw)/2,logoTop+(logoH-lh)/2,lw,lh);res();
+        };img.src=logoUrl;
+      });
+    }
   }
 
   const a=document.createElement('a');
@@ -563,5 +585,3 @@ openDB().then(async()=>{await wpCheckAuth();await loadAll();renderList();});
 </script>
 </body>
 </html>
- 
- 
