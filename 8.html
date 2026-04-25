@@ -141,18 +141,18 @@ function defP(name){
   return{
     id:uid(),name,ct:Date.now(),at:Date.now(),
     bgColor:'#ffffff',
-    headerH:331,
-    pad:40,gap:18,radius:12,topImgH:531,botImgH:650,
+    headerH:318,
+    pad:40,gap:18,radius:12,topImgH:546,botImgH:689,
     imgs:[
       {imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1},
       {imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1},
       {imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1},
     ],
-    mainTitle:'暮光森林',
-    mainTitleFont:'Noto Serif SC',mainTitleSize:96,mainTitleWeight:'700',mainTitleColor:'#111111',
-    mainTitleX:40,mainTitleY:36,mainTitleLS:0.02,
-    enSub:'OSCAR BALLROOM',
-    enSubFont:'Microsoft YaHei',enSubSize:31,enSubWeight:'700',enSubColor:'#111111',
+    mainTitle:'蔷薇华庭',
+    mainTitleFont:'Noto Serif SC',mainTitleSize:120,mainTitleWeight:'700',mainTitleColor:'#111111',
+    mainTitleX:28,mainTitleY:36,mainTitleLS:0.02,
+    enSub:'Rose Garden Court',
+    enSubFont:'Microsoft YaHei',enSubSize:36,enSubWeight:'700',enSubColor:'#111111',
     enSubX:40,enSubY:168,enSubLS:0.02,
     lineColor:'#111111',lineY:228,lineH:4,
     orgName:'22桌｜红金风格｜顶部大面积水晶吊灯｜旋转楼梯｜大面积红玫瑰｜炽热、奔放',
@@ -259,9 +259,9 @@ async function renderPoster(){
   const pad=Math.round((p.pad||40)*sc);
   const gap=Math.round((p.gap||16)*sc);
   const rad=Math.round((p.radius||12)*sc);
-  const headerH=Math.round((p.headerH||280)*sc);
-  const topImgH=Math.round((p.topImgH||480)*sc);
-  const botImgH=Math.round((p.botImgH||680)*sc);
+  const headerH=Math.round((p.headerH||318)*sc);
+  const topImgH=Math.round((p.topImgH||546)*sc);
+  const botImgH=Math.round((p.botImgH||689)*sc);
   const halfW=Math.floor((w-pad*2-gap)/2);
   const botW=w-pad*2;
 
@@ -270,16 +270,16 @@ async function renderPoster(){
   const urls=await Promise.all(p.imgs.map(img=>getURL(img.imgKey)));
 
   // 字号
-  const mTSz=Math.round((p.mainTitleSize||96)*sc);
-  const enSubSz=Math.round((p.enSubSize||30)*sc);
-  const orgSz=Math.round((p.orgNameSize||22)*sc);
+  const mTSz=Math.round((p.mainTitleSize||120)*sc);
+  const enSubSz=Math.round((p.enSubSize||36)*sc);
+  const orgSz=Math.round((p.orgNameSize||25)*sc);
 
   // 顶部坐标
   const mTY=Math.round((p.mainTitleY||36)*sc);
-  const enSubY=Math.round((p.enSubY||158)*sc);
-  const lineY=Math.round((p.lineY||205)*sc);
-  const orgY=Math.round((p.orgNameY||222)*sc);
-  const mTX=Math.round((p.mainTitleX||40)*sc);
+  const enSubY=Math.round((p.enSubY||168)*sc);
+  const lineY=Math.round((p.lineY||228)*sc);
+  const orgY=Math.round((p.orgNameY||263)*sc);
+  const mTX=Math.round((p.mainTitleX||28)*sc);
   const enSubX=Math.round((p.enSubX||40)*sc);
   const orgX=Math.round((p.orgNameX||40)*sc);
 
@@ -548,11 +548,11 @@ async function doExport(){
   const W=1200,H=1600;const sc=W/1200;
   const bg=p.bgColor||'#ffffff';
   const pad=p.pad||40;
-  const gap=p.gap||16;
+  const gap=p.gap||18;
   const rad=p.radius||12;
-  const headerH=p.headerH||280;
-  const topImgH=p.topImgH||480;
-  const botImgH=p.botImgH||680;
+  const headerH=p.headerH||318;
+  const topImgH=p.topImgH||546;
+  const botImgH=p.botImgH||689;
   const halfW=Math.floor((W-pad*2-gap)/2);
   const botW=W-pad*2;
 
@@ -600,30 +600,30 @@ async function doExport(){
   ctx.textBaseline='top';
 
   // 主标题
-  const mTSz=p.mainTitleSize||96;
+  const mTSz=p.mainTitleSize||120;
   ctx.fillStyle=p.mainTitleColor||'#111';
   ctx.font=`${p.mainTitleWeight||'700'} ${mTSz}px "${p.mainTitleFont||'Noto Serif SC'}",serif`;
-  drawTextLS(ctx,p.mainTitle,p.mainTitleX||40,p.mainTitleY||36,p.mainTitleLS||0.02,'left');
+  drawTextLS(ctx,p.mainTitle,p.mainTitleX||28,p.mainTitleY||36,p.mainTitleLS||0.02,'left');
 
   // 英文副标题
-  const enSubSz=p.enSubSize||30;
+  const enSubSz=p.enSubSize||36;
   ctx.fillStyle=p.enSubColor||'#111';
-  ctx.font=`${p.enSubWeight||'400'} ${enSubSz}px "${p.enSubFont||'Cormorant Garamond'}",serif`;
-  drawTextLS(ctx,p.enSub,p.enSubX||40,p.enSubY||158,p.enSubLS||0.12,'left');
+  ctx.font=`${p.enSubWeight||'700'} ${enSubSz}px "${p.enSubFont||'Microsoft YaHei'}",sans-serif`;
+  drawTextLS(ctx,p.enSub,p.enSubX||40,p.enSubY||168,p.enSubLS||0.02,'left');
 
   // 三点装饰
-  const dotY2=(p.enSubY||158)+(p.dotY||0)+Math.round(enSubSz*0.4);
-  const dotR=p.dotSize||3;const dotGap=10;
+  const dotY2=(p.enSubY||168)+(p.dotY||0)+Math.round(enSubSz*0.4);
+  const dotR=p.dotSize||9;const dotGap=10;
   ctx.fillStyle=p.dotColor||'#111';
   [0,1,2].forEach(i=>{ctx.beginPath();ctx.arc(W-pad-(2-i)*(dotR*2+dotGap)-dotR,dotY2+dotR,dotR,0,Math.PI*2);ctx.fill();});
 
   // 分割线
-  ctx.fillStyle=p.lineColor||'#111';ctx.fillRect(pad,p.lineY||205,W-pad*2,p.lineH||1);
+  ctx.fillStyle=p.lineColor||'#111';ctx.fillRect(pad,p.lineY||228,W-pad*2,p.lineH||4);
 
   // 机构名
   ctx.fillStyle=p.orgNameColor||'#333';
-  ctx.font=`${p.orgNameWeight||'300'} ${p.orgNameSize||22}px "${p.orgNameFont||'Cormorant Garamond'}",serif`;
-  drawTextLS(ctx,p.orgName,p.orgNameX||40,p.orgNameY||222,p.orgNameLS||0.08,'left');
+  ctx.font=`${p.orgNameWeight||'700'} ${p.orgNameSize||25}px "${p.orgNameFont||'Arial'}",sans-serif`;
+  drawTextLS(ctx,p.orgName,p.orgNameX||40,p.orgNameY||263,p.orgNameLS||0.08,'left');
 
   canvas.toBlob(blob=>{
     const url=URL.createObjectURL(blob);
