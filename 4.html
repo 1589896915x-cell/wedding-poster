@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>大图文字版</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500&family=Cormorant+Garamond:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans SC',sans-serif;background:#111;color:#fff;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
@@ -77,6 +77,17 @@ body{font-family:'Noto Sans SC',sans-serif;background:#111;color:#fff;height:100
 .empty{display:flex;align-items:center;justify-content:center;height:100%;color:#333;font-size:12px;}
 
 /* modal overlay - OUTSIDE body flex */
+/* collapsible sections */
+.cs-hd{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:6px 0;user-select:none;}
+.cs-hd:hover .cs-title{color:#ccc;}
+.cs-title{font-size:10px;color:#aaa;letter-spacing:.5px;font-weight:500;}
+.cs-arrow{font-size:9px;color:#555;transition:transform .2s;}
+.cs-arrow.open{transform:rotate(180deg);}
+.cs-body{overflow:hidden;}
+.cp2{display:flex;gap:5px;margin-bottom:3px;}
+.cp2 label{font-size:9px;color:#666;width:52px;flex-shrink:0;display:flex;align-items:center;}
+.cp2 input[type=color]{width:32px;height:22px;border:1px solid #2a2a2a;border-radius:3px;background:#0a0a0a;cursor:pointer;flex-shrink:0;}
+.cp2 .cp2-txt{flex:1;padding:3px 5px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:3px;color:#ddd;font-size:9px;outline:none;}
 </style>
 </head>
 <body>
@@ -138,6 +149,7 @@ body{font-family:'Noto Sans SC',sans-serif;background:#111;color:#fff;height:100
 const SB='https://kyemjxgdmkupfkntflzh.supabase.co';
 const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
 let LIC=null;
+let _urlCache={heroUrl:null,gridUrls:[]};  // cached image URLs for fast re-render
 
 async function checkAuth(){
   if(location.protocol==='file:'||location.hostname==='localhost'){
@@ -194,16 +206,19 @@ function defP(name,cols){return{
   id:uid(),name,ct:Date.now(),at:Date.now(),cols:cols||3,
   hero:{imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1},
   grids:Array.from({length:cols||3},()=>defG()),
-  heroPct:58,
-  bgTop:'#f5ede0',bgBot:'#e8d5b7',
-  mainText:'xx小预算婚礼必看',
-  mainSize:108,mainFont:'Noto Serif SC',mainWeight:'700',mainColor:'#2a1a0a',
+  heroPct:61,
+  bgTop:'#2a090e',bgBot:'#1a0508',
+  mainText:'北仑小预算婚礼必看',
+  mainSize:108,mainFont:'Noto Serif SC',mainWeight:'700',mainColor:'#ffffff',
   subText:'主题宴会厅 资深婚庆团队 星级厨师服务',
-  subSize:30,subWeight:'400',subFont:'Noto Sans SC',subColor:'#5a3a1a',
+  subSize:32,subWeight:'500',subFont:'Cormorant Garamond',subColor:'#ffffff',
   ctaText:'点击获取最新报价',ctaTagText:'含草坪婚礼',
-  ctaSize:26,ctaColor:'#2a1a0a',ctaBorderColor:'#7a4a1a',
-  ctaTagColor:'#ffffff',ctaTagBg:'#f0a050',
-  gridPad:3,gridGap:2,gridRadius:4,midTextPct:32,titleOffsetY:0,midOffsetX:0,midOffsetY:0,
+  ctaSize:26,ctaFont:'Noto Sans SC',ctaColor:'#ffffff',
+  ctaBorderColor:'#ffffff',ctaBorderW:3,ctaPillBg:'#3a0a10',
+  ctaTagColor:'#ffffff',ctaTagBg:'#8b0000',
+  gridPad:3,gridGap:2,gridRadius:4,gridHPct:30,midTextPct:32,
+  titleOffsetY:-25,midOffsetX:0,midOffsetY:-68,ctaOffsetY:20,
+  gradStart:65,gradEnd:100,gradOp:0.84,gradColor:'#2a090e',
 };}
 
 // ── Image cache ───────────────────────────────────────────────────
@@ -257,6 +272,10 @@ function renderList(){
 }
 
 async function openProj(id){
+  // pre-load all image URLs into cache
+  const pp=projs.find(x=>x.id===id);if(!pp)return;
+  _urlCache.heroUrl=await getURL(pp.hero?.imgKey);
+  _urlCache.gridUrls=await Promise.all((pp.grids||[]).map(g=>getURL(g?.imgKey)));
   curId=id;selG=0;
   const p=cur();if(!p)return;
   document.getElementById('pname').value=p.name;
@@ -315,12 +334,13 @@ async function renderPoster(){
   const gW=Math.round((w-pad*2-gap*(cols-1))/cols);
   const midH=h-heroH;
   const midTxtH=Math.round(midH*(p.midTextPct||32)/100);
-  const gH=midH-midTxtH-pad;
+  const gH=p.gridHPct>0?Math.round(h*(p.gridHPct)/100):midH-midTxtH-pad;
   const rad=Math.round(gW*(p.gridRadius||4)/100);
 
-  const rgb=h2rgb(p.bgTop||'#f5ede0');
-  const heroUrl=await getURL(p.hero.imgKey);
-  const gridUrls=await Promise.all(p.grids.slice(0,cols).map(g=>getURL(g.imgKey)));
+  const gradC=p.gradColor&&p.gradColor!==''?p.gradColor:(p.bgTop||'#f5ede0');
+  const rgb=h2rgb(gradC);
+  const heroUrl=_urlCache.heroUrl;
+  const gridUrls=_urlCache.gridUrls;
 
   const mainSz=Math.round((p.mainSize||68)*sc);
   const subSz=Math.round((p.subSize||30)*sc);
@@ -338,18 +358,29 @@ async function renderPoster(){
       :`<div onclick="uploadHero()" style="width:100%;height:100%;background:#c8b89a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#7a6a4a;cursor:pointer;"><div style="font-size:28px;">＋</div><div style="font-size:11px;">点击上传主图</div></div>`}
   </div>
   <!-- gradient fade: OUTSIDE hero-w so overflow:hidden doesn't clip it -->
-  ${heroUrl?`<div style="position:absolute;top:${Math.round(heroH*0.38)}px;left:0;right:0;height:${Math.round(heroH*0.62)}px;background:linear-gradient(to bottom,rgba(${rgb[0]},${rgb[1]},${rgb[2]},0) 0%,rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.3) 25%,rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.65) 55%,rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.92) 85%,${p.bgTop} 100%);pointer-events:none;z-index:2;"></div>`:''}
+  ${(()=>{
+    if(!heroUrl)return '';
+    const gTop=Math.round(heroH*(p.gradStart||38)/100);
+    const gEnd=Math.min(Math.round(heroH*(p.gradEnd||100)/100), heroH);
+    const gH=Math.max(1, gEnd-gTop);
+    const op=p.gradOp||0.92;
+    return `<div style="position:absolute;top:${gTop}px;left:0;right:0;height:${gH}px;background:linear-gradient(to bottom,rgba(${rgb[0]},${rgb[1]},${rgb[2]},0) 0%,rgba(${rgb[0]},${rgb[1]},${rgb[2]},${Math.round(op*0.32*100)/100}) 25%,rgba(${rgb[0]},${rgb[1]},${rgb[2]},${Math.round(op*0.70*100)/100}) 55%,rgba(${rgb[0]},${rgb[1]},${rgb[2]},${Math.round(op*100)/100}) 85%,${gradC} 100%);pointer-events:none;z-index:2;"></div>`;
+  })()}
   <!-- title: also outside hero-w, on top of gradient -->
-  <div style="position:absolute;top:${heroH - mainSz - Math.round(h*0.04) + Math.round((p.titleOffsetY||0)*sc)}px;left:${pad}px;right:${pad}px;text-align:center;pointer-events:none;z-index:3;">
-    <div style="font-family:'${p.mainFont||'Noto Serif SC'}',serif;font-size:${mainSz}px;font-weight:${p.mainWeight||700};color:${p.mainColor||'#2a1a0a'};letter-spacing:.04em;line-height:1.2;">${esc(p.mainText)}</div>
+  <div style="position:absolute;top:${heroH - mainSz - Math.round(h*0.04) + Math.round((p.titleOffsetY||0)*sc)}px;left:${pad}px;right:${pad}px;text-align:center;z-index:3;">
+    <div contenteditable="true" spellcheck="false" title="点击编辑主标题" style="font-family:'${p.mainFont||'Noto Serif SC'}',serif;font-size:${mainSz}px;font-weight:${p.mainWeight||700};color:${p.mainColor||'#2a1a0a'};letter-spacing:.04em;line-height:1.2;outline:none;cursor:text;" oninput="setP('mainText',this.innerText.trim())" onblur="setP('mainText',this.innerText.trim())">${esc(p.mainText)}</div>
   </div>
 
-  <!-- middle: sub + cta -->
-  <div style="position:absolute;top:${heroH+Math.round((p.midOffsetY||0)*sc)}px;left:${Math.round((p.midOffsetX||0)*sc)}px;right:${Math.round(-(p.midOffsetX||0)*sc)}px;height:${midTxtH}px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:${Math.round(10*sc)}px;padding:${Math.round(16*sc)}px ${pad}px 0;z-index:4;">
-    <div style="font-family:'${p.subFont||'Noto Sans SC'}',sans-serif;font-size:${subSz}px;font-weight:${p.subWeight||'400'};color:${p.subColor||'#5a3a1a'};letter-spacing:.06em;text-align:center;">${esc(p.subText)}</div>
-    <div style="display:inline-flex;align-items:center;background:#f5ede0;border:${Math.round(1.5*sc)}px solid ${p.ctaBorderColor||'#c8a06a'};border-radius:${Math.round(100*sc)}px;overflow:hidden;box-shadow:0 ${Math.round(2*sc)}px ${Math.round(8*sc)}px rgba(0,0,0,0.08);">
-      <div style="padding:${Math.round(12*sc)}px ${Math.round(28*sc)}px;font-size:${ctaSz}px;color:${p.ctaColor||'#2a1a0a'};font-family:'${p.subFont||'Noto Sans SC'}',sans-serif;white-space:nowrap;letter-spacing:.04em;">${esc(p.ctaText)}</div>
-      <div style="background:${p.ctaTagBg||'#f0a050'};padding:${Math.round(12*sc)}px ${Math.round(24*sc)}px;font-size:${ctaSz}px;color:${p.ctaTagColor||'#fff'};font-weight:700;font-family:'${p.subFont||'Noto Sans SC'}',sans-serif;white-space:nowrap;">${esc(p.ctaTagText)}</div>
+  <!-- sub text: independent position -->
+  <div style="position:absolute;top:${heroH+Math.round((p.midOffsetY||0)*sc)}px;left:${Math.round((p.midOffsetX||0)*sc)}px;right:${Math.round(-(p.midOffsetX||0)*sc)}px;display:flex;align-items:center;justify-content:center;padding:${Math.round(16*sc)}px ${pad}px 0;z-index:4;">
+    <div contenteditable="true" spellcheck="false" title="点击编辑副标题" style="font-family:'${p.subFont||'Noto Sans SC'}',sans-serif;font-size:${subSz}px;font-weight:${p.subWeight||'400'};color:${p.subColor||'#5a3a1a'};letter-spacing:.06em;text-align:center;outline:none;cursor:text;" oninput="setP('subText',this.innerText.trim())" onblur="setP('subText',this.innerText.trim())">${esc(p.subText)}</div>
+  </div>
+
+  <!-- cta button: independent position -->
+  <div style="position:absolute;top:${heroH+Math.round((p.midOffsetY||0)*sc)+subSz+Math.round(20*sc)+Math.round((p.ctaOffsetY||0)*sc)}px;left:${Math.round((p.midOffsetX||0)*sc)}px;right:${Math.round(-(p.midOffsetX||0)*sc)}px;display:flex;align-items:center;justify-content:center;z-index:4;">
+    <div style="display:inline-flex;align-items:center;background:${p.ctaPillBg||'#3a0a10'};border:${Math.round((p.ctaBorderW||1.5)*sc)}px solid ${p.ctaBorderColor||'#7a4a1a'};border-radius:${Math.round(100*sc)}px;overflow:hidden;box-shadow:0 ${Math.round(2*sc)}px ${Math.round(8*sc)}px rgba(0,0,0,0.08);">
+      <div contenteditable="true" spellcheck="false" title="点击编辑按钮文字" style="padding:${Math.round(12*sc)}px ${Math.round(28*sc)}px;font-size:${ctaSz}px;color:${p.ctaColor||'#ffffff'};font-family:'${p.ctaFont||p.subFont||'Noto Sans SC'}',sans-serif;white-space:nowrap;letter-spacing:.04em;outline:none;cursor:text;" oninput="setP('ctaText',this.innerText.trim())" onblur="setP('ctaText',this.innerText.trim())">${esc(p.ctaText)}</div>
+      <div contenteditable="true" spellcheck="false" title="点击编辑标签文字" style="background:${p.ctaTagBg||'#8b0000'};padding:${Math.round(12*sc)}px ${Math.round(28*sc)}px;font-size:${ctaSz}px;color:${p.ctaTagColor||'#fff'};font-weight:700;font-family:'${p.subFont||'Noto Sans SC'}',sans-serif;white-space:nowrap;outline:none;cursor:text;" oninput="setP('ctaTagText',this.innerText.trim())" onblur="setP('ctaTagText',this.innerText.trim())">${esc(p.ctaTagText)}</div>
     </div>
   </div>
 
@@ -386,7 +417,7 @@ function updGridPos(i){
   const{w,h}=pSz();const cols=p.cols||3;
   const pad=Math.round(w*(p.gridPad||3)/100);const gap=Math.round(w*(p.gridGap||2)/100);
   const gW=Math.round((w-pad*2-gap*(cols-1))/cols);
-  const midH=h-Math.round(h*(p.heroPct||58)/100);const gH=Math.round(midH*0.68);
+  const midH=h-Math.round(h*(p.heroPct||58)/100);const gH=p.gridHPct>0?Math.round(h*(p.gridHPct)/100):Math.round(midH*0.68);
   const l=iLay(g.nW,g.nH,gW,gH,g.zoom,g.px,g.py);
   img.style.width=l.width+'px';img.style.height=l.height+'px';img.style.left=l.left+'px';img.style.top=l.top+'px';
 }
@@ -427,6 +458,7 @@ function uploadHero(){
     const u=URL.createObjectURL(f);
     await new Promise(res=>{const img=new Image();img.onload=()=>{p.hero.nW=img.naturalWidth;p.hero.nH=img.naturalHeight;URL.revokeObjectURL(u);res();};img.src=u;});
     await saveImg(hk(curId),f);p.hero.imgKey=hk(curId);p.hero.px=50;p.hero.py=50;p.hero.zoom=1;
+    _urlCache.heroUrl=await getURL(p.hero.imgKey);
     await save(p);await renderPoster();renderRP();fi.value='';
   };fi.click();
 }
@@ -437,98 +469,130 @@ function uploadGrid(i){
     const u=URL.createObjectURL(f);
     await new Promise(res=>{const img=new Image();img.onload=()=>{p.grids[i].nW=img.naturalWidth;p.grids[i].nH=img.naturalHeight;URL.revokeObjectURL(u);res();};img.src=u;});
     await saveImg(gk(curId,i),f);p.grids[i].imgKey=gk(curId,i);p.grids[i].px=50;p.grids[i].py=50;p.grids[i].zoom=1;
+    _urlCache.gridUrls=await Promise.all((p.grids||[]).map(g=>getURL(g?.imgKey)));
     await save(p);await renderPoster();renderRP();fi.value='';
   };fi.click();
 }
 
 // ── Right panel ───────────────────────────────────────────────────
+function toggleSec(id){
+  const b=document.getElementById(id);const a=b.previousElementSibling.querySelector('.cs-arrow');
+  if(b.style.display==='none'){b.style.display='';a.classList.add('open');}
+  else{b.style.display='none';a.classList.remove('open');}
+}
+// Compact color picker row: label + color swatch
+function cpRow(label,key,val){
+  return `<div class="cp2"><label>${label}</label><input type="color" value="${val||'#ffffff'}" oninput="setP('${key}',this.value);reRender()"><span style="font-size:9px;color:#555;padding-left:4px;">${val||''}</span></div>`;
+}
+function cs(id,title,open,body){
+  return `<div style="border-top:1px solid #1a1a1a;margin-top:4px;">
+    <div class="cs-hd" onclick="toggleSec('csbody-${id}')">
+      <span class="cs-title">${title}</span>
+      <span class="cs-arrow ${open?'open':''}">▼</span>
+    </div>
+    <div id="csbody-${id}" class="cs-body" style="${open?'':'display:none'}">
+      ${body}
+    </div>
+  </div>`;
+}
 function fO(sel){return FONTS.map(f=>`<option value="${f}" ${sel===f?'selected':''}>${f}</option>`).join('');}
 function renderRP(){
   const rp=document.getElementById('rp');const p=cur();
   if(!p){rp.innerHTML='<div class="empty">新建或选择项目</div>';return;}
   const g=p.grids[selG];
+  const sld=(k,id,val,min,max,step,unit)=>`<div class="row"><input class="sld" type="range" min="${min}" max="${max}" step="${step||1}" value="${val}" id="${id}_s" oninput="setP('${k}',+this.value);reRender();document.getElementById('${id}_v').textContent=this.value+'${unit||'%'}'"><span class="fval" id="${id}_v">${val}${unit||'%'}</span></div>`;
+  const sldG=(i,k,id,val,min,max,fn)=>`<div class="row"><input class="sld" type="range" min="${min}" max="${max}" step="0.05" value="${val}" id="${id}_s" oninput="setG(${i},'${k}',+this.value);${fn};document.getElementById('${id}_v').textContent=Math.round(this.value*100)+'%'"><span class="fval" id="${id}_v">${Math.round(val*100)}%</span></div>`;
+  const cp=(k,v)=>`<input type="color" value="${v}" style="width:100%;height:24px;border:1px solid #2a2a2a;border-radius:3px;background:#0a0a0a;cursor:pointer;margin-bottom:3px;" onchange="setP('${k}',this.value);reRender()">`;
+  const num=(k,v,min,max)=>`<div class="row"><input class="num" type="number" min="${min}" max="${max}" value="${v}" oninput="setP('${k}',+this.value);reRender()"><span class="unit">px</span></div>`;
+
   rp.innerHTML=`<div class="rp-t">编辑面板</div>
 
-  <div class="sec"><div class="sec-t">主图（上方大图）</div>
-    <button class="img-btn" onclick="uploadHero()">${p.hero.imgKey?'更换主图':'上传主图'}</button>
-    <div style="font-size:9px;color:#c8392b;margin-top:3px;padding:3px 6px;background:#1a0808;border-radius:3px;border-left:2px solid #c8392b;">⚠️ 请使用原图，勿上传截图</div>
-    ${p.hero.imgKey?`<div class="drag-hint">拖动调整位置，或用滑块精确调整</div>
-    <div class="row" style="margin-top:5px;"><label>缩放</label><input class="sld" type="range" min="1" max="3" step="0.05" value="${p.hero.zoom||1}" oninput="setH('zoom',+this.value);updHeroPos();document.getElementById('v-hz').textContent=Math.round(this.value*100)+'%'"><span class="fval" id="v-hz">${Math.round((p.hero.zoom||1)*100)}%</span></div>
-    <div class="row"><label>左右</label><input class="sld" type="range" min="0" max="100" value="${p.hero.px||50}" oninput="setH('px',+this.value);updHeroPos();document.getElementById('v-hx').textContent=this.value+'%'"><span class="fval" id="v-hx">${Math.round(p.hero.px||50)}%</span></div>
-    <div class="row"><label>上下</label><input class="sld" type="range" min="0" max="100" value="${p.hero.py||50}" oninput="setH('py',+this.value);updHeroPos();document.getElementById('v-hy').textContent=this.value+'%'"><span class="fval" id="v-hy">${Math.round(p.hero.py||50)}%</span></div>`:''}
+  ${cs('hero','🖼 主图',true,`
+    <button class="img-btn" onclick="uploadHero()" style="margin-bottom:4px;">${p.hero.imgKey?'更换主图':'上传主图'}</button>
+    ${p.hero.imgKey?`
+    ${sld('_hz','hz',Math.round((p.hero.zoom||1)*100),100,300,5,'%').replace("setP('_hz'","setH('zoom'").replace("reRender()","updHeroPos()")}
+    <div class="row"><label style="font-size:9px;color:#666;min-width:26px;">左右</label><input class="sld" type="range" min="0" max="100" value="${p.hero.px||50}" oninput="setH('px',+this.value);updHeroPos()"><span class="fval">${Math.round(p.hero.px||50)}%</span></div>
+    <div class="row"><label style="font-size:9px;color:#666;min-width:26px;">上下</label><input class="sld" type="range" min="0" max="100" value="${p.hero.py||50}" oninput="setH('py',+this.value);updHeroPos()"><span class="fval">${Math.round(p.hero.py||50)}%</span></div>`:''}
     <div class="lbl">主图高度</div>
-    <div class="row"><input class="sld" type="range" min="40" max="75" value="${p.heroPct||58}" oninput="setP('heroPct',+this.value);reRender()"><span class="fval">${p.heroPct||58}%</span></div>
+    <div class="row"><input class="sld" type="range" min="40" max="75" value="${p.heroPct||61}" oninput="setP('heroPct',+this.value);reRender()"><span class="fval">${p.heroPct||61}%</span></div>
+  `)}
 
-    <div class="lbl">标题 上下位置（负=上移）</div>
-    <div class="row">
-      <input class="num" type="number" min="-300" max="300" value="${p.titleOffsetY||0}" oninput="setP('titleOffsetY',+this.value);reRender()">
-      <span class="unit">px</span>
-    </div>
-    <div class="lbl">副标题+按钮 上下（正=下移）</div>
-    <div class="row">
-      <input class="num" type="number" min="-200" max="200" value="${p.midOffsetY||0}" oninput="setP('midOffsetY',+this.value);reRender()">
-      <span class="unit">px</span>
-    </div>
-    <div class="lbl">文字区 左右位置（正数=右移）</div>
-    <div class="row">
-      <input class="num" type="number" min="-200" max="200" value="${p.midOffsetX||0}" oninput="setP('midOffsetX',+this.value);reRender()">
-      <span class="unit">px</span>
-    </div>
-  </div>
+  ${cs('grad','🌅 渐变遮罩',false,`
+    <div class="lbl">起始位置</div>
+    <div class="row"><input class="sld" type="range" min="0" max="99" value="${p.gradStart||65}" id="sld-gradStart" oninput="setP('gradStart',+this.value);reRender();document.getElementById('v-gradStart').textContent=this.value+'%'"><span class="fval" id="v-gradStart">${p.gradStart||65}%</span></div>
+    <div class="lbl">结束位置（100%=主图底边）</div>
+    <div class="row"><input class="sld" type="range" min="1" max="100" value="${p.gradEnd||100}" id="sld-gradEnd" oninput="setP('gradEnd',Math.max(+this.value,+(document.getElementById('sld-gradStart').value)+1));reRender();document.getElementById('v-gradEnd').textContent=this.value+'%'"><span class="fval" id="v-gradEnd">${p.gradEnd||100}%</span></div>
+    <div class="lbl">不透明度</div>
+    <div class="row"><input class="sld" type="range" min="0" max="1" step="0.01" value="${p.gradOp||0.84}" oninput="setP('gradOp',+this.value);reRender()"><span class="fval">${Math.round((p.gradOp||0.84)*100)}%</span></div>
+    <div class="lbl">渐变颜色</div>
+    ${cp('gradColor',p.gradColor||p.bgTop||'#2a090e')}
+  `)}
 
-  <div class="sec"><div class="sec-t">主标题</div>
+  ${cs('txt','✏️ 文字位置',false,`
+    <div class="lbl">标题 上下（负=上移）</div>${num('titleOffsetY',p.titleOffsetY||0,-300,300)}
+    <div class="lbl">副标题 上下</div>${num('midOffsetY',p.midOffsetY||0,-300,300)}
+    <div class="lbl">按钮 上下偏移</div>${num('ctaOffsetY',p.ctaOffsetY||0,-200,200)}
+    <div class="lbl">文字区 左右</div>${num('midOffsetX',p.midOffsetX||0,-200,200)}
+  `)}
+
+  ${cs('main','📌 主标题',true,`
     <textarea class="ta" oninput="setP('mainText',this.value);reRender()">${esc(p.mainText)}</textarea>
     <div class="lbl">字体</div><select class="sel" onchange="setP('mainFont',this.value);reRender()">${fO(p.mainFont||'Noto Serif SC')}</select>
-    <div class="row"><label>字号</label><input class="num" type="number" min="20" max="200" value="${p.mainSize||108}" oninput="setP('mainSize',+this.value);reRender()"><span class="unit">px</span></div>
-    <div class="lbl">颜色</div>
-    <input type="color" value="${p.mainColor||'#2a1a0a'}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;margin-bottom:3px;" onchange="setP('mainColor',this.value);reRender()">
-  </div>
+    <div class="row"><label>字号</label><input class="num" type="number" min="20" max="200" value="${p.mainSize||108}" oninput="setP('mainSize',+this.value);reRender()"><span class="unit">px</span>
+    <select style="width:80px;padding:3px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:3px;color:#ddd;font-size:10px;margin-left:4px;" onchange="setP('mainWeight',this.value);reRender()">
+      ${['300','400','500','700','900'].map(w=>`<option value="${w}" ${(p.mainWeight||'700')===w?'selected':''}>${w}</option>`).join('')}
+    </select></div>
+    <div class="lbl">颜色</div>${cp('mainColor',p.mainColor||'#ffffff')}
+  `)}
 
-  <div class="sec"><div class="sec-t">副标题</div>
+  ${cs('sub','📝 副标题',true,`
     <input class="fi" type="text" value="${esc(p.subText)}" oninput="setP('subText',this.value);reRender()">
-    <div class="row"><label>字号</label><input class="num" type="number" min="8" max="80" value="${p.subSize||30}" oninput="setP('subSize',+this.value);reRender()"><span class="unit">px</span></div>
-    <div class="lbl">字重（粗细）</div>
-    <select class="sel" onchange="setP('subWeight',this.value);reRender()">
-      <option value="300" ${(p.subWeight||'400')==='300'?'selected':''}>细 300</option>
-      <option value="400" ${(p.subWeight||'400')==='400'?'selected':''}>常规 400</option>
-      <option value="500" ${(p.subWeight||'400')==='500'?'selected':''}>中等 500</option>
-      <option value="700" ${(p.subWeight||'400')==='700'?'selected':''}>粗 700</option>
-    </select>
-    <div class="lbl">颜色</div>
-    <input type="color" value="${p.subColor||'#5a3a1a'}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;" onchange="setP('subColor',this.value);reRender()">
-  </div>
+    <div class="lbl">字体</div><select class="sel" onchange="setP('subFont',this.value);reRender()">${fO(p.subFont||'Noto Sans SC')}</select>
+    <div class="row"><label>字号</label><input class="num" type="number" min="8" max="80" value="${p.subSize||32}" oninput="setP('subSize',+this.value);reRender()"><span class="unit">px</span>
+    <select style="width:80px;padding:3px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:3px;color:#ddd;font-size:10px;margin-left:4px;" onchange="setP('subWeight',this.value);reRender()">
+      ${['300','400','500','700'].map(w=>`<option value="${w}" ${(p.subWeight||'500')===w?'selected':''}>${w}</option>`).join('')}
+    </select></div>
+    <div class="lbl">颜色</div>${cp('subColor',p.subColor||'#ffffff')}
+  `)}
 
-  <div class="sec"><div class="sec-t">按钮标签</div>
+  ${cs('cta','🔘 按钮标签',true,`
     <div class="lbl">按钮文字</div><input class="fi" type="text" value="${esc(p.ctaText)}" oninput="setP('ctaText',this.value);reRender()">
     <div class="lbl">标签文字</div><input class="fi" type="text" value="${esc(p.ctaTagText)}" oninput="setP('ctaTagText',this.value);reRender()">
-    <div class="lbl">标签颜色</div>
-    <input type="color" value="${p.ctaTagColor||'#c8392b'}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;" onchange="setP('ctaTagColor',this.value);reRender()">
-    <div class="lbl">标签背景</div>
-    <input type="color" value="${p.ctaTagBg||'#fff0e0'}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;" onchange="setP('ctaTagBg',this.value);reRender()">
-  </div>
+    <div class="lbl">字体</div><select class="sel" onchange="setP('ctaFont',this.value);reRender()">${fO(p.ctaFont||'Noto Sans SC')}</select>
+    <div class="row"><label>字号</label><input class="num" type="number" min="10" max="80" value="${p.ctaSize||26}" oninput="setP('ctaSize',+this.value);reRender()"><span class="unit">px</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:4px;">
+      <div><div class="lbl">按钮文字色</div>${cp('ctaColor',p.ctaColor||'#ffffff')}</div>
+      <div><div class="lbl">按钮背景色</div>${cp('ctaPillBg',p.ctaPillBg||'#3a0a10')}</div>
+      <div><div class="lbl">边框颜色</div>${cp('ctaBorderColor',p.ctaBorderColor||'#ffffff')}</div>
+      <div><div class="lbl">标签文字色</div>${cp('ctaTagColor',p.ctaTagColor||'#ffffff')}</div>
+      <div style="grid-column:span 2"><div class="lbl">标签背景色</div>${cp('ctaTagBg',p.ctaTagBg||'#8b0000')}</div>
+    </div>
+    <div class="lbl">边框粗细</div>
+    <div class="row"><input class="sld" type="range" min="0" max="6" step="0.5" value="${p.ctaBorderW||3}" oninput="setP('ctaBorderW',+this.value);reRender()"><span class="fval">${p.ctaBorderW||3}px</span></div>
+  `)}
 
-  <div class="sec"><div class="sec-t">背景色</div>
-    <div class="lbl">顶部颜色</div>
-    <input type="color" value="${p.bgTop||'#f5ede0'}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;margin-bottom:6px;" onchange="setP('bgTop',this.value);reRender()">
-    <div class="lbl">底部颜色</div>
-    <input type="color" value="${p.bgBot||'#e8d5b7'}" style="width:100%;height:26px;border:1px solid #2a2a2a;border-radius:4px;background:#0a0a0a;cursor:pointer;" onchange="setP('bgBot',this.value);reRender()">
-  </div>
+  ${cs('bg','🎨 背景色',false,`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;">
+      <div><div class="lbl">顶部</div>${cp('bgTop',p.bgTop||'#2a090e')}</div>
+      <div><div class="lbl">底部</div>${cp('bgBot',p.bgBot||'#1a0508')}</div>
+    </div>
+  `)}
 
-  <div class="sec"><div class="sec-t">下方图片</div>
+  ${cs('grid','🖼 下方图片',true,`
     <div class="col-tabs">${Array.from({length:p.cols||3},(_,i)=>`<button class="ct ${i===selG?'on':''}" onclick="selGrid(${i})">图${i+1}</button>`).join('')}</div>
     <button class="img-btn" onclick="uploadGrid(${selG})">${g.imgKey?'更换图片':'上传图片'}</button>
-    <div style="font-size:9px;color:#c8392b;margin-top:3px;padding:3px 6px;background:#1a0808;border-radius:3px;border-left:2px solid #c8392b;">⚠️ 请使用原图，勿上传截图</div>
-    ${g.imgKey?`<div class="drag-hint">拖动调整位置，或用滑块精确调整</div>
-    <div class="row" style="margin-top:5px;"><label>缩放</label><input class="sld" type="range" min="1" max="3" step="0.05" value="${g.zoom||1}" oninput="setG(${selG},'zoom',+this.value);updGridPos(${selG});document.getElementById('v-gz').textContent=Math.round(this.value*100)+'%'"><span class="fval" id="v-gz">${Math.round((g.zoom||1)*100)}%</span></div>
-    <div class="row"><label>左右</label><input class="sld" type="range" min="0" max="100" value="${g.px||50}" oninput="setG(${selG},'px',+this.value);updGridPos(${selG});document.getElementById('v-gx').textContent=this.value+'%'"><span class="fval" id="v-gx">${Math.round(g.px||50)}%</span></div>
-    <div class="row"><label>上下</label><input class="sld" type="range" min="0" max="100" value="${g.py||50}" oninput="setG(${selG},'py',+this.value);updGridPos(${selG});document.getElementById('v-gy').textContent=this.value+'%'"><span class="fval" id="v-gy">${Math.round(g.py||50)}%</span></div>`:''}
-    <div class="lbl">圆角</div>
-    <div class="row"><input class="sld" type="range" min="0" max="15" value="${p.gridRadius||4}" oninput="setP('gridRadius',+this.value);reRender()"><span class="fval">${p.gridRadius||4}%</span></div>
-    <div class="lbl">边距</div>
-    <div class="row"><input class="sld" type="range" min="0" max="8" value="${p.gridPad||3}" oninput="setP('gridPad',+this.value);reRender()"><span class="fval">${p.gridPad||3}%</span></div>
-    <div class="lbl">间距</div>
-    <div class="row"><input class="sld" type="range" min="0" max="6" step="0.5" value="${p.gridGap||2}" oninput="setP('gridGap',+this.value);reRender()"><span class="fval">${p.gridGap||2}%</span></div>
-  </div>`;
+    ${g.imgKey?`
+    <div class="row" style="margin-top:4px;"><label style="font-size:9px;color:#666;min-width:26px;">缩放</label><input class="sld" type="range" min="1" max="3" step="0.05" value="${g.zoom||1}" oninput="setG(${selG},'zoom',+this.value);updGridPos(${selG})"><span class="fval">${Math.round((g.zoom||1)*100)}%</span></div>
+    <div class="row"><label style="font-size:9px;color:#666;min-width:26px;">左右</label><input class="sld" type="range" min="0" max="100" value="${g.px||50}" oninput="setG(${selG},'px',+this.value);updGridPos(${selG})"><span class="fval">${Math.round(g.px||50)}%</span></div>
+    <div class="row"><label style="font-size:9px;color:#666;min-width:26px;">上下</label><input class="sld" type="range" min="0" max="100" value="${g.py||50}" oninput="setG(${selG},'py',+this.value);updGridPos(${selG})"><span class="fval">${Math.round(g.py||50)}%</span></div>`:''}
+    <div class="lbl">图片高度（0=自动）</div>
+    <div class="row"><input class="sld" type="range" min="0" max="60" value="${p.gridHPct||30}" oninput="setP('gridHPct',+this.value);reRender()"><span class="fval">${p.gridHPct||30}%</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-top:2px;">
+      <div><div class="lbl">圆角</div><div class="row"><input class="sld" type="range" min="0" max="15" value="${p.gridRadius||4}" oninput="setP('gridRadius',+this.value);reRender()"><span class="fval">${p.gridRadius||4}%</span></div></div>
+      <div><div class="lbl">边距</div><div class="row"><input class="sld" type="range" min="0" max="8" value="${p.gridPad||3}" oninput="setP('gridPad',+this.value);reRender()"><span class="fval">${p.gridPad||3}%</span></div></div>
+      <div><div class="lbl">间距</div><div class="row"><input class="sld" type="range" min="0" max="6" step="0.5" value="${p.gridGap||2}" oninput="setP('gridGap',+this.value);reRender()"><span class="fval">${p.gridGap||2}%</span></div></div>
+    </div>
+  `)}`;
 }
 
 function selGrid(i){selG=i;renderRP();}
@@ -536,6 +600,29 @@ async function setP(k,v){const p=cur();if(!p)return;p[k]=v;await save(p);}
 async function setH(k,v){const p=cur();if(!p)return;p.hero[k]=v;await save(p);}
 async function setG(i,k,v){const p=cur();if(!p)return;p.grids[i][k]=v;await save(p);}
 async function reRender(){await renderPoster();}
+
+// ── drawTextLS ───────────────────────────────────────────────────
+function drawTextLS(ctx,text,cx,y,letterSpacingEm,align){
+  const fs=parseFloat(ctx.font.match(/([\d.]+)px/)?.[1]||16);
+  const ls=letterSpacingEm*fs;
+  const chars=text.split('');
+  let totalW=0;
+  chars.forEach((ch,i)=>{totalW+=ctx.measureText(ch).width;if(i<chars.length-1)totalW+=ls;});
+  let sx=align==='center'?cx-totalW/2:align==='right'?cx-totalW:cx;
+  chars.forEach((ch,i)=>{ctx.fillText(ch,sx,y);sx+=ctx.measureText(ch).width+(i<chars.length-1?ls:0);});
+}
+
+// ── roundRect polyfill ───────────────────────────────────────────
+function rrect(ctx,x,y,w,h,r){
+  r=Math.min(r,w/2,h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
 
 // ── Export ────────────────────────────────────────────────────────
 async function doExport(){
@@ -551,13 +638,26 @@ async function doExport(){
   const gW=Math.round((W-pad*2-gap*(cols-1))/cols);
   const midH=H-heroH;
   const midTxtH=Math.round(midH*(p.midTextPct||32)/100);
-  const gH=midH-midTxtH-pad;
+  const gH=p.gridHPct>0?Math.round(H*(p.gridHPct)/100):midH-midTxtH-pad;
   const rad=Math.round(gW*(p.gridRadius||4)/100);
-  const rgb=h2rgb(p.bgTop||'#f5ede0');
+  const gradC=p.gradColor&&p.gradColor!==''?p.gradColor:(p.bgTop||'#f5ede0');
+  const rgb=h2rgb(gradC);
 
   const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
   const ctx=canvas.getContext('2d');
   await document.fonts.ready;
+  // Force canvas font cache by drawing a test char with each font used
+  const _fonts=[
+    `${p.mainWeight||700} ${Math.round(p.mainSize||108)}px "${p.mainFont||'Noto Serif SC'}",serif`,
+    `400 ${Math.round(p.mainSize||108)}px "${p.mainFont||'Noto Serif SC'}",serif`,
+    `${p.subWeight||'400'} ${Math.round(p.subSize||32)}px "${p.subFont||'Noto Sans SC'}",sans-serif`,
+    `400 ${Math.round(p.ctaSize||26)}px "${p.ctaFont||'Noto Sans SC'}",sans-serif`,
+    `700 ${Math.round(p.ctaSize||26)}px "${p.ctaFont||'Noto Sans SC'}",sans-serif`,
+    `500 ${Math.round(p.subSize||32)}px "${p.subFont||'Noto Sans SC'}",sans-serif`,
+  ];
+  for(const f of _fonts){ctx.font=f;ctx.fillStyle='rgba(0,0,0,0)';ctx.fillText('测',0,0);}
+  // Small delay to let canvas font cache settle
+  await new Promise(r=>setTimeout(r,400));
 
   // background
   const bg=ctx.createLinearGradient(0,heroH,0,H);
@@ -574,67 +674,92 @@ async function doExport(){
     };img.src=heroUrl;});
   }
   // fade
-  const gradH=Math.round(heroH*0.55);
-  const gr=ctx.createLinearGradient(0,heroH-gradH,0,heroH);
-  gr.addColorStop(0,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0)`);gr.addColorStop(0.25,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.35)`);gr.addColorStop(0.55,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.72)`);gr.addColorStop(0.80,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.92)`);gr.addColorStop(1,p.bgTop||'#f5ede0');
-  ctx.fillStyle=gr;ctx.fillRect(0,heroH-gradH,W,gradH);
+  const gradTopPx=Math.round(heroH*(p.gradStart||38)/100);
+  const gradEndPx=Math.min(Math.round(heroH*(p.gradEnd||100)/100), heroH);
+  const gradHpx=Math.max(1, gradEndPx-gradTopPx);
+  const gradOpMax=p.gradOp||0.92;
+  const gr=ctx.createLinearGradient(0,gradTopPx,0,gradTopPx+gradHpx);
+  gr.addColorStop(0,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0)`);gr.addColorStop(0.25,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${(gradOpMax*0.38).toFixed(2)})`);gr.addColorStop(0.55,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${(gradOpMax*0.78).toFixed(2)})`);gr.addColorStop(0.80,`rgba(${rgb[0]},${rgb[1]},${rgb[2]},${gradOpMax.toFixed(2)})`);gr.addColorStop(1,gradC);
+  ctx.fillStyle=gr;ctx.fillRect(0,gradTopPx,W,gradHpx);
 
-  // main title
-  ctx.textAlign='center';ctx.textBaseline='top';
+  // main title — matches preview: center aligned, top baseline
+  ctx.textBaseline='top';
   const exportMainSz=Math.round(p.mainSize||68);
   ctx.font=`${p.mainWeight||700} ${exportMainSz}px "${p.mainFont||'Noto Serif SC'}",serif`;
-  ctx.fillStyle=p.mainColor||'#2a1a0a';
+  ctx.fillStyle=p.mainColor||'#ffffff';
   const titleY=heroH - exportMainSz - Math.round(H*0.04) + Math.round(p.titleOffsetY||0);
-  ctx.fillText(p.mainText,W/2,titleY);
+  drawTextLS(ctx,p.mainText,W/2,titleY,0.04,'center');
 
-  // subtitle
+  // subtitle — matches preview
   const midOffY=Math.round(p.midOffsetY||0);
   const midOffX=Math.round(p.midOffsetX||0);
   const exportSubSz=Math.round(p.subSize||30);
-  const subY=heroH+midOffY+Math.round(16)+exportSubSz/2+Math.round(10);
-  ctx.textBaseline='middle';
+  const subY=heroH+midOffY+Math.round(16);
+  ctx.textBaseline='top';
   ctx.font=`${p.subWeight||'400'} ${exportSubSz}px "${p.subFont||'Noto Sans SC'}",sans-serif`;
-  ctx.fillStyle=p.subColor||'#5a3a1a';
-  ctx.fillText(p.subText,W/2+midOffX,subY);
+  ctx.fillStyle=p.subColor||'#ffffff';
+  drawTextLS(ctx,p.subText,W/2+midOffX,subY,0.06,'center');
 
-  // CTA - unified pill (matches preview)
+  // CTA pill — render to offscreen canvas then stamp onto main canvas
+  // This avoids all measureText font-loading unreliability
   const ctaSz=Math.round(p.ctaSize||26);
-  const ctaY=subY+exportSubSz/2+10+Math.round(12)+ctaSz/2;
-  const padX=ctaSz*1.2,padY=ctaSz*0.55;
-  ctx.font=`400 ${ctaSz}px "${p.subFont||'Noto Sans SC'}",sans-serif`;
-  const btnTW=ctx.measureText(p.ctaText).width;
-  ctx.font=`700 ${ctaSz}px "${p.subFont||'Noto Sans SC'}",sans-serif`;
-  const tagTW=ctx.measureText(p.ctaTagText).width;
-  const btnSectionW=btnTW+padX*2, tagSectionW=tagTW+padX*1.5;
-  const pillTotalW=btnSectionW+tagSectionW, pillH=ctaSz+padY*2;
-  const pillX=(W-pillTotalW)/2, pillY=ctaY-pillH/2;
-  const pillR=pillH/2;
-  // pill background
-  ctx.fillStyle='#f5ede0';
-  ctx.beginPath();ctx.roundRect(pillX,pillY,pillTotalW,pillH,pillR);ctx.fill();
-  // pill border
-  ctx.strokeStyle=p.ctaBorderColor||'#c8a06a';ctx.lineWidth=2;
-  ctx.beginPath();ctx.roundRect(pillX,pillY,pillTotalW,pillH,pillR);ctx.stroke();
-  // tag orange fill (clipped to pill shape)
-  ctx.save();ctx.beginPath();ctx.roundRect(pillX,pillY,pillTotalW,pillH,pillR);ctx.clip();
-  ctx.fillStyle=p.ctaTagBg||'#f0a050';
-  ctx.fillRect(pillX+btnSectionW,pillY,tagSectionW,pillH);
+  const ctaTopY=subY+exportSubSz+Math.round(20)+Math.round(p.ctaOffsetY||0);
+  const padY2=Math.round(ctaSz*0.55);
+  const pillH2=ctaSz+padY2*2;
+  const pillR2=pillH2/2;
+  const padX2=Math.round(ctaSz*1.3);
+
+  // Build pill on offscreen canvas sized by character count estimate
+  const btnChars=(p.ctaText||'').length||8;
+  const tagChars=(p.ctaTagText||'').length||4;
+  const estCharW=Math.round(ctaSz*0.85); // CJK chars ~0.85em wide
+  const btnEst=Math.round(btnChars*estCharW+padX2*2);
+  // tag font-weight:700 makes chars ~10% wider, compensate padding
+  const tagEst=Math.round(tagChars*estCharW*1.1+padX2*2);
+  const pillW2=btnEst+tagEst;
+  const pillX2=Math.round((W-pillW2)/2);
+
+  // Draw pill sections
+  // Left (btn) background
+  ctx.save();
+  ctx.beginPath();rrect(ctx,pillX2,ctaTopY,pillW2,pillH2,pillR2);
+  ctx.fillStyle=p.ctaPillBg||'#3a0a10';ctx.fill();
   ctx.restore();
-  // button text
-  ctx.font=`400 ${ctaSz}px "${p.subFont||'Noto Sans SC'}",sans-serif`;
-  ctx.fillStyle=p.ctaColor||'#2a1a0a';ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText(p.ctaText,pillX+btnSectionW/2,ctaY);
-  // tag text
-  ctx.font=`700 ${ctaSz}px "${p.subFont||'Noto Sans SC'}",sans-serif`;
+  // Right (tag) background — clipped to pill
+  ctx.save();
+  ctx.beginPath();rrect(ctx,pillX2,ctaTopY,pillW2,pillH2,pillR2);ctx.clip();
+  ctx.fillStyle=p.ctaTagBg||'#8b0000';
+  ctx.fillRect(pillX2+btnEst,ctaTopY,tagEst,pillH2);
+  ctx.restore();
+  // Border
+  ctx.save();
+  ctx.beginPath();rrect(ctx,pillX2,ctaTopY,pillW2,pillH2,pillR2);
+  ctx.strokeStyle=p.ctaBorderColor||'#ffffff';
+  ctx.lineWidth=Math.max(p.ctaBorderW||3,1);
+  ctx.stroke();
+  ctx.restore();
+  // Btn text
+  ctx.save();
+  ctx.font=`400 ${ctaSz}px "${p.ctaFont||'Noto Sans SC'}",sans-serif`;
+  ctx.fillStyle=p.ctaColor||'#ffffff';
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  const ctaMidY=ctaTopY+pillH2/2;
+  ctx.fillText(p.ctaText,pillX2+btnEst/2,ctaMidY);
+  ctx.restore();
+  // Tag text
+  ctx.save();
+  ctx.font=`700 ${ctaSz}px "${p.ctaFont||'Noto Sans SC'}",sans-serif`;
   ctx.fillStyle=p.ctaTagColor||'#ffffff';
-  ctx.fillText(p.ctaTagText,pillX+btnSectionW+tagSectionW/2,ctaY);
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(p.ctaTagText,pillX2+btnEst+tagEst/2,ctaMidY);
+  ctx.restore();
 
   // grid images
   const gridUrls=await Promise.all(p.grids.slice(0,cols).map(g=>getURL(g.imgKey)));
-  const gridTop=heroH+midTxtH;
+  const gridTop=H-gH-pad;  // match preview: position:absolute;bottom:pad
   for(let i=0;i<cols;i++){
     const gx=pad+i*(gW+gap),gy=gridTop;const g=p.grids[i];const url=gridUrls[i];
-    ctx.save();ctx.beginPath();ctx.roundRect(gx,gy,gW,gH,rad);ctx.clip();
+    ctx.save();ctx.beginPath();rrect(ctx,gx,gy,gW,gH,rad);ctx.clip();
     if(url){await new Promise(res=>{const img=new Image();img.onload=()=>{
       const l=iLay(g.nW||img.naturalWidth,g.nH||img.naturalHeight,gW,gH,g.zoom,g.px,g.py);
       ctx.drawImage(img,gx+l.left,gy+l.top,l.width,l.height);res();
@@ -643,10 +768,14 @@ async function doExport(){
     ctx.restore();
   }
 
-  const a=document.createElement('a');
-  a.download=(p.name||'poster')+'_大图文字版_1200x1600.png';
-  a.href=canvas.toDataURL('image/png',1);a.click();
-  btn.textContent='↓ 导出 PNG';btn.disabled=false;
+  canvas.toBlob(blob=>{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.download=(p.name||'poster')+'_大图文字版_1200x1600.png';
+    a.href=url;a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    btn.textContent='↓ 导出 PNG 1200×1600';btn.disabled=false;
+  },'image/png');
 }
 
 // roundRect polyfill
@@ -682,5 +811,3 @@ document.getElementById('m-name').addEventListener('keydown',e=>{if(e.key==='Ent
 </script>
 </body>
 </html>
- 
- 
