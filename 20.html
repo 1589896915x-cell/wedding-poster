@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>背景叠图三宫格版 · 婚礼海报设计</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Great+Vibes&family=Allura&family=Tangerine:wght@400;700&family=Italianno&family=Sacramento&family=Dancing+Script:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=Italiana&family=Cinzel:wght@400;500;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700&family=Long+Cang&family=Ma+Shan+Zheng&family=Liu+Jian+Mao+Cao&family=ZCOOL+XiaoWei&family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=Noto+Serif+SC:wght@300;400;500;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html,body{height:100%;background:#0e0d0c;color:#e9e3d8;font:13px/1.55 -apple-system,"PingFang SC","Microsoft YaHei",sans-serif;overflow:hidden}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:transparent}
+input,select,textarea{font:inherit;color:inherit}
+
+#app{display:grid;grid-template-columns:240px 1fr 380px;height:100vh}
+
+#side{background:#16140f;border-right:1px solid #2a251c;display:flex;flex-direction:column;overflow:hidden}
+.side-h{padding:16px 14px 10px;border-bottom:1px solid #2a251c}
+.side-h h1{font:600 14px/1.3 "Cormorant Garamond","Noto Serif SC",serif;letter-spacing:1px;color:#d4b87a}
+.side-h .sub{font-size:11px;color:#7a6f5a;margin-top:4px;letter-spacing:.5px}
+.side-btns{padding:10px;display:flex;gap:6px}
+.side-btns button{flex:1;background:#1f1c15;border:1px solid #34301f;color:#cfc4a8;padding:8px 0;border-radius:6px;font-size:12px}
+.side-btns button:hover{background:#2a2417;border-color:#5a4a2c;color:#e9d4a3}
+.side-btns button.primary{background:linear-gradient(180deg,#a18047,#7e5e2f);color:#fff;border-color:#a18047}
+.proj-list{flex:1;overflow-y:auto;padding:6px 8px}
+.proj-item{padding:9px 10px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#bdb29a;margin-bottom:3px;border:1px solid transparent}
+.proj-item:hover{background:#1c1a14}
+.proj-item.active{background:#231e13;border-color:#4a3a1f;color:#e9d4a3}
+.proj-item .pn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proj-item .pdel{opacity:0;font-size:14px;color:#7a6f5a;padding:2px 6px;border-radius:4px}
+.proj-item:hover .pdel{opacity:1}
+.proj-item .pdel:hover{background:#3a1818;color:#e88}
+.lic{padding:10px 14px;border-top:1px solid #2a251c;font-size:11.5px;color:#8a7e63;display:flex;justify-content:space-between}
+.lic b{color:#d4b87a;font-weight:500}
+
+#main{display:flex;flex-direction:column;background:#0a0908;overflow:hidden}
+.tbar{height:48px;border-bottom:1px solid #1c1a14;display:flex;align-items:center;padding:0 16px;gap:10px;background:#100e0a}
+.tbar input.pname{flex:1;max-width:320px;background:#1a1812;border:1px solid #2a251c;border-radius:6px;padding:6px 10px;color:#e9d4a3;font-size:13px;outline:none}
+.tbar input.pname:focus{border-color:#5a4a2c}
+.tbar .undo{background:#1a1812;border:1px solid #2a251c;border-radius:6px;padding:6px 12px;color:#bdb29a;font-size:12px}
+.tbar .undo:disabled{opacity:.4;cursor:not-allowed}
+.tbar .undo:hover:not(:disabled){background:#2a2417;color:#e9d4a3}
+.tbar .exp{margin-left:auto;background:linear-gradient(180deg,#a88456,#7c5e2f);color:#fff;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:500;letter-spacing:.5px}
+
+.stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:20px}
+.canvas-wrap{position:relative;width:540px;background:#fff;box-shadow:0 6px 40px rgba(0,0,0,.6),0 0 0 1px #2a251c}
+.cv{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;background:#fff}
+.bg-img{position:absolute;user-select:none;pointer-events:none;will-change:transform}
+.bg-overlay{position:absolute;inset:0;pointer-events:none}
+.photo-slot{position:absolute;overflow:hidden;cursor:move;background:#eee}
+.photo-slot.empty{background:repeating-linear-gradient(45deg,#f4ebe0,#f4ebe0 10px,#ede1d0 10px,#ede1d0 20px);display:flex;align-items:center;justify-content:center;color:#a89c80;font-size:12px;cursor:pointer;user-select:none}
+.photo-slot img{position:absolute;user-select:none;pointer-events:none;will-change:transform}
+.photo-slot.sel{outline:2px dashed rgba(255,200,120,.7);outline-offset:2px}
+.txt{position:absolute;outline:none;cursor:text;user-select:text;text-rendering:geometricPrecision}
+.txt:hover{outline:1px dashed rgba(0,0,0,.25);outline-offset:3px}
+.txt:focus{outline:1px dashed rgba(255,150,150,.8);outline-offset:3px}
+.logo-img{position:absolute;pointer-events:none;user-select:none}
+
+#rp{background:#16140f;border-left:1px solid #2a251c;display:flex;flex-direction:column;overflow:hidden}
+.rp-h{padding:14px 16px 10px;border-bottom:1px solid #2a251c}
+.rp-h h2{font:500 13px/1.3 "Cormorant Garamond",serif;letter-spacing:1.5px;color:#d4b87a;text-transform:uppercase}
+.rp-h-sub{font-size:11px;color:#7a6f5a;margin-top:3px;letter-spacing:.3px}
+.rp-tabs{padding:10px 14px 4px;border-bottom:1px solid #2a251c;background:#15130e}
+.rp-tabs-ttl{font-size:10.5px;color:#8a7e63;letter-spacing:1px;text-transform:uppercase;margin-bottom:7px}
+.bandtabs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.bandtab{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:5px;border:1px solid #2a251c;background:#13110d;color:#a89c80;font-size:11px;text-align:center;justify-content:center}
+.bandtab:hover{border-color:#5a4a2c;background:#1a1812;color:#cfc4a8}
+.bandtab.on{border-color:#7e5e2f;background:#231e13;color:#e9d4a3;box-shadow:0 0 0 1px #4a3a1f inset}
+.rp-body{flex:1;overflow-y:auto;padding:10px 14px 30px}
+
+.sec{margin-bottom:8px;border:1px solid #25211a;border-radius:8px;background:#1a1812;overflow:hidden}
+.sec-h{padding:11px 13px;display:flex;align-items:center;cursor:pointer;font-size:12.5px;color:#d4b87a;letter-spacing:.5px;font-weight:500;user-select:none}
+.sec-h::before{content:"›";margin-right:8px;transition:transform .2s;font-size:14px;color:#7a6f5a}
+.sec.open .sec-h::before{transform:rotate(90deg)}
+.sec-h:hover{background:#1f1d15}
+.sec-b{display:none;padding:6px 13px 12px;border-top:1px solid #25211a}
+.sec.open .sec-b{display:block}
+
+.row{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:12px;color:#a89c80}
+.row label{flex-shrink:0;min-width:54px;color:#a89c80;font-size:11.5px}
+
+input[type=text],input[type=number],select,textarea{background:#0e0d0a;border:1px solid #2a251c;border-radius:5px;padding:5px 8px;color:#e9d4a3;font-size:12px;outline:none}
+input[type=text]:focus,input[type=number]:focus,select:focus,textarea:focus{border-color:#5a4a2c}
+input[type=text],textarea{flex:1;min-width:0}
+textarea{resize:vertical;font:12px/1.5 inherit;min-height:60px}
+input[type=number]{width:58px;text-align:center}
+select{flex:1;cursor:pointer;background-image:linear-gradient(45deg,transparent 50%,#7a6f5a 50%),linear-gradient(135deg,#7a6f5a 50%,transparent 50%);background-position:calc(100% - 14px) 50%,calc(100% - 9px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:24px;-webkit-appearance:none;appearance:none}
+
+input[type=range]{flex:1;-webkit-appearance:none;background:transparent;height:18px;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:3px;background:#2a251c;border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#d4b87a;margin-top:-5.5px;border:2px solid #1a1812}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#d4b87a;border:2px solid #1a1812}
+
+.btn{background:#231f17;border:1px solid #34301f;color:#cfc4a8;padding:6px 12px;border-radius:5px;font-size:12px}
+.btn:hover{background:#2a2417;border-color:#5a4a2c;color:#e9d4a3}
+.btn-sm{padding:4px 9px;font-size:11.5px}
+.btn-dng:hover{background:#3a1818;border-color:#7a3030;color:#f0a0a0}
+
+.seg{display:flex;background:#0e0d0a;border:1px solid #2a251c;border-radius:6px;padding:2px;gap:1px;flex:1}
+.seg button{flex:1;padding:5px 0;font-size:12px;color:#8a7e63;border-radius:4px}
+.seg button.on{background:#3a2f1c;color:#e9d4a3}
+
+.cp-trig{width:28px;height:22px;border-radius:4px;border:1px solid #2a251c;cursor:pointer;background-image:linear-gradient(45deg,#444 25%,transparent 25%),linear-gradient(-45deg,#444 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#444 75%),linear-gradient(-45deg,transparent 75%,#444 75%);background-size:8px 8px;background-position:0 0,0 4px,4px -4px,-4px 0;flex-shrink:0;position:relative;overflow:hidden}
+.cp-trig::after{content:"";position:absolute;inset:0;background:var(--c,#fff)}
+.cp-pop{position:fixed;width:240px;background:#1a1812;border:1px solid #3a3220;border-radius:8px;padding:10px;box-shadow:0 8px 30px rgba(0,0,0,.7);z-index:1000;font-size:11px}
+.cp-sat{position:relative;width:100%;height:140px;border-radius:4px;cursor:crosshair;margin-bottom:8px;background:#fff}
+.cp-sat-w{position:absolute;inset:0;background:linear-gradient(to right,#fff,transparent)}
+.cp-sat-b{position:absolute;inset:0;background:linear-gradient(to top,#000,transparent)}
+.cp-sat-cur{position:absolute;width:10px;height:10px;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 0 0 1px #000}
+.cp-bar{position:relative;width:100%;height:12px;border-radius:6px;cursor:pointer;margin-bottom:6px}
+.cp-hue{background:linear-gradient(to right,#f00 0%,#ff0 17%,#0f0 33%,#0ff 50%,#00f 67%,#f0f 83%,#f00 100%)}
+.cp-alp{background-image:linear-gradient(45deg,#444 25%,transparent 25%),linear-gradient(-45deg,#444 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#444 75%),linear-gradient(-45deg,transparent 75%,#444 75%);background-size:8px 8px;background-position:0 0,0 4px,4px -4px,-4px 0;position:relative}
+.cp-alp::after{content:"";position:absolute;inset:0;border-radius:6px;background:var(--alp-bg,linear-gradient(to right,transparent,#fff))}
+.cp-bar-cur{position:absolute;top:50%;width:10px;height:14px;border:2px solid #fff;border-radius:3px;transform:translate(-50%,-50%);pointer-events:none;background:transparent;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+.cp-rgba{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px}
+.cp-rgba input{width:100%;padding:4px 0;text-align:center;background:#0e0d0a;border:1px solid #2a251c;color:#e9d4a3;border-radius:3px;font-size:11px}
+.cp-rgba div{font-size:9.5px;color:#7a6f5a;text-align:center;margin-top:1px;letter-spacing:.5px}
+.cp-txt{width:100%;padding:5px 7px;background:#0e0d0a;border:1px solid #2a251c;color:#e9d4a3;border-radius:4px;font-size:11px;font-family:monospace;margin-bottom:8px}
+.cp-pre{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cp-pre div{aspect-ratio:1;border-radius:3px;cursor:pointer;border:1px solid #2a251c;position:relative;overflow:hidden;background-image:linear-gradient(45deg,#444 25%,transparent 25%),linear-gradient(-45deg,#444 25%,transparent 25%);background-size:6px 6px;background-position:0 0,0 3px}
+.cp-pre div::after{content:"";position:absolute;inset:0;background:var(--c)}
+.cp-pre div:hover{border-color:#d4b87a}
+
+.imgbox{border:1px dashed #34301f;border-radius:6px;padding:14px;text-align:center;cursor:pointer;color:#7a6f5a;font-size:12px}
+.imgbox:hover{border-color:#5a4a2c;background:#1f1c14;color:#bdb29a}
+.imgbox.has{border-style:solid;padding:6px}
+.imgbox img{max-width:100%;max-height:80px;border-radius:4px;display:block;margin:0 auto}
+
+#toast{position:fixed;left:50%;top:24px;transform:translateX(-50%);background:rgba(28,24,16,.96);color:#e9d4a3;padding:9px 18px;border-radius:6px;font-size:12.5px;box-shadow:0 4px 18px rgba(0,0,0,.5);border:1px solid #3a3220;z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none}
+#toast.show{opacity:1}
+
+.proj-list::-webkit-scrollbar,.rp-body::-webkit-scrollbar,.stage::-webkit-scrollbar{width:8px}
+.proj-list::-webkit-scrollbar-thumb,.rp-body::-webkit-scrollbar-thumb,.stage::-webkit-scrollbar-thumb{background:#2a251c;border-radius:4px}
+
+.tip{font-size:10.5px;color:#6a6049;margin-top:4px;line-height:1.5}
+.divider{height:1px;background:#25211a;margin:10px -13px}
+.tag{display:inline-block;padding:2px 7px;background:#2a2417;color:#a89c80;border-radius:10px;font-size:10.5px;margin-left:6px}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <div class="side-h"><h1>背景叠图三宫格</h1><div class="sub">Bg + 3 Photos · Style A</div></div>
+    <div class="side-btns">
+      <button class="primary" onclick="newProject()">+ 新建</button>
+      <button onclick="dupProject()">复制</button>
+    </div>
+    <div class="proj-list" id="projList"></div>
+    <div class="lic"><span>剩余次数</span><b id="licCount">--</b></div>
+  </aside>
+  <main id="main">
+    <div class="tbar">
+      <input class="pname" id="pname" placeholder="项目名称" oninput="renameProject(this.value)">
+      <button class="undo" id="btnUndo" onclick="undo()">↶ 撤销</button>
+      <button class="btn btn-sm" onclick="exportJSON()">备份</button>
+      <button class="btn btn-sm" onclick="importJSON()">恢复</button>
+      <button class="exp" onclick="doExport()">导出 PNG</button>
+    </div>
+    <div class="stage" id="stage">
+      <div class="canvas-wrap" id="cw"><div class="cv" id="cv"></div></div>
+    </div>
+  </main>
+  <aside id="rp">
+    <div class="rp-h">
+      <h2>设计控制台</h2>
+      <div class="rp-h-sub" id="rpHSub">未命名作品</div>
+    </div>
+    <div class="rp-tabs" id="rpTabs"></div>
+    <div class="rp-body" id="rpBody"></div>
+  </aside>
+</div>
+<div id="toast"></div>
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+<input type="file" id="logoInput" accept="image/*" style="display:none">
+<input type="file" id="jsonInput" accept=".json" style="display:none">
+
+<script>
+/* =========================================================
+   背景叠图三宫格版 · 婚礼海报设计
+========================================================= */
+const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+let _lic=null;
+async function wpCheckAuth(){
+  if(location.protocol==='file:'||location.hostname==='localhost'||location.hostname==='127.0.0.1'){_lic={credits:999,id:'test',code:'TEST'};updateLic();return true}
+  const code=localStorage.getItem('wp-license');
+  if(!code){location.href='index.html';return false}
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    const d=await r.json();
+    if(!d||!d[0]||!d[0].is_active){location.href='index.html';return false}
+    const lic=d[0];
+    if((lic.credits||0)<=0){location.href='index.html';return false}
+    if(lic.expires_at&&new Date(lic.expires_at)<new Date()){location.href='index.html';return false}
+    if(lic.duration_days&&lic.first_used_at){const exp=new Date(lic.first_used_at);exp.setDate(exp.getDate()+lic.duration_days);if(exp<new Date()){location.href='index.html';return false}}
+    _lic=lic;updateLic();return true;
+  }catch(e){return true}
+}
+async function wpCheckExportQuota(){
+  if(location.protocol==='file:'||location.hostname==='localhost'||location.hostname==='127.0.0.1') return true;
+  if(!_lic){toast('请先登录');return false}
+  if((_lic.credits||0)<=0){toast('导出次数已用完');return false}
+  try{
+    const newC=(_lic.credits||0)-1;
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${_lic.id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({credits:newC})});
+    const d=await r.json();
+    if(d&&d[0]) _lic=d[0]; else _lic.credits=newC;
+    updateLic();return true;
+  }catch(e){_lic.credits=Math.max(0,(_lic.credits||0)-1);updateLic();return true}
+}
+function updateLic(){const el=$('#licCount');if(el)el.textContent=_lic?(_lic.code==='TEST'?'测试':String(_lic.credits||0)):'--'}
+
+const FONTS_CN=[{n:'Noto Sans SC',l:'思源黑体'},{n:'Noto Serif SC',l:'思源宋体'},{n:'Ma Shan Zheng',l:'马善政·毛笔'},{n:'Long Cang',l:'龙藏体'},{n:'Liu Jian Mao Cao',l:'刘建毛草'},{n:'ZCOOL XiaoWei',l:'站酷小薇'},{n:'ZCOOL KuaiLe',l:'站酷快乐'},{n:'ZCOOL QingKe HuangYou',l:'站酷庆科黄油'}];
+const FONTS_EN_S=[{n:'Pinyon Script',l:'Pinyon · 古典花体'},{n:'Great Vibes',l:'Great Vibes'},{n:'Allura',l:'Allura'},{n:'Tangerine',l:'Tangerine'},{n:'Italianno',l:'Italianno'},{n:'Sacramento',l:'Sacramento'},{n:'Dancing Script',l:'Dancing Script'}];
+const FONTS_EN_R=[{n:'Cormorant Garamond',l:'Cormorant · 古典'},{n:'Playfair Display',l:'Playfair'},{n:'Italiana',l:'Italiana'},{n:'Cinzel',l:'Cinzel · 罗马'},{n:'EB Garamond',l:'EB Garamond'}];
+const PRESETS=['#ffffff','#fff5ee','#ffe4e1','#ffc0cb','#ff9eb5','#e8a3a3','#d4789c','#a85674','#000000','#3a3a3a','#7a6f5a','#d4b87a','rgba(255,255,255,0.6)','rgba(0,0,0,0.4)'];
+
+const EXP_W=1200, EXP_H=1600, PV_W=540, sc=PV_W/EXP_W;
+
+function makeDefaultState(name='未命名作品'){
+  return {
+    id:'p_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+    name, createdAt:Date.now(), updatedAt:Date.now(),
+    /* 背景图 + 半透明白色遮罩 */
+    bgImg:'', bgZoom:1, bgPx:50, bgPy:50, bgColor:'#fef5ed',
+    overlayOn:true, overlayColor:'rgba(255,255,255,0.55)',
+    /* 3 张照片（带边框联动）*/
+    photos:[
+      /* 右上 */ {img:'', zoom:1, px:50, py:50, x:630, y:60,  w:540, h:760},
+      /* 左下 */ {img:'', zoom:1, px:50, py:50, x:60,  y:850, w:540, h:700},
+      /* 右下 */ {img:'', zoom:1, px:50, py:50, x:630, y:850, w:540, h:700}
+    ],
+    /* 全局：边框（联动 3 张）*/
+    borderW:7, borderColor:'#f3a3b8', borderRadius:0,
+    /* 标题 */
+    cnTitle:'仙境花园',
+    cnTitleFont:'Noto Sans SC', cnTitleSize:118, cnTitleWeight:900, cnTitleColor:'rgb(175,70,70)',
+    cnTitleX:35, cnTitleY:90, cnTitleLs:0.05,
+    enTitle:'Wonderland Garden',
+    enTitleFont:'Dancing Script', enTitleSize:57, enTitleWeight:400, enTitleColor:'#f3a3b8',
+    enTitleX:49, enTitleY:200, enTitleLs:0.06,
+    /* 中文标题 · 描边 + 发光 */
+    cnStrokeOn:true, cnStrokeColor:'rgba(169,94,12,0.706)', cnStrokeW:13.5,
+    cnGlowOn:true, cnGlowColor:'rgb(236,218,218)', cnGlowBlur:15,
+    /* 英文副标题 · 描边 + 发光 */
+    enStrokeOn:false, enStrokeColor:'#000000', enStrokeW:2,
+    enGlowOn:true, enGlowColor:'rgb(242,237,240)', enGlowBlur:18,
+    /* 正文（前缀+正文，前缀颜色独立）*/
+    bodyPrefix:'风格特点:',
+    bodyPrefixColor:'#d44a4a',
+    bodyText:'踏进仙境花园，每一步都洋溢着浪漫与爱意。粉色玫瑰花海簇拥着新人，如同童话中的王子和公主，踏上幸福的红毯。',
+    bodyFont:'Noto Sans SC', bodySize:44, bodyWeight:700, bodyColor:'#1a1a1a',
+    bodyX:45, bodyY:280, bodyMaxW:540, bodyLineH:1.55, bodyLs:0,
+    /* 底部 LOGO */
+    logoShow:true, logoMode:'text',
+    logoImg:'', logoImgW:240,
+    logoCnText:'格 乐 利 雅', logoEnText:'GALLERIA',
+    logoCnFont:'Noto Sans SC', logoCnSize:30, logoCnWeight:400, logoCnColor:'#ffffff', logoCnLs:0.5,
+    logoEnFont:'Cormorant Garamond', logoEnSize:42, logoEnWeight:300, logoEnColor:'#ffffff', logoEnLs:0.3,
+    logoX:600, logoY:1530, logoGap:6,
+    /* 文字阴影 */
+    shadowOn:false, shadowBlur:8, shadowOffY:2, shadowColor:'rgba(0,0,0,0.4)'
+  };
+}
+function migrateState(s){
+  if(!s) return s;
+  const def=makeDefaultState();
+  for(const k in def){if(s[k]===undefined) s[k]=def[k]}
+  // 兜底：photos 数组完整
+  if(!Array.isArray(s.photos)||s.photos.length<3){s.photos=def.photos}
+  for(let i=0;i<s.photos.length;i++){const dp=def.photos[i]||def.photos[0];const sp=s.photos[i];for(const k in dp){if(sp[k]===undefined)sp[k]=dp[k]}}
+  return s;
+}
+
+/* ===== 工具 ===== */
+function $(s,p){return (p||document).querySelector(s)}
+function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(msg,t=1800){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),t)}
+function uid(p='k'){return p+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,8)}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function parseColor(str){if(!str)return{r:255,g:255,b:255,a:1};if(str[0]==='#'){const h=str.slice(1);const r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);const a=h.length>=8?parseInt(h.slice(6,8),16)/255:1;return{r,g,b,a}}const m=str.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/);if(m)return{r:+m[1],g:+m[2],b:+m[3],a:m[4]==null?1:+m[4]};return{r:255,g:255,b:255,a:1}}
+function toCss(c){return c.a>=1?`rgb(${c.r},${c.g},${c.b})`:`rgba(${c.r},${c.g},${c.b},${+c.a.toFixed(3)})`}
+function rgbToHsv(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;if(d){if(mx===r)h=((g-b)/d)%6;else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;if(h<0)h+=360}return{h,s:mx?d/mx:0,v:mx}}
+function hsvToRgb(h,s,v){h=(h%360+360)%360;const c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;let r,g,b;if(h<60){r=c;g=x;b=0}else if(h<120){r=x;g=c;b=0}else if(h<180){r=0;g=c;b=x}else if(h<240){r=0;g=x;b=c}else if(h<300){r=x;g=0;b=c}else{r=c;g=0;b=x}return{r:Math.round((r+m)*255),g:Math.round((g+m)*255),b:Math.round((b+m)*255)}}
+function iLay(nW,nH,cW,cH,zoom,px,py){const scl=Math.max(cW/nW,cH/nH)*(zoom||1);const w=nW*scl,h=nH*scl;return{left:(px/100)*(cW-w),top:(py/100)*(cH-h),width:w,height:h}}
+
+/* ===== IndexedDB ===== */
+const DB_NAME='overlay-three-v1', DB_VER=1;
+let _db=null;
+function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB_NAME,DB_VER);req.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains('imgs'))db.createObjectStore('imgs');if(!db.objectStoreNames.contains('projects'))db.createObjectStore('projects',{keyPath:'id'})};req.onsuccess=e=>{_db=e.target.result;res(_db)};req.onerror=e=>rej(e.target.error)})}
+function dbPut(store,key,val){return new Promise((res,rej)=>{const tx=_db.transaction(store,'readwrite');const s=tx.objectStore(store);const req=(key===undefined)?s.put(val):s.put(val,key);req.onsuccess=()=>res(req.result);req.onerror=e=>rej(e.target.error)})}
+function dbGet(store,key){return new Promise((res,rej)=>{const req=_db.transaction(store,'readonly').objectStore(store).get(key);req.onsuccess=()=>res(req.result);req.onerror=e=>rej(e.target.error)})}
+function dbAll(store){return new Promise((res,rej)=>{const req=_db.transaction(store,'readonly').objectStore(store).getAll();req.onsuccess=()=>res(req.result||[]);req.onerror=e=>rej(e.target.error)})}
+function dbDel(store,key){return new Promise((res,rej)=>{const req=_db.transaction(store,'readwrite').objectStore(store).delete(key);req.onsuccess=()=>res();req.onerror=e=>rej(e.target.error)})}
+
+const _imgURLs={};
+async function getImgURL(key){if(!key)return'';if(_imgURLs[key])return _imgURLs[key];const blob=await dbGet('imgs',key);if(!blob)return'';const u=URL.createObjectURL(blob);_imgURLs[key]=u;return u}
+async function loadImage(url){return new Promise(res=>{if(!url){res(null);return}const im=new Image();im.crossOrigin='anonymous';im.onload=()=>res(im);im.onerror=()=>res(null);im.src=url})}
+
+/* ===== 项目管理 ===== */
+let _state=null,_curId=null,_projects=[],_saveTimer=null,_selPhoto=0;
+async function loadAllProjects(){_projects=await dbAll('projects');_projects.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0))}
+async function saveProjectNow(){if(!_state)return;_state.updatedAt=Date.now();await dbPut('projects',undefined,_state);const i=_projects.findIndex(p=>p.id===_state.id);if(i>=0)_projects[i]=_state;else _projects.unshift(_state)}
+function saveProject(){if(_saveTimer)clearTimeout(_saveTimer);_saveTimer=setTimeout(()=>saveProjectNow(),250)}
+async function newProject(){const s=makeDefaultState();_state=s;_curId=s.id;_history=[];_selPhoto=0;await saveProjectNow();await loadAllProjects();renderAll();toast('已新建项目')}
+async function dupProject(){if(!_state)return;const s=JSON.parse(JSON.stringify(_state));s.id='p_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);s.name=(_state.name||'未命名')+' 副本';s.createdAt=Date.now();s.updatedAt=Date.now();
+  // 复制图片 blobs
+  for(const p of s.photos){if(p.img){const b=await dbGet('imgs',p.img);if(b){const nk=uid('img');await dbPut('imgs',nk,b);p.img=nk}else p.img=''}}
+  for(const k of ['bgImg','logoImg']){if(s[k]){const b=await dbGet('imgs',s[k]);if(b){const nk=uid('img');await dbPut('imgs',nk,b);s[k]=nk}else s[k]=''}}
+  _state=s;_curId=s.id;_history=[];await saveProjectNow();await loadAllProjects();renderAll();toast('已复制项目')}
+async function deleteProject(id,ev){ev&&ev.stopPropagation();if(!confirm('删除这个项目？'))return;const p=_projects.find(x=>x.id===id);if(p){if(p.photos)for(const ph of p.photos)if(ph.img)await dbDel('imgs',ph.img);for(const k of ['bgImg','logoImg'])if(p[k])await dbDel('imgs',p[k])}await dbDel('projects',id);_projects=_projects.filter(p=>p.id!==id);if(_curId===id){if(_projects.length)await loadProject(_projects[0].id);else await newProject()}else renderProjList()}
+async function loadProject(id){const p=_projects.find(x=>x.id===id);if(!p)return;_state=migrateState(p);_curId=id;_history=[];_selPhoto=0;renderProjList();renderAll()}
+function renameProject(name){if(!_state)return;_state.name=name||'未命名';saveProject();renderProjList();const sub=$('#rpHSub');if(sub)sub.textContent=_state.name}
+
+/* ===== 撤销栈 ===== */
+let _history=[];const HIST_MAX=20;
+function snapshot(){return _state?JSON.stringify(_state):null}
+function pushHistory(){if(!_state)return;const s=snapshot();if(_history[_history.length-1]===s)return;_history.push(s);if(_history.length>HIST_MAX)_history.shift();$('#btnUndo').disabled=false}
+function undo(){if(!_history.length)return;const s=_history.pop();if(!s)return;_state=JSON.parse(s);saveProject();renderAll();$('#btnUndo').disabled=_history.length===0;toast('已撤销')}
+
+/* ===== Setter ===== */
+function setP(key,val,opts={}){if(!_state)return;if(_state[key]===val)return;if(!opts.skipHist)pushHistory();_state[key]=val;saveProject();if(!opts.skipRender)scheduleRender()}
+function setPP(idx,key,val,opts={}){if(!_state||!_state.photos[idx])return;if(_state.photos[idx][key]===val)return;if(!opts.skipHist)pushHistory();_state.photos[idx][key]=val;saveProject();if(!opts.skipRender)scheduleRender()}
+function setPR(...args){setP(...args);renderRP()}
+let _renderRAF=null;
+function scheduleRender(){if(_renderRAF)cancelAnimationFrame(_renderRAF);_renderRAF=requestAnimationFrame(()=>{renderPreview();_renderRAF=null})}
+
+/* ===== 项目列表 ===== */
+function renderProjList(){const el=$('#projList');el.innerHTML=_projects.map(p=>`<div class="proj-item ${p.id===_curId?'active':''}" onclick="loadProject('${p.id}')"><span class="pn">${esc(p.name||'未命名')}</span><span class="pdel" onclick="deleteProject('${p.id}',event)">×</span></div>`).join('')||'<div style="font-size:11px;color:#5a4f3c;padding:10px 4px">暂无项目</div>'}
+
+/* ===== 预览渲染 ===== */
+async function renderPreview(){
+  if(!_state)return;
+  const cv=$('#cv');cv.innerHTML='';
+  const s=_state;
+  const W=PV_W, H=Math.round(PV_W*EXP_H/EXP_W);
+  cv.style.background=parseColor(s.bgColor).a>0?toCss(parseColor(s.bgColor)):'#fff';
+
+  // 背景图
+  if(s.bgImg){
+    const url=await getImgURL(s.bgImg);
+    if(url){
+      const im=document.createElement('img');im.className='bg-img';im.draggable=false;
+      const apply=()=>{const lay=iLay(im.naturalWidth,im.naturalHeight,W,H,s.bgZoom,s.bgPx,s.bgPy);im.style.left=lay.left+'px';im.style.top=lay.top+'px';im.style.width=lay.width+'px';im.style.height=lay.height+'px'};
+      im.onload=apply;im.src=url;if(im.complete&&im.naturalWidth)apply();
+      cv.appendChild(im);
+    }
+  }
+  // 背景半透明覆盖
+  if(s.overlayOn){
+    const ov=document.createElement('div');ov.className='bg-overlay';ov.style.background=s.overlayColor;cv.appendChild(ov);
+  }
+  // 文字阴影
+  const shCss=s.shadowOn?`text-shadow:0 ${s.shadowOffY*sc}px ${s.shadowBlur*sc}px ${s.shadowColor};`:'';
+
+  // 3 张照片
+  for(let i=0;i<s.photos.length;i++){
+    const p=s.photos[i];
+    const slot=document.createElement('div');
+    slot.className='photo-slot'+(p.img?'':' empty')+(_selPhoto===i?' sel':'');
+    slot.style.cssText=`left:${p.x*sc}px;top:${p.y*sc}px;width:${p.w*sc}px;height:${p.h*sc}px;border:${s.borderW*sc}px solid ${s.borderColor};border-radius:${s.borderRadius*sc}px;box-sizing:border-box;`;
+    if(!p.img){
+      slot.textContent=`+ 上传第 ${i+1} 张`;
+      slot.onclick=(()=>{const idx=i;return ()=>{_selPhoto=idx;pickPhoto(idx);renderRP()}})();
+    }else{
+      const url=await getImgURL(p.img);
+      if(url){
+        const im=document.createElement('img');im.draggable=false;
+        const innerW=p.w*sc-s.borderW*sc*2, innerH=p.h*sc-s.borderW*sc*2;
+        const apply=()=>{const lay=iLay(im.naturalWidth,im.naturalHeight,innerW,innerH,p.zoom,p.px,p.py);im.style.left=lay.left+'px';im.style.top=lay.top+'px';im.style.width=lay.width+'px';im.style.height=lay.height+'px'};
+        im.onload=apply;im.src=url;if(im.complete&&im.naturalWidth)apply();
+        slot.appendChild(im);
+        // 拖动 + 选中
+        slot.onmousedown=(()=>{const idx=i;return e=>{
+          if(e.button!==0)return;
+          _selPhoto=idx;renderRP();
+          e.preventDefault();pushHistory();
+          const sx=e.clientX,sy=e.clientY;
+          const px0=s.photos[idx].px, py0=s.photos[idx].py;
+          const cW=innerW, cH=innerH, nW=im.naturalWidth, nH=im.naturalHeight;
+          const scl=Math.max(cW/nW,cH/nH)*(s.photos[idx].zoom||1);
+          const dW=nW*scl-cW, dH=nH*scl-cH;
+          function mv(ev){
+            const dx=ev.clientX-sx,dy=ev.clientY-sy;
+            if(dW>0)s.photos[idx].px=clamp(px0-dx/dW*100,0,100);
+            if(dH>0)s.photos[idx].py=clamp(py0-dy/dH*100,0,100);
+            const lay=iLay(nW,nH,cW,cH,s.photos[idx].zoom,s.photos[idx].px,s.photos[idx].py);
+            im.style.left=lay.left+'px';im.style.top=lay.top+'px';im.style.width=lay.width+'px';im.style.height=lay.height+'px';
+            syncPhotoSliders(idx);
+          }
+          function up(){document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);saveProject();renderRP()}
+          document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+        }})();
+      }
+    }
+    cv.appendChild(slot);
+  }
+
+  // 副标题（英文）— 先渲染（在下层）
+  if(s.enTitle){
+    const t=document.createElement('div');t.className='txt';t.contentEditable='true';t.dataset.k='enTitle';t.spellcheck=false;
+    const enFx=buildTextShadowCSS(s.enGlowOn,s.enGlowColor,s.enGlowBlur,s.shadowOn,s.shadowOffY,s.shadowBlur,s.shadowColor);
+    const enStk=buildStrokeCSS(s.enStrokeOn,s.enStrokeColor,s.enStrokeW);
+    t.style.cssText=`left:${s.enTitleX*sc}px;top:${s.enTitleY*sc}px;font-family:"${s.enTitleFont}",cursive;font-size:${s.enTitleSize*sc}px;font-weight:${s.enTitleWeight};color:${s.enTitleColor};letter-spacing:${s.enTitleLs}em;line-height:1;${enFx}${enStk}position:absolute;`;
+    t.textContent=s.enTitle; bindEdit(t,'enTitle'); cv.appendChild(t);
+  }
+  // 主标题（中文）— 后渲染（覆盖在英文之上）
+  if(s.cnTitle){
+    const t=document.createElement('div');t.className='txt';t.contentEditable='true';t.dataset.k='cnTitle';t.spellcheck=false;
+    const cnFx=buildTextShadowCSS(s.cnGlowOn,s.cnGlowColor,s.cnGlowBlur,s.shadowOn,s.shadowOffY,s.shadowBlur,s.shadowColor);
+    const cnStk=buildStrokeCSS(s.cnStrokeOn,s.cnStrokeColor,s.cnStrokeW);
+    t.style.cssText=`left:${s.cnTitleX*sc}px;top:${s.cnTitleY*sc}px;font-family:"${s.cnTitleFont}","Noto Sans SC",sans-serif;font-size:${s.cnTitleSize*sc}px;font-weight:${s.cnTitleWeight};color:${s.cnTitleColor};letter-spacing:${s.cnTitleLs}em;line-height:1;${cnFx}${cnStk}position:absolute;`;
+    t.textContent=s.cnTitle; bindEdit(t,'cnTitle'); cv.appendChild(t);
+  }
+  // 正文（前缀 + 正文）
+  if(s.bodyPrefix||s.bodyText){
+    const div=document.createElement('div');
+    div.className='txt';
+    div.style.cssText=`left:${s.bodyX*sc}px;top:${s.bodyY*sc}px;width:${s.bodyMaxW*sc}px;font-family:"${s.bodyFont}","Noto Sans SC",sans-serif;font-size:${s.bodySize*sc}px;font-weight:${s.bodyWeight};color:${s.bodyColor};letter-spacing:${s.bodyLs}em;line-height:${s.bodyLineH};${shCss}position:absolute;white-space:normal;`;
+    div.innerHTML = (s.bodyPrefix?`<span style="color:${s.bodyPrefixColor}">${esc(s.bodyPrefix)}</span>`:'')+esc(s.bodyText);
+    cv.appendChild(div);
+  }
+  // 底部 LOGO
+  if(s.logoShow && s.logoMode!=='off'){
+    if(s.logoMode==='image' && s.logoImg){
+      const url=await getImgURL(s.logoImg);
+      if(url){
+        const lim=document.createElement('img');lim.className='logo-img';lim.draggable=false;
+        const lwPx=s.logoImgW*sc;lim.style.width=lwPx+'px';lim.style.height='auto';
+        const apply=()=>{const lhPx=lim.naturalHeight*(lwPx/lim.naturalWidth);lim.style.left=(s.logoX*sc-lwPx/2)+'px';lim.style.top=(s.logoY*sc-lhPx/2)+'px'};
+        lim.onload=apply;lim.src=url;if(lim.complete&&lim.naturalWidth)apply();
+        cv.appendChild(lim);
+      }
+    }else if(s.logoMode==='text'){
+      const wrap=document.createElement('div');wrap.className='logo-wrap';
+      wrap.style.cssText=`position:absolute;left:${s.logoX*sc}px;top:${s.logoY*sc}px;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:${s.logoGap*sc}px;${shCss}`;
+      if(s.logoCnText){const cn=document.createElement('div');cn.style.cssText=`font-family:"${s.logoCnFont}","Noto Sans SC",sans-serif;font-size:${s.logoCnSize*sc}px;font-weight:${s.logoCnWeight};color:${s.logoCnColor};letter-spacing:${s.logoCnLs}em;line-height:1.1;text-align:center;`;cn.textContent=s.logoCnText;wrap.appendChild(cn)}
+      if(s.logoEnText){const en=document.createElement('div');en.style.cssText=`font-family:"${s.logoEnFont}",serif;font-size:${s.logoEnSize*sc}px;font-weight:${s.logoEnWeight};color:${s.logoEnColor};letter-spacing:${s.logoEnLs}em;line-height:1.2;text-align:center;`;en.textContent=s.logoEnText;wrap.appendChild(en)}
+      cv.appendChild(wrap);
+    }
+  }
+}
+function syncPhotoSliders(i){
+  ['px','py'].forEach(k=>{const sl=$('#sl_p'+i+k),nm=$('#vl_p'+i+k);if(sl)sl.value=Math.round(_state.photos[i][k]);if(nm)nm.value=Math.round(_state.photos[i][k])});
+}
+function bindEdit(el,key){
+  el.addEventListener('focus',()=>pushHistory());
+  el.addEventListener('blur',()=>{const v=el.innerText.trim();if(_state[key]!==v){_state[key]=v;saveProject();renderRP()}});
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();el.blur()}});
+}
+/* 文字效果 CSS 助手：发光 + 阴影 + 描边 */
+function buildTextShadowCSS(glowOn,glowColor,glowBlur,shadowOn,shadowOffY,shadowBlur,shadowColor){
+  const parts=[];
+  if(glowOn){const b=glowBlur*sc;parts.push(`0 0 ${b}px ${glowColor}`);parts.push(`0 0 ${b}px ${glowColor}`);parts.push(`0 0 ${b*0.6}px ${glowColor}`)}
+  if(shadowOn)parts.push(`0 ${shadowOffY*sc}px ${shadowBlur*sc}px ${shadowColor}`);
+  return parts.length?`text-shadow:${parts.join(',')};`:'';
+}
+function buildStrokeCSS(strokeOn,strokeColor,strokeW){
+  return strokeOn&&strokeW>0?`-webkit-text-stroke:${strokeW*sc}px ${strokeColor};paint-order:stroke fill;`:'';
+}
+
+/* ===== 右侧面板 ===== */
+const _rpOpen={bg:false, photos:true, border:true, title:true, effects:false, body:true, logo:false, shadow:false};
+function renderRP(){
+  if(!_state)return;
+  const sub=$('#rpHSub');if(sub)sub.textContent=_state.name||'未命名作品';
+  const tabs=$('#rpTabs');
+  tabs.innerHTML=`<div class="rp-tabs-ttl">编辑照片 · ${_selPhoto+1} / 3</div>
+    <div class="bandtabs">${[0,1,2].map(k=>`<button class="bandtab ${k===_selPhoto?'on':''}" onclick="selPhoto(${k})">第 ${k+1} 张</button>`).join('')}</div>`;
+  const root=$('#rpBody');
+  root.innerHTML=secBg()+secPhotos()+secBorder()+secTitle()+secEffects()+secBody()+secLogo()+secShadow();
+  root.querySelectorAll('.sec').forEach(sec=>{
+    const k=sec.dataset.k;if(_rpOpen[k])sec.classList.add('open');
+    sec.querySelector('.sec-h').onclick=()=>{sec.classList.toggle('open');_rpOpen[k]=sec.classList.contains('open')};
+  });
+}
+function selPhoto(i){_selPhoto=i;renderPreview();renderRP()}
+
+function secBg(){
+  const s=_state;
+  return `<div class="sec ${_rpOpen.bg?'open':''}" data-k="bg"><div class="sec-h">背景图 · 底色</div><div class="sec-b">
+    <div class="imgbox ${s.bgImg?'has':''}" onclick="pickBgImg()">${s.bgImg?`<img src="${_imgURLs[s.bgImg]||''}">`:'+ 上传背景图（可选，留空则用底色）'}</div>
+    ${s.bgImg?`<div class="row" style="margin-top:6px"><button class="btn btn-sm" onclick="pickBgImg()">替换</button><button class="btn btn-sm btn-dng" onclick="clearBgImg()">移除</button></div>`:''}
+    ${sliderF('缩放',s.bgZoom,0.5,3,0.05,v=>setP('bgZoom',+v.toFixed(2)))}
+    ${slider('左右%',s.bgPx,0,100,1,v=>setP('bgPx',v))}
+    ${slider('上下%',s.bgPy,0,100,1,v=>setP('bgPy',v))}
+    <div class="row"><label>底色</label>${cpInput(s.bgColor,v=>setP('bgColor',v))}</div>
+    <div class="divider"></div>
+    <div class="row"><label>遮罩</label><div class="seg"><button class="${s.overlayOn?'on':''}" onclick="setPR('overlayOn',true)">开</button><button class="${!s.overlayOn?'on':''}" onclick="setPR('overlayOn',false)">关</button></div></div>
+    ${s.overlayOn?`<div class="row"><label>遮罩色</label>${cpInput(s.overlayColor,v=>setP('overlayColor',v))}</div><div class="tip">半透明遮罩压在背景图上，让照片和文字更突出</div>`:''}
+  </div></div>`;
+}
+function secPhotos(){
+  const s=_state, i=_selPhoto, p=s.photos[i];
+  return `<div class="sec ${_rpOpen.photos?'open':''}" data-k="photos"><div class="sec-h">第 ${i+1} 张照片 <span class="tag">独立</span></div><div class="sec-b">
+    <div class="imgbox ${p.img?'has':''}" onclick="pickPhoto(${i})">${p.img?`<img src="${_imgURLs[p.img]||''}">`:`+ 上传第 ${i+1} 张`}</div>
+    ${p.img?`<div class="row" style="margin-top:6px"><button class="btn btn-sm" onclick="pickPhoto(${i})">替换</button><button class="btn btn-sm btn-dng" onclick="clearPhoto(${i})">移除</button><span class="tip" style="margin-left:auto">画面可拖动</span></div>`:''}
+    ${sliderF('缩放',p.zoom,0.5,3,0.05,v=>setPP(i,'zoom',+v.toFixed(2)),'p'+i+'zoom')}
+    ${slider('左右%',p.px,0,100,1,v=>setPP(i,'px',v),'p'+i+'px')}
+    ${slider('上下%',p.py,0,100,1,v=>setPP(i,'py',v),'p'+i+'py')}
+    <div class="divider"></div>
+    <div style="font-size:11px;color:#7a6f5a;margin:6px 0 4px">位置 · 尺寸（1200 × 1600 坐标）</div>
+    ${slider('X',p.x,0,EXP_W,1,v=>setPP(i,'x',v))}
+    ${slider('Y',p.y,0,EXP_H,1,v=>setPP(i,'y',v))}
+    ${slider('宽',p.w,50,EXP_W,1,v=>setPP(i,'w',v))}
+    ${slider('高',p.h,50,EXP_H,1,v=>setPP(i,'h',v))}
+  </div></div>`;
+}
+function secBorder(){
+  const s=_state;
+  return `<div class="sec ${_rpOpen.border?'open':''}" data-k="border"><div class="sec-h">照片边框 <span class="tag">3 张联动</span></div><div class="sec-b">
+    ${slider('粗细 px',s.borderW,0,30,1,v=>setP('borderW',v))}
+    <div class="row"><label>颜色</label>${cpInput(s.borderColor,v=>setP('borderColor',v))}</div>
+    ${slider('圆角 px',s.borderRadius,0,40,1,v=>setP('borderRadius',v))}
+    <div class="tip">3 张照片的边框样式联动 · 修改一处全部同步</div>
+  </div></div>`;
+}
+function secTitle(){
+  const s=_state;
+  return `<div class="sec ${_rpOpen.title?'open':''}" data-k="title"><div class="sec-h">标题（中文 + 英文）</div><div class="sec-b">
+    <div style="font-size:11px;color:#7a6f5a;margin:4px 0">中文标题</div>
+    <div class="row"><label>文字</label><input type="text" value="${esc(s.cnTitle)}" oninput="setP('cnTitle',this.value)"></div>
+    <div class="row"><label>字体</label><select onchange="setP('cnTitleFont',this.value)">${FONTS_CN.map(f=>`<option value="${f.n}" ${s.cnTitleFont===f.n?'selected':''}>${f.l}</option>`).join('')}</select></div>
+    ${slider('字号',s.cnTitleSize,30,260,1,v=>setP('cnTitleSize',v))}
+    <div class="row"><label>字重</label><div class="seg">${[300,400,500,700,900].map(w=>`<button class="${s.cnTitleWeight===w?'on':''}" onclick="setPR('cnTitleWeight',${w})">${w}</button>`).join('')}</div></div>
+    ${sliderF('字间距',s.cnTitleLs,-0.05,0.5,0.01,v=>setP('cnTitleLs',+v.toFixed(2)))}
+    <div class="row"><label>颜色</label>${cpInput(s.cnTitleColor,v=>setP('cnTitleColor',v))}</div>
+    ${slider('X',s.cnTitleX,0,EXP_W,1,v=>setP('cnTitleX',v))}
+    ${slider('Y',s.cnTitleY,0,EXP_H,1,v=>setP('cnTitleY',v))}
+    <div class="divider"></div>
+    <div style="font-size:11px;color:#7a6f5a;margin:4px 0">英文副标题</div>
+    <div class="row"><label>文字</label><input type="text" value="${esc(s.enTitle)}" oninput="setP('enTitle',this.value)"></div>
+    <div class="row"><label>字体</label><select onchange="setP('enTitleFont',this.value)">${[...FONTS_EN_S,...FONTS_EN_R].map(f=>`<option value="${f.n}" ${s.enTitleFont===f.n?'selected':''} style="font-family:'${f.n}'">${f.l}</option>`).join('')}</select></div>
+    ${slider('字号',s.enTitleSize,16,120,1,v=>setP('enTitleSize',v))}
+    ${sliderF('字间距',s.enTitleLs,-0.05,0.4,0.01,v=>setP('enTitleLs',+v.toFixed(2)))}
+    <div class="row"><label>颜色</label>${cpInput(s.enTitleColor,v=>setP('enTitleColor',v))}</div>
+    ${slider('X',s.enTitleX,0,EXP_W,1,v=>setP('enTitleX',v))}
+    ${slider('Y',s.enTitleY,0,EXP_H,1,v=>setP('enTitleY',v))}
+  </div></div>`;
+}
+function secEffects(){
+  const s=_state;
+  return `<div class="sec ${_rpOpen.effects?'open':''}" data-k="effects"><div class="sec-h">文字效果 · 描边 · 发光</div><div class="sec-b">
+    <div style="font-size:11px;color:#7a6f5a;margin:4px 0">中文标题 · 仙境花园</div>
+    <div class="row"><label>描边</label><div class="seg"><button class="${s.cnStrokeOn?'on':''}" onclick="setPR('cnStrokeOn',true)">开</button><button class="${!s.cnStrokeOn?'on':''}" onclick="setPR('cnStrokeOn',false)">关</button></div></div>
+    ${s.cnStrokeOn?`<div class="row"><label>描边色</label>${cpInput(s.cnStrokeColor,v=>setP('cnStrokeColor',v))}</div>${sliderF('描边粗',s.cnStrokeW,0,20,0.5,v=>setP('cnStrokeW',+v.toFixed(1)))}`:''}
+    <div class="row"><label>发光</label><div class="seg"><button class="${s.cnGlowOn?'on':''}" onclick="setPR('cnGlowOn',true)">开</button><button class="${!s.cnGlowOn?'on':''}" onclick="setPR('cnGlowOn',false)">关</button></div></div>
+    ${s.cnGlowOn?`<div class="row"><label>发光色</label>${cpInput(s.cnGlowColor,v=>setP('cnGlowColor',v))}</div>${slider('发光强度',s.cnGlowBlur,0,80,1,v=>setP('cnGlowBlur',v))}`:''}
+    <div class="divider"></div>
+    <div style="font-size:11px;color:#7a6f5a;margin:4px 0">英文副标题</div>
+    <div class="row"><label>描边</label><div class="seg"><button class="${s.enStrokeOn?'on':''}" onclick="setPR('enStrokeOn',true)">开</button><button class="${!s.enStrokeOn?'on':''}" onclick="setPR('enStrokeOn',false)">关</button></div></div>
+    ${s.enStrokeOn?`<div class="row"><label>描边色</label>${cpInput(s.enStrokeColor,v=>setP('enStrokeColor',v))}</div>${sliderF('描边粗',s.enStrokeW,0,20,0.5,v=>setP('enStrokeW',+v.toFixed(1)))}`:''}
+    <div class="row"><label>发光</label><div class="seg"><button class="${s.enGlowOn?'on':''}" onclick="setPR('enGlowOn',true)">开</button><button class="${!s.enGlowOn?'on':''}" onclick="setPR('enGlowOn',false)">关</button></div></div>
+    ${s.enGlowOn?`<div class="row"><label>发光色</label>${cpInput(s.enGlowColor,v=>setP('enGlowColor',v))}</div>${slider('发光强度',s.enGlowBlur,0,80,1,v=>setP('enGlowBlur',v))}`:''}
+  </div></div>`;
+}
+function secBody(){
+  const s=_state;
+  return `<div class="sec ${_rpOpen.body?'open':''}" data-k="body"><div class="sec-h">正文段落</div><div class="sec-b">
+    <div class="row"><label>前缀</label><input type="text" value="${esc(s.bodyPrefix)}" oninput="setP('bodyPrefix',this.value)" placeholder="可留空"></div>
+    <div class="row"><label>前缀色</label>${cpInput(s.bodyPrefixColor,v=>setP('bodyPrefixColor',v))}</div>
+    <div class="row" style="align-items:flex-start"><label>正文</label><textarea oninput="setP('bodyText',this.value)" rows="4">${esc(s.bodyText)}</textarea></div>
+    <div class="row"><label>字体</label><select onchange="setP('bodyFont',this.value)">${FONTS_CN.map(f=>`<option value="${f.n}" ${s.bodyFont===f.n?'selected':''}>${f.l}</option>`).join('')}</select></div>
+    ${slider('字号',s.bodySize,18,80,1,v=>setP('bodySize',v))}
+    <div class="row"><label>字重</label><div class="seg">${[300,400,500,700,900].map(w=>`<button class="${s.bodyWeight===w?'on':''}" onclick="setPR('bodyWeight',${w})">${w}</button>`).join('')}</div></div>
+    <div class="row"><label>颜色</label>${cpInput(s.bodyColor,v=>setP('bodyColor',v))}</div>
+    ${sliderF('行高',s.bodyLineH,1.0,2.4,0.05,v=>setP('bodyLineH',+v.toFixed(2)))}
+    ${sliderF('字间距',s.bodyLs,-0.05,0.3,0.01,v=>setP('bodyLs',+v.toFixed(2)))}
+    ${slider('X',s.bodyX,0,EXP_W,1,v=>setP('bodyX',v))}
+    ${slider('Y',s.bodyY,0,EXP_H,1,v=>setP('bodyY',v))}
+    ${slider('最大宽',s.bodyMaxW,200,EXP_W,1,v=>setP('bodyMaxW',v))}
+  </div></div>`;
+}
+function secLogo(){
+  const s=_state;
+  return `<div class="sec ${_rpOpen.logo?'open':''}" data-k="logo"><div class="sec-h">底部 LOGO</div><div class="sec-b">
+    <div class="row"><label>显示</label><div class="seg"><button class="${s.logoShow?'on':''}" onclick="setPR('logoShow',true)">显示</button><button class="${!s.logoShow?'on':''}" onclick="setPR('logoShow',false)">隐藏</button></div></div>
+    ${s.logoShow?`
+    <div class="row"><label>形式</label><div class="seg"><button class="${s.logoMode==='text'?'on':''}" onclick="setPR('logoMode','text')">文字</button><button class="${s.logoMode==='image'?'on':''}" onclick="setPR('logoMode','image')">图片</button></div></div>
+    ${s.logoMode==='image'?`
+      <div class="imgbox ${s.logoImg?'has':''}" onclick="pickLogoImg()">${s.logoImg?`<img src="${_imgURLs[s.logoImg]||''}">`:'+ 上传 LOGO 图片'}</div>
+      ${s.logoImg?`<div class="row" style="margin-top:6px"><button class="btn btn-sm" onclick="pickLogoImg()">替换</button><button class="btn btn-sm btn-dng" onclick="clearLogoImg()">移除</button></div>`:''}
+      ${slider('宽度 px',s.logoImgW,50,800,2,v=>setP('logoImgW',v))}
+    `:`
+      <div class="row"><label>中文</label><input type="text" value="${esc(s.logoCnText)}" oninput="setP('logoCnText',this.value)"></div>
+      <div class="row"><label>英文</label><input type="text" value="${esc(s.logoEnText)}" oninput="setP('logoEnText',this.value)"></div>
+      <div style="font-size:11px;color:#7a6f5a;margin:4px 0">中文行</div>
+      <div class="row"><label>字体</label><select onchange="setP('logoCnFont',this.value)">${FONTS_CN.map(f=>`<option value="${f.n}" ${s.logoCnFont===f.n?'selected':''}>${f.l}</option>`).join('')}</select></div>
+      ${slider('字号',s.logoCnSize,12,80,1,v=>setP('logoCnSize',v))}
+      ${sliderF('字间距',s.logoCnLs,0,1.5,0.05,v=>setP('logoCnLs',+v.toFixed(2)))}
+      <div class="row"><label>颜色</label>${cpInput(s.logoCnColor,v=>setP('logoCnColor',v))}</div>
+      <div style="font-size:11px;color:#7a6f5a;margin:4px 0">英文行</div>
+      <div class="row"><label>字体</label><select onchange="setP('logoEnFont',this.value)">${FONTS_EN_R.map(f=>`<option value="${f.n}" ${s.logoEnFont===f.n?'selected':''}>${f.l}</option>`).join('')}</select></div>
+      ${slider('字号',s.logoEnSize,8,80,1,v=>setP('logoEnSize',v))}
+      ${sliderF('字间距',s.logoEnLs,0,1.0,0.05,v=>setP('logoEnLs',+v.toFixed(2)))}
+      <div class="row"><label>颜色</label>${cpInput(s.logoEnColor,v=>setP('logoEnColor',v))}</div>
+      ${slider('行间距',s.logoGap,0,30,1,v=>setP('logoGap',v))}
+    `}
+    ${slider('X',s.logoX,0,EXP_W,1,v=>setP('logoX',v))}
+    ${slider('Y',s.logoY,0,EXP_H,1,v=>setP('logoY',v))}`:'<div class="tip">底部 LOGO 已隐藏</div>'}
+  </div></div>`;
+}
+function secShadow(){
+  const s=_state;
+  return `<div class="sec ${_rpOpen.shadow?'open':''}" data-k="shadow"><div class="sec-h">文字阴影</div><div class="sec-b">
+    <div class="row"><label>启用</label><div class="seg"><button class="${s.shadowOn?'on':''}" onclick="setPR('shadowOn',true)">开</button><button class="${!s.shadowOn?'on':''}" onclick="setPR('shadowOn',false)">关</button></div></div>
+    ${slider('模糊',s.shadowBlur,0,40,1,v=>setP('shadowBlur',v))}
+    ${slider('Y偏移',s.shadowOffY,-10,20,1,v=>setP('shadowOffY',v))}
+    <div class="row"><label>颜色</label>${cpInput(s.shadowColor,v=>setP('shadowColor',v))}</div>
+  </div></div>`;
+}
+
+let _sid=0;
+function slider(label,val,min,max,step,cb,key){const id='sl_'+(key||(++_sid));const vid='vl_'+(key||_sid);const fn='__cb_'+id;window[fn]=function(v){const n=+v;cb(n);const sl=document.getElementById(id),nm=document.getElementById(vid);if(sl)sl.value=n;if(nm)nm.value=n};return `<div class="row"><label>${label}</label><input id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${val}" oninput="${fn}(this.value)"><input id="${vid}" type="number" min="${min}" max="${max}" step="${step}" value="${val}" onchange="${fn}(this.value)"></div>`}
+function sliderF(label,val,min,max,step,cb,key){return slider(label,val,min,max,step,cb,key)}
+
+/* ===== 取色器（与之前模板一致）===== */
+function cpInput(value,cb){const tid=uid('cp');const inputId=uid('cpi');setTimeout(()=>{const tr=document.getElementById(tid);if(!tr)return;tr.style.setProperty('--c',value);tr.onclick=()=>cpOpen(tr,value,(v)=>{tr.style.setProperty('--c',v);const inp=document.getElementById(inputId);if(inp)inp.value=v;cb(v)});const inp=document.getElementById(inputId);if(inp)inp.oninput=()=>cpFromText(inp,tid,cb)},0);return `<div class="cp-trig" id="${tid}"></div><input id="${inputId}" type="text" value="${value}" style="flex:1;font-family:monospace;font-size:11px">`}
+function cpFromText(inp,trigId,fn){const v=inp.value.trim();const c=parseColor(v);const css=toCss(c);const t=document.getElementById(trigId);if(t)t.style.setProperty('--c',css);fn(css)}
+let _cpCur=null;
+function cpOpen(trig,value,onChange){if(_cpCur){_cpCur.pop.remove();_cpCur=null}const c=parseColor(value);const hsv=rgbToHsv(c.r,c.g,c.b);const state={h:hsv.h,s:hsv.s,v:hsv.v,a:c.a};const pop=document.createElement('div');pop.className='cp-pop';pop.innerHTML=`<div class="cp-sat" id="cpsat"><div class="cp-sat-w"></div><div class="cp-sat-b"></div><div class="cp-sat-cur" id="cpsatc"></div></div><div class="cp-bar cp-hue" id="cphue"><div class="cp-bar-cur" id="cphuec"></div></div><div class="cp-bar cp-alp" id="cpalp"><div class="cp-bar-cur" id="cpalpc"></div></div><div class="cp-rgba"><div><input type="number" id="cprr" min="0" max="255"><div>R</div></div><div><input type="number" id="cpgg" min="0" max="255"><div>G</div></div><div><input type="number" id="cpbb" min="0" max="255"><div>B</div></div><div><input type="number" id="cpaa" min="0" max="100"><div>A</div></div></div><input class="cp-txt" id="cptxt" type="text"><div class="cp-pre">${PRESETS.map(p=>`<div data-c="${p}" style="--c:${p}"></div>`).join('')}</div>`;document.body.appendChild(pop);const r=trig.getBoundingClientRect();const popH=320;let top=r.bottom+6;if(top+popH>innerHeight)top=Math.max(8,r.top-popH-6);let left=r.right-240;if(left<8)left=8;pop.style.left=left+'px';pop.style.top=top+'px';
+function update(emit=true){const rgb=hsvToRgb(state.h,state.s,state.v);const out={r:rgb.r,g:rgb.g,b:rgb.b,a:state.a};pop.querySelector('#cpsat').style.background=`hsl(${state.h},100%,50%)`;pop.querySelector('#cpsatc').style.left=(state.s*100)+'%';pop.querySelector('#cpsatc').style.top=((1-state.v)*100)+'%';pop.querySelector('#cphuec').style.left=(state.h/360*100)+'%';pop.querySelector('#cpalpc').style.left=(state.a*100)+'%';pop.querySelector('#cpalp').style.setProperty('--alp-bg',`linear-gradient(to right,rgba(${rgb.r},${rgb.g},${rgb.b},0),rgba(${rgb.r},${rgb.g},${rgb.b},1))`);pop.querySelector('#cprr').value=rgb.r;pop.querySelector('#cpgg').value=rgb.g;pop.querySelector('#cpbb').value=rgb.b;pop.querySelector('#cpaa').value=Math.round(state.a*100);pop.querySelector('#cptxt').value=toCss(out);if(emit)onChange(toCss(out))}
+function bindDrag(elSel,fn){const el=pop.querySelector(elSel);function move(e){const r=el.getBoundingClientRect();const x=clamp((e.clientX-r.left)/r.width,0,1);const y=clamp((e.clientY-r.top)/r.height,0,1);fn(x,y)}el.onmousedown=e=>{e.preventDefault();move(e);const mv=ev=>move(ev);const up=()=>{document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up)};document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up)}}
+bindDrag('#cpsat',(x,y)=>{state.s=x;state.v=1-y;update()});bindDrag('#cphue',x=>{state.h=x*360;update()});bindDrag('#cpalp',x=>{state.a=x;update()});
+['cprr','cpgg','cpbb','cpaa'].forEach(id=>{pop.querySelector('#'+id).oninput=e=>{let v=+e.target.value;if(isNaN(v))return;if(id==='cpaa')state.a=clamp(v,0,100)/100;else{const cur=hsvToRgb(state.h,state.s,state.v);if(id==='cprr')cur.r=clamp(v,0,255);if(id==='cpgg')cur.g=clamp(v,0,255);if(id==='cpbb')cur.b=clamp(v,0,255);const h=rgbToHsv(cur.r,cur.g,cur.b);state.h=h.h;state.s=h.s;state.v=h.v}update()}});
+pop.querySelector('#cptxt').onchange=e=>{const c=parseColor(e.target.value);const h=rgbToHsv(c.r,c.g,c.b);state.h=h.h;state.s=h.s;state.v=h.v;state.a=c.a;update()};
+pop.querySelectorAll('.cp-pre div').forEach(d=>{d.onclick=()=>{const c=parseColor(d.dataset.c);const h=rgbToHsv(c.r,c.g,c.b);state.h=h.h;state.s=h.s;state.v=h.v;state.a=c.a;update()}});
+_cpCur={pop,trig};update(false);setTimeout(()=>document.addEventListener('mousedown',cpOutside),0)}
+function cpOutside(e){if(!_cpCur)return;if(_cpCur.pop.contains(e.target))return;if(_cpCur.trig===e.target)return;cpClose()}
+function cpClose(){if(_cpCur){_cpCur.pop.remove();_cpCur=null;document.removeEventListener('mousedown',cpOutside)}}
+
+/* ===== 图片上传 ===== */
+let _picTarget=null;  // {kind,idx}
+function pickBgImg(){_picTarget={kind:'bg'};$('#fileInput').value='';$('#fileInput').click()}
+function pickPhoto(i){_picTarget={kind:'photo',idx:i};$('#fileInput').value='';$('#fileInput').click()}
+function pickLogoImg(){_picTarget={kind:'logo'};$('#logoInput').value='';$('#logoInput').click()}
+async function clearBgImg(){pushHistory();const k=_state.bgImg;if(k){await dbDel('imgs',k);if(_imgURLs[k]){URL.revokeObjectURL(_imgURLs[k]);delete _imgURLs[k]}}_state.bgImg='';saveProject();renderAll()}
+async function clearPhoto(i){pushHistory();const k=_state.photos[i].img;if(k){await dbDel('imgs',k);if(_imgURLs[k]){URL.revokeObjectURL(_imgURLs[k]);delete _imgURLs[k]}}_state.photos[i].img='';saveProject();renderAll()}
+async function clearLogoImg(){pushHistory();const k=_state.logoImg;if(k){await dbDel('imgs',k);if(_imgURLs[k]){URL.revokeObjectURL(_imgURLs[k]);delete _imgURLs[k]}}_state.logoImg='';saveProject();renderAll()}
+async function handleImgFile(file){
+  if(!file||!_picTarget)return;
+  const k=uid('img');await dbPut('imgs',k,file);pushHistory();
+  if(_picTarget.kind==='bg'){if(_state.bgImg)await dbDel('imgs',_state.bgImg);_state.bgImg=k;_state.bgPx=50;_state.bgPy=50;_state.bgZoom=1}
+  else if(_picTarget.kind==='photo'){const i=_picTarget.idx;if(_state.photos[i].img)await dbDel('imgs',_state.photos[i].img);_state.photos[i].img=k;_state.photos[i].px=50;_state.photos[i].py=50;_state.photos[i].zoom=1}
+  else if(_picTarget.kind==='logo'){if(_state.logoImg)await dbDel('imgs',_state.logoImg);_state.logoImg=k}
+  saveProject();renderAll();
+}
+$('#fileInput').addEventListener('change',async e=>{const f=e.target.files[0];if(f)await handleImgFile(f)});
+$('#logoInput').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;_picTarget={kind:'logo'};await handleImgFile(f)});
+
+/* ===== 导出 PNG ===== */
+async function doExport(){
+  if(!_state)return;
+  if(!await wpCheckExportQuota())return;
+  toast('正在生成…',1500);
+  try{await document.fonts.ready}catch(e){}
+  const cv=document.createElement('canvas');cv.width=EXP_W;cv.height=EXP_H;
+  const ctx=cv.getContext('2d');const s=_state;
+  // 底色
+  ctx.fillStyle=toCss(parseColor(s.bgColor));ctx.fillRect(0,0,EXP_W,EXP_H);
+  // 背景图
+  if(s.bgImg){const im=await loadImage(await getImgURL(s.bgImg));if(im){const lay=iLay(im.naturalWidth,im.naturalHeight,EXP_W,EXP_H,s.bgZoom,s.bgPx,s.bgPy);ctx.drawImage(im,lay.left,lay.top,lay.width,lay.height)}}
+  // 遮罩
+  if(s.overlayOn){ctx.fillStyle=toCss(parseColor(s.overlayColor));ctx.fillRect(0,0,EXP_W,EXP_H)}
+  // 阴影函数
+  function applyShadow(){if(s.shadowOn){const c=parseColor(s.shadowColor);ctx.shadowColor=toCss(c);ctx.shadowBlur=s.shadowBlur*2;ctx.shadowOffsetY=s.shadowOffY}else{ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0}}
+  function clearShadow(){ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0}
+
+  // 3 张照片
+  for(const p of s.photos){
+    clearShadow();
+    // 边框（外框矩形）
+    if(s.borderW>0){
+      ctx.fillStyle=toCss(parseColor(s.borderColor));
+      if(s.borderRadius>0){
+        roundRect(ctx,p.x,p.y,p.w,p.h,s.borderRadius);ctx.fill();
+      }else{
+        ctx.fillRect(p.x,p.y,p.w,p.h);
+      }
+    }
+    // 图片本体（裁剪到内框）
+    if(p.img){
+      const im=await loadImage(await getImgURL(p.img));
+      if(im){
+        const innerX=p.x+s.borderW, innerY=p.y+s.borderW, innerW=p.w-s.borderW*2, innerH=p.h-s.borderW*2;
+        ctx.save();
+        if(s.borderRadius>0){roundRect(ctx,innerX,innerY,innerW,innerH,Math.max(0,s.borderRadius-s.borderW));ctx.clip()}
+        else{ctx.beginPath();ctx.rect(innerX,innerY,innerW,innerH);ctx.clip()}
+        const lay=iLay(im.naturalWidth,im.naturalHeight,innerW,innerH,p.zoom,p.px,p.py);
+        ctx.drawImage(im,innerX+lay.left,innerY+lay.top,lay.width,lay.height);
+        ctx.restore();
+      }
+    }
+  }
+
+  // 副标题（英文）— 先渲染（位于下层）
+  if(s.enTitle){
+    ctx.font=`${s.enTitleWeight} ${s.enTitleSize}px "${s.enTitleFont}",cursive`;
+    ctx.textBaseline='top';
+    paintTextEffects(ctx,s.enTitle,s.enTitleX,s.enTitleY,s.enTitleLs,'left',toCss(parseColor(s.enTitleColor)),
+      s.enGlowOn,toCss(parseColor(s.enGlowColor)),s.enGlowBlur,
+      s.enStrokeOn,toCss(parseColor(s.enStrokeColor)),s.enStrokeW,
+      s.shadowOn,toCss(parseColor(s.shadowColor)),s.shadowBlur,s.shadowOffY);
+  }
+  // 主标题（中文）— 后渲染（覆盖在英文上层）
+  if(s.cnTitle){
+    ctx.font=`${s.cnTitleWeight} ${s.cnTitleSize}px "${s.cnTitleFont}","Noto Sans SC",sans-serif`;
+    ctx.textBaseline='top';
+    paintTextEffects(ctx,s.cnTitle,s.cnTitleX,s.cnTitleY,s.cnTitleLs,'left',toCss(parseColor(s.cnTitleColor)),
+      s.cnGlowOn,toCss(parseColor(s.cnGlowColor)),s.cnGlowBlur,
+      s.cnStrokeOn,toCss(parseColor(s.cnStrokeColor)),s.cnStrokeW,
+      s.shadowOn,toCss(parseColor(s.shadowColor)),s.shadowBlur,s.shadowOffY);
+  }
+  // 正文（前缀+正文，CJK 自动换行）
+  if(s.bodyPrefix||s.bodyText){
+    applyShadow();
+    ctx.font=`${s.bodyWeight} ${s.bodySize}px "${s.bodyFont}","Noto Sans SC",sans-serif`;
+    ctx.textBaseline='top';
+    const lh=s.bodySize*s.bodyLineH;
+    const ls=s.bodySize*s.bodyLs;
+    const segs=[];
+    if(s.bodyPrefix) segs.push({txt:s.bodyPrefix,color:s.bodyPrefixColor});
+    if(s.bodyText) segs.push({txt:s.bodyText,color:s.bodyColor});
+    let curX=s.bodyX, curY=s.bodyY;
+    for(const seg of segs){
+      ctx.fillStyle=toCss(parseColor(seg.color));
+      const chars=Array.from(seg.txt);
+      for(const ch of chars){
+        if(ch==='\n'){curY+=lh;curX=s.bodyX;continue}
+        const cw=ctx.measureText(ch).width;
+        if(curX+cw>s.bodyX+s.bodyMaxW && curX>s.bodyX){curY+=lh;curX=s.bodyX}
+        ctx.fillText(ch,curX,curY);
+        curX+=cw+ls;
+      }
+    }
+  }
+  // 底部 LOGO
+  if(s.logoShow && s.logoMode!=='off'){
+    if(s.logoMode==='image' && s.logoImg){
+      clearShadow();
+      const im=await loadImage(await getImgURL(s.logoImg));
+      if(im){const lw=s.logoImgW;const lh=im.naturalHeight*(lw/im.naturalWidth);ctx.drawImage(im,s.logoX-lw/2,s.logoY-lh/2,lw,lh)}
+    }else if(s.logoMode==='text'){
+      applyShadow();
+      const cnH=s.logoCnText?s.logoCnSize:0;
+      const enH=s.logoEnText?s.logoEnSize:0;
+      const gap=(cnH&&enH)?s.logoGap:0;
+      const totalH=cnH+gap+enH;
+      let top=s.logoY-totalH/2;
+      ctx.textBaseline='middle';
+      if(s.logoCnText){ctx.font=`${s.logoCnWeight} ${s.logoCnSize}px "${s.logoCnFont}","Noto Sans SC",sans-serif`;ctx.fillStyle=toCss(parseColor(s.logoCnColor));drawTextLS(ctx,s.logoCnText,s.logoX,top+cnH/2,s.logoCnLs,'center')}
+      if(s.logoEnText){ctx.font=`${s.logoEnWeight} ${s.logoEnSize}px "${s.logoEnFont}",serif`;ctx.fillStyle=toCss(parseColor(s.logoEnColor));drawTextLS(ctx,s.logoEnText,s.logoX,top+cnH+gap+enH/2,s.logoEnLs,'center')}
+    }
+  }
+
+  cv.toBlob(blob=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(s.name||'未命名')+'_背景三宫格_1200x1600.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);toast('导出完成')},'image/png',0.95);
+}
+function roundRect(ctx,x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y)}
+function drawTextLS(ctx,text,cx,y,lsEm,align){const fs=parseInt(ctx.font.match(/(\d+)px/)[1]);const ls=fs*lsEm;const chars=Array.from(text);let totalW=0;chars.forEach((ch,i)=>{totalW+=ctx.measureText(ch).width;if(i<chars.length-1)totalW+=ls});let curX=align==='center'?cx-totalW/2:align==='right'?cx-totalW:cx;chars.forEach((ch,i)=>{ctx.fillText(ch,curX,y);curX+=ctx.measureText(ch).width;if(i<chars.length-1)curX+=ls})}
+function drawTextLSStroke(ctx,text,cx,y,lsEm,align){const fs=parseInt(ctx.font.match(/(\d+)px/)[1]);const ls=fs*lsEm;const chars=Array.from(text);let totalW=0;chars.forEach((ch,i)=>{totalW+=ctx.measureText(ch).width;if(i<chars.length-1)totalW+=ls});let curX=align==='center'?cx-totalW/2:align==='right'?cx-totalW:cx;chars.forEach((ch,i)=>{ctx.strokeText(ch,curX,y);curX+=ctx.measureText(ch).width;if(i<chars.length-1)curX+=ls})}
+function paintTextEffects(ctx,text,x,y,lsEm,align,fillColor,glowOn,glowColor,glowBlur,strokeOn,strokeColor,strokeW,shadowOn,shadowColor,shadowBlur,shadowOffY){
+  // 1. 发光（如开启）
+  if(glowOn){ctx.save();ctx.shadowColor=glowColor;ctx.shadowBlur=(glowBlur||0)*2;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;ctx.fillStyle=fillColor;drawTextLS(ctx,text,x,y,lsEm,align);ctx.restore()}
+  // 2. 描边（如开启，无阴影）
+  if(strokeOn&&strokeW>0){ctx.save();ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;ctx.strokeStyle=strokeColor;ctx.lineWidth=strokeW;ctx.lineJoin='round';ctx.miterLimit=2;drawTextLSStroke(ctx,text,x,y,lsEm,align);ctx.restore()}
+  // 3. 最终填充（带可选投影）
+  ctx.save();
+  if(shadowOn){ctx.shadowColor=shadowColor;ctx.shadowBlur=(shadowBlur||0)*2;ctx.shadowOffsetX=0;ctx.shadowOffsetY=shadowOffY||0}
+  else{ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0}
+  ctx.fillStyle=fillColor;drawTextLS(ctx,text,x,y,lsEm,align);
+  ctx.restore();
+}
+
+/* ===== JSON 备份 ===== */
+function exportJSON(){if(!_state)return;const d=JSON.parse(JSON.stringify(_state));d.bgImg='';d.logoImg='';for(const p of d.photos)p.img='';const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(d.name||'project')+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);toast('已导出 JSON · 图片未包含')}
+function importJSON(){$('#jsonInput').value='';$('#jsonInput').click()}
+$('#jsonInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{try{const d=JSON.parse(r.result);d.id='p_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);d.bgImg='';d.logoImg='';if(d.photos)for(const p of d.photos)p.img='';d.createdAt=Date.now();d.updatedAt=Date.now();_state=migrateState(d);_curId=d.id;_history=[];await saveProjectNow();await loadAllProjects();renderAll();toast('已导入项目')}catch(e){toast('JSON 格式错误')}};r.readAsText(f)});
+
+function renderAll(){$('#pname').value=_state?_state.name:'';renderProjList();renderRP();scheduleRender()}
+
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){const t=document.activeElement;if(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable)return;e.preventDefault();undo()}});
+
+async function init(){await openDB();const ok=await wpCheckAuth();if(!ok)return;await loadAllProjects();if(_projects.length)await loadProject(_projects[0].id);else await newProject()}
+init();
+</script>
+</body>
+</html>
