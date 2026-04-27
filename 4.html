@@ -266,6 +266,7 @@ function renderList(){
       <p>${new Date(p.at).toLocaleDateString('zh-CN')} · ${p.cols}张</p>
       <div class="pi-acts">
         <button class="pi-btn" onclick="event.stopPropagation();renameP('${p.id}')">改名</button>
+        <button class="pi-btn" onclick="event.stopPropagation();dupP('${p.id}')">复制</button>
         <button class="pi-btn del" onclick="event.stopPropagation();delP('${p.id}')">删除</button>
       </div>
     </div>`).join('');
@@ -291,6 +292,27 @@ async function delP(id){
   await dbD('P',id);projs=projs.filter(x=>x.id!==id);
   if(curId===id){curId=null;document.getElementById('lsw').style.display='none';document.getElementById('poster').innerHTML='';renderRP();}
   renderList();
+}
+async function dupP(id){
+  const src=projs.find(x=>x.id===id);if(!src)return;
+  const np=JSON.parse(JSON.stringify(src));    /* 深拷贝项目数据 */
+  np.id=uid();
+  np.name=(src.name||'未命名')+' 副本';
+  np.ct=Date.now();np.at=Date.now();
+  /* 主图：复制 blob 到新键 */
+  if(src.hero&&src.hero.imgKey){
+    try{const b=await dbG('I',src.hero.imgKey);if(b){const nk=hk(np.id);await saveImg(nk,b);np.hero.imgKey=nk}else np.hero.imgKey=null}
+    catch(e){np.hero.imgKey=null}
+  }
+  /* 网格图：每张都复制 blob 到新键 */
+  for(let i=0;i<(np.cols||3);i++){
+    if(np.grids[i]&&src.grids[i]&&src.grids[i].imgKey){
+      try{const b=await dbG('I',src.grids[i].imgKey);if(b){const nk=gk(np.id,i);await saveImg(nk,b);np.grids[i].imgKey=nk}else np.grids[i].imgKey=null}
+      catch(e){np.grids[i].imgKey=null}
+    }
+  }
+  try{await save(np);projs.unshift(np);renderList();await openProj(np.id)}
+  catch(e){alert('复制失败：'+e.message)}
 }
 async function onNameChange(){const p=cur();if(!p)return;p.name=document.getElementById('pname').value;await save(p);renderList();}
 async function switchCols(n){
