@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>价格海报版（增强）</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@400;700;900&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Dancing+Script:wght@400;700&family=Pacifico&family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0e0e0e;color:#fff;height:100vh;overflow:hidden;display:flex;padding-top:40px;}
+.sb{width:186px;flex-shrink:0;background:#161616;border-right:1px solid #222;display:flex;flex-direction:column;}
+.sb-h{padding:12px;border-bottom:1px solid #222;}.sb-h h2{font-size:12px;font-weight:500;color:#ddd;}.sb-h p{font-size:9px;color:#444;margin-top:2px;}
+.nb{margin:8px 10px;padding:6px;background:#1c1c1c;border:1px dashed #2e2e2e;border-radius:5px;color:#666;font-size:10px;cursor:pointer;text-align:center;}.nb:hover{border-color:#555;color:#bbb;}
+.pl{flex:1;overflow-y:auto;padding:4px 7px;}.pi{padding:7px 9px;border-radius:5px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;}.pi:hover{background:#1c1c1c;}.pi.on{background:#1c1c1c;border-color:#2e2e2e;}.pi h3{font-size:11px;font-weight:400;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.pi .mt{font-size:9px;color:#444;margin-top:2px;}.pa{display:flex;gap:3px;margin-top:4px;}.pb2{padding:2px 6px;background:none;border:1px solid #222;border-radius:3px;color:#555;font-size:9px;cursor:pointer;font-family:inherit;}.pb2:hover{border-color:#555;color:#aaa;}.pb2.del:hover{border-color:#b00;color:#f44;}
+.ed{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.tb{height:44px;background:#161616;border-bottom:1px solid #222;display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;}
+.pn{background:none;border:none;outline:none;color:#fff;font-size:13px;font-weight:500;font-family:inherit;flex:1;max-width:240px;}.pn::placeholder{color:#333;}.sp{flex:1;}
+.xb{padding:6px 16px;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;background:#c8392b;color:#fff;}.xb:hover{background:#a02d22;}.xb:disabled{background:#6a1f17;cursor:default;}
+.bd{display:flex;flex:1;overflow:hidden;}.ca{flex:1;background:#0a0a0a;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.rp{width:280px;flex-shrink:0;background:#161616;border-left:1px solid #222;overflow-y:auto;padding:10px 10px 24px;}
+.rp::-webkit-scrollbar{width:3px;}.rp::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px;}
+.sc{margin-top:10px;padding-top:9px;border-top:1px solid #1e1e1e;}.st{font-size:9px;color:#666;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;font-weight:600;}
+.sc.tx{background:#0e0e0e;padding:8px;border-radius:5px;border:1px solid #1a1a1a;}.sc.tx .st{color:#c8a96a;}
+.lb{font-size:9px;color:#555;margin-bottom:2px;margin-top:5px;}
+.fi{width:100%;padding:5px 7px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;margin-bottom:3px;}.fi:focus{border-color:#444;}
+.sl{width:100%;padding:4px 6px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;margin-bottom:3px;}
+.rw{display:flex;gap:5px;align-items:center;margin-bottom:4px;}.rw label{font-size:9px;color:#555;min-width:36px;flex-shrink:0;}.sld{flex:1;accent-color:#c8392b;cursor:pointer;}.vl{font-size:9px;color:#555;min-width:34px;text-align:right;}
+.cp{display:flex;gap:5px;align-items:center;}.cd{width:20px;height:20px;border-radius:3px;border:1px solid #333;cursor:pointer;flex-shrink:0;}
+.ib{width:100%;padding:6px;border:1px dashed #2a2a2a;border-radius:4px;background:none;color:#666;font-size:10px;cursor:pointer;font-family:inherit;text-align:center;margin-bottom:3px;}.ib:hover{border-color:#555;color:#aaa;}
+.bkr{display:flex;gap:5px;margin-top:6px;}.bk{flex:1;padding:5px 4px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:9px;cursor:pointer;font-family:inherit;}.bk:hover{border-color:#555;color:#aaa;}
+.np{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#2a2a2a;}.np p{font-size:12px;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;}.ov.open{display:flex;}
+.md{background:#1c1c1c;border:1px solid #2e2e2e;border-radius:10px;padding:22px;width:300px;}.md h3{font-size:14px;font-weight:500;margin-bottom:16px;color:#ddd;}.ml{font-size:10px;color:#777;margin-bottom:4px;}
+.mi{width:100%;padding:8px 10px;background:#111;border:1px solid #2e2e2e;border-radius:5px;color:#fff;font-size:13px;font-family:inherit;outline:none;margin-bottom:16px;}.mi:focus{border-color:#555;}
+.ma{display:flex;gap:8px;}.ma button{flex:1;padding:8px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
+</style>
+</head>
+<body>
+<div style="height:40px;background:#0a0a0a;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;padding:0 14px;gap:10px;position:fixed;top:0;left:0;right:0;z-index:100;">
+  <a href="index.html" style="font-size:18px;color:#555;text-decoration:none;">←</a>
+  <span style="font-size:11px;color:#444;">价格海报版（增强）</span><div style="flex:1;"></div>
+  <span id="credits" style="background:#1a1a1a;padding:3px 10px;border-radius:4px;font-size:11px;color:#c8a96a;"></span>
+  <button onclick="wpLogout()" style="padding:4px 12px;border:1px solid #222;border-radius:4px;background:none;color:#555;font-size:11px;cursor:pointer;font-family:inherit;">退出</button>
+</div>
+<div class="sb"><div class="sb-h"><h2>项目</h2><p>Ctrl+Z 撤销 · 自动保存</p></div><div class="nb" onclick="openModal()">＋ 新建项目</div><div class="pl" id="pl"></div></div>
+<div class="ed">
+  <div class="tb"><input class="pn" id="pname" type="text" placeholder="项目名称" oninput="onNC()"><div class="sp"></div><button class="xb" id="xbtn" onclick="doExport()">↓ 导出 PNG 1200×1600</button></div>
+  <div class="bd"><div class="ca" id="ca"><div id="poster" style="position:relative;overflow:hidden;"></div></div><div class="rp" id="rp"><div class="np"><p>新建或选择项目</p></div></div></div>
+</div>
+<input type="file" id="fi" accept="image/*" style="display:none">
+<input type="file" id="jfi" accept=".json" style="display:none">
+<div class="ov" id="modal"><div class="md"><h3>新建项目</h3><div class="ml">名称</div><input class="mi" id="mn" type="text" placeholder="未命名"><div class="ma"><button onclick="closeModal()" style="background:#2a2a2a;color:#aaa;border:1px solid #333;">取消</button><button onclick="createProj()" style="background:#fff;color:#000;">创建</button></div></div></div>
+<script>
+const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+let _lic=null;
+async function wpCheckAuth(){if(location.protocol==='file:'||location.hostname==='localhost'){_lic={credits:999,id:'test'};const e=document.getElementById('credits');if(e)e.textContent='测试模式';return true;}const code=localStorage.getItem('wp-license');if(!code){location.href='index.html';return false;}try{const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});const d=await r.json();if(!d||!d[0]||!d[0].is_active){location.href='index.html';return false;}const lic=d[0];if((lic.credits||0)<=0||(lic.expires_at&&new Date(lic.expires_at)<new Date())){location.href='index.html';return false;}_lic=lic;updC();return true;}catch{return true;}}
+function updC(){const e=document.getElementById('credits');if(e&&_lic)e.textContent=`剩余 ${_lic.credits||0} 次`;}
+async function checkQuota(){if(location.protocol==='file:'||location.hostname==='localhost')return true;if(!_lic||(_lic.credits||0)<=0){alert('次数不足');return false;}try{const nc=(_lic.credits||0)-1;const r=await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${_lic.id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({credits:nc})});const d=await r.json();if(d&&d[0])_lic=d[0];else _lic.credits=nc;updC();return true;}catch{_lic.credits=Math.max(0,(_lic.credits||0)-1);updC();return true;}}
+function wpLogout(){localStorage.removeItem('wp-license');location.href='index.html';}
+function drawTextLS(ctx,text,cx,y,lsEm,align){if(!text)return;ctx.textBaseline='top';const m=ctx.font.match(/([\d.]+)px/);const fs=m?parseFloat(m[1]):16;const ls=lsEm*fs;const chars=[...text];let tw=0;chars.forEach((c,i)=>{tw+=ctx.measureText(c).width;if(i<chars.length-1)tw+=ls;});let sx=align==='center'?cx-tw/2:align==='right'?cx-tw:cx;chars.forEach((c,i)=>{ctx.fillText(c,sx,y);sx+=ctx.measureText(c).width+(i<chars.length-1?ls:0);});}
+function drawTextLSstk(ctx,text,cx,y,lsEm,align,strokeWidth){if(!text)return;ctx.textBaseline='top';const m=ctx.font.match(/([\d.]+)px/);const fs=m?parseFloat(m[1]):16;const ls=lsEm*fs;const chars=[...text];let tw=0;chars.forEach((c,i)=>{tw+=ctx.measureText(c).width;if(i<chars.length-1)tw+=ls;});let sx=align==='center'?cx-tw/2:align==='right'?cx-tw:cx;ctx.lineWidth=strokeWidth;ctx.lineJoin='round';chars.forEach((c,i)=>{ctx.strokeText(c,sx,y);sx+=ctx.measureText(c).width+(i<chars.length-1?ls:0);});}
+function iLay(nW,nH,cW,cH,zoom,px,py){if(!nW||!nH)return{left:0,top:0,width:cW,height:cH};const s=Math.max(cW/nW,cH/nH)*(zoom||1);const rW=nW*s,rH=nH*s;return{left:-((px||50)/100)*Math.max(0,rW-cW),top:-((py||50)/100)*Math.max(0,rH-cH),width:rW,height:rH};}
+function toHex(c){if(!c)return'#000000';if(c.startsWith('#'))return c;const m=c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);if(m)return'#'+[m[1],m[2],m[3]].map(x=>parseInt(x).toString(16).padStart(2,'0')).join('');return'#000000';}
+const DB='wedding-price-v1';let db=null;
+function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB,1);req.onupgradeneeded=e=>{const d=e.target.result;['P','I'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,s==='P'?{keyPath:'id'}:undefined);});};req.onsuccess=e=>{db=e.target.result;res();};req.onerror=rej;});}
+const TX=(s,m='readonly')=>db.transaction(s,m).objectStore(s);
+const dbGet=(s,k)=>new Promise((r,j)=>{const q=TX(s).get(k);q.onsuccess=()=>r(q.result);q.onerror=j;});
+const dbPut=(s,v,k)=>new Promise((r,j)=>{const q=k!==undefined?TX(s,'readwrite').put(v,k):TX(s,'readwrite').put(v);q.onsuccess=r;q.onerror=j;});
+const dbDel=(s,k)=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=r;t.onerror=j;});
+const dbAll=(s)=>new Promise((r,j)=>{const q=TX(s).getAll();q.onsuccess=()=>r(q.result);q.onerror=j;});
+let projs=[],curId=null;const imgCache={};let dragging=false,dragSX=0,dragSY=0,dragPX=50,dragPY=50;let _hist=[],_hi=-1;
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const cur=()=>projs.find(p=>p.id===curId)||null;
+const ik=(pid)=>`bp-${pid}-bg`;
+function pushH(){const p=cur();if(!p)return;_hist=_hist.slice(0,_hi+1);_hist.push(JSON.stringify(p));if(_hist.length>20)_hist.shift();_hi=_hist.length-1;}
+async function undo(){if(_hi<=0)return;_hi--;const p=JSON.parse(_hist[_hi]);const i=projs.findIndex(x=>x.id===p.id);if(i>=0)projs[i]=p;await dbPut('P',p);await render();renderRP();}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+async function loadAll(){projs=await dbAll('P');projs.sort((a,b)=>b.at-a.at);}
+async function save(p){p.at=Date.now();await dbPut('P',p);}
+async function saveImg(key,blob){await dbPut('I',blob,key);if(imgCache[key])URL.revokeObjectURL(imgCache[key]);imgCache[key]=URL.createObjectURL(blob);}
+async function delImg(key){if(!key)return;await dbDel('I',key);if(imgCache[key]){URL.revokeObjectURL(imgCache[key]);delete imgCache[key];}}
+async function getURL(key){if(!key)return null;if(imgCache[key])return imgCache[key];const b=await dbGet('I',key);if(!b)return null;imgCache[key]=URL.createObjectURL(b);return imgCache[key];}
+function exportJSON(){const p=cur();if(!p)return;const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(p.name||'p')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+function importJSON(){const fi=document.getElementById('jfi');fi.onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JSON.parse(await f.text());p.id=uid();p.name=(p.name||'导入')+' (导入)';p.ct=p.at=Date.now();await save(p);projs.unshift(p);renderList();openProj(p.id);}catch{alert('格式错误');}fi.value='';};fi.click();}
+
+// ═══ Per-line text style ROOT SPEC ════════════════════════════════════
+function defLine(text,opts){return Object.assign({text:text||'',font:'Noto Sans SC',weight:'400',italic:false,size:36,color:'#ffffff',ls:0.02,strokeColor:'#000000',strokeWidth:0,glowColor:'#000000',glowBlur:0},opts||{});}
+const FONT_OPTS=['Noto Sans SC','Noto Serif SC','Ma Shan Zheng','ZCOOL XiaoWei','Cormorant Garamond','Dancing Script','Pacifico','Oswald','STSong','SimSun','Microsoft YaHei','KaiTi'];
+const WEIGHT_OPTS=[['300','细'],['400','常规'],['500','中等'],['700','粗'],['900','超粗']];
+function applyLineCSS(line,sizePx){const sty=[`font-family:'${line.font}',sans-serif`,`font-size:${sizePx}px`,`font-weight:${line.weight}`,`color:${line.color}`,`letter-spacing:${line.ls}em`,`line-height:1`];if(line.italic)sty.push('font-style:italic');if(line.strokeWidth>0)sty.push(`-webkit-text-stroke:${line.strokeWidth}px ${line.strokeColor}`);if(line.glowBlur>0)sty.push(`text-shadow:0 0 ${line.glowBlur}px ${line.glowColor},0 0 ${line.glowBlur*1.6}px ${line.glowColor}`);return sty.join(';');}
+function canvasDrawLine(ctx,line,cx,y,sizePx,align){if(!line.text)return;const it=line.italic?'italic ':'';ctx.font=`${it}${line.weight} ${sizePx}px '${line.font}',sans-serif`;if(line.glowBlur>0){ctx.shadowColor=line.glowColor;ctx.shadowBlur=line.glowBlur;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;}else{ctx.shadowBlur=0;}if(line.strokeWidth>0){ctx.strokeStyle=line.strokeColor;drawTextLSstk(ctx,line.text,cx,y,line.ls,align||'center',line.strokeWidth*2);}ctx.fillStyle=line.color;drawTextLS(ctx,line.text,cx,y,line.ls,align||'center');ctx.shadowBlur=0;}
+
+function defProject(){return{
+  bgImg:{imgKey:null,px:50,py:50,zoom:1,nW:0,nH:0},
+  // Each text line independently configurable
+  headlineLine:defLine('繁景6-9月档期告急',{font:'Noto Sans SC',weight:'900',size:116,color:'#ffffff',ls:0.01,strokeColor:'#000000',strokeWidth:0,glowColor:'#000000',glowBlur:0}),
+  headlineY:90,
+  subLeftLine:defLine('北京婚宴',{font:'Noto Serif SC',weight:'400',size:49,color:'#ffffff',ls:0.08,strokeColor:'#000000',strokeWidth:0,glowColor:'#000000',glowBlur:14}),
+  subRightLine:defLine('一价全包',{font:'Noto Serif SC',weight:'400',size:49,color:'#ffffff',ls:0.08,strokeColor:'#000000',strokeWidth:0,glowColor:'#000000',glowBlur:14}),
+  subOffY:32,
+  // Price split into 3 independent lines: ¥ (currency), digits, unit
+  priceCurrencyLine:defLine('¥',{font:'Noto Sans SC',weight:'900',size:75,color:'#ffffff',ls:0,strokeColor:'#000000',strokeWidth:0,glowColor:'#000000',glowBlur:0}),
+  priceLine:defLine('5880',{font:'Noto Sans SC',weight:'900',size:140,color:'#ffffff',ls:0,strokeColor:'#000000',strokeWidth:0,glowColor:'#000000',glowBlur:30}),
+  priceUnitLine:defLine('起/桌',{font:'Noto Sans SC',weight:'700',size:42,color:'#ffffff',ls:0.04,strokeColor:'#000000',strokeWidth:0,glowColor:'#000000',glowBlur:18}),
+  priceOffY:80,
+  badgeLine:defLine('7大宴会厅  Banquet Hall',{font:'Noto Sans SC',weight:'700',size:54,color:'#ffffff',ls:0.06,strokeColor:'#000000',strokeWidth:0,glowColor:'#000000',glowBlur:0}),
+  // Symmetric gradient: edges (Edge color) → middle (Mid color) → edges
+  badgeColorEdge:'#903060',badgeColorMid:'#e85a85',
+  badgeW:90,badgeH:114,badgeOffY:80,badgeRadius:70,
+};}
+
+function openModal(){document.getElementById('mn').value='';document.getElementById('modal').classList.add('open');setTimeout(()=>document.getElementById('mn').focus(),50);}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+async function createProj(){const name=document.getElementById('mn').value.trim()||'未命名';const p={id:uid(),name,ct:Date.now(),at:Date.now(),...defProject()};await save(p);projs.unshift(p);closeModal();renderList();openProj(p.id);}
+document.getElementById('mn').addEventListener('keydown',e=>{if(e.key==='Enter')createProj();});
+function renderList(){const el=document.getElementById('pl');if(!projs.length){el.innerHTML='<div style="font-size:10px;color:#333;padding:8px;">暂无项目</div>';return;}el.innerHTML=projs.map(p=>`<div class="pi${p.id===curId?' on':''}" onclick="openProj('${p.id}')"><h3>${esc(p.name)}</h3><div class="mt">${new Date(p.at).toLocaleDateString('zh-CN')}</div><div class="pa"><button class="pb2" onclick="event.stopPropagation();renameProj('${p.id}')">改名</button><button class="pb2" onclick="event.stopPropagation();dupProj('${p.id}')">复制</button><button class="pb2 del" onclick="event.stopPropagation();delProj('${p.id}')">删除</button></div></div>`).join('');}
+async function renameProj(id){const p=projs.find(x=>x.id===id);if(!p)return;const n=prompt('新名称：',p.name);if(!n||!n.trim())return;p.name=n.trim();await save(p);if(curId===id)document.getElementById('pname').value=p.name;renderList();}
+async function openProj(id){curId=id;const p=cur();if(!p)return;document.getElementById('pname').value=p.name;_hist=[];_hi=-1;renderList();await render();renderRP();}
+async function dupProj(id){const p=projs.find(x=>x.id===id);if(!p)return;const nid=uid();const np={...JSON.parse(JSON.stringify(p)),id:nid,name:p.name+' 副本',ct:Date.now(),at:Date.now()};const b=await dbGet('I',ik(id));if(b){await dbPut('I',b,ik(nid));np.bgImg.imgKey=ik(nid);}await save(np);projs.unshift(np);renderList();}
+async function delProj(id){if(!confirm('确认删除？'))return;await delImg(ik(id));await dbDel('P',id);projs=projs.filter(p=>p.id!==id);if(curId===id){curId=null;document.getElementById('poster').innerHTML='';renderRP();}renderList();}
+async function onNC(){const p=cur();if(!p)return;p.name=document.getElementById('pname').value;await save(p);renderList();}
+function pSz(){const a=document.getElementById('ca');const aH=a.clientHeight-24,aW=a.clientWidth-24;let h,w;if(aH*.75<aW){h=Math.floor(aH);w=Math.floor(h*.75);}else{w=Math.floor(aW);h=Math.floor(w/.75);}return{w,h};}
+
+async function render(){
+  const poster=document.getElementById('poster');const p=cur();if(!p){poster.innerHTML='';return;}
+  const{w,h}=pSz();const sc=w/1200;
+  poster.style.cssText=`width:${w}px;height:${h}px;background:#0a0a0a;position:relative;overflow:hidden;flex-shrink:0;box-shadow:0 20px 60px rgba(0,0,0,.6);`;
+  const bgURL=await getURL(p.bgImg.imgKey);const bg=p.bgImg;const bl=bgURL?iLay(bg.nW,bg.nH,w,h,bg.zoom,bg.px,bg.py):{left:0,top:0,width:w,height:h};
+  let html='';
+  // bg
+  if(bgURL){html+=`<div id="bgslot" style="position:absolute;inset:0;overflow:hidden;cursor:grab;"><img id="img-bg" src="${bgURL}" draggable="false" style="position:absolute;left:${bl.left}px;top:${bl.top}px;width:${bl.width}px;height:${bl.height}px;pointer-events:none;"></div>`;}
+  else{html+=`<div id="bgslot" style="position:absolute;inset:0;background:linear-gradient(160deg,#1a0a1a 0%,#2a0818 50%,#1a0828 100%);cursor:pointer;" onclick="uploadBg()"><div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;color:#444;"><div style="font-size:32px;margin-bottom:8px;">＋</div><div style="font-size:11px;">点击上传背景图片</div></div></div>`;}
+  // headline (centered)
+  const hl=p.headlineLine;
+  const hlY=Math.round(p.headlineY*sc);
+  html+=`<div contenteditable="true" spellcheck="false" style="position:absolute;left:0;top:${hlY}px;width:100%;text-align:center;${applyLineCSS(hl,Math.round(hl.size*sc))};line-height:1.15;outline:none;cursor:text;pointer-events:auto;" oninput="setLineText('headlineLine',this.textContent)" onblur="setLineText('headlineLine',this.textContent)">${esc(hl.text)}</div>`;
+  // sub line: 5 segments share one style — — left ｜ right —
+  const subY=hlY+Math.round((hl.size+p.subOffY)*sc);
+  const sl=p.subLeftLine,sr=p.subRightLine;
+  const subSz=Math.round(sl.size*sc);
+  const subCSS=applyLineCSS(sl,subSz);
+  const sepCSS=subCSS+';opacity:0.55;';
+  html+=`<div style="position:absolute;left:0;top:${subY}px;width:100%;display:flex;align-items:baseline;justify-content:center;gap:${Math.round(12*sc)}px;pointer-events:none;">
+    <span style="${sepCSS}">—</span>
+    <div contenteditable="true" spellcheck="false" style="${subCSS};outline:none;cursor:text;pointer-events:auto;" oninput="setLineText('subLeftLine',this.textContent)" onblur="setLineText('subLeftLine',this.textContent)">${esc(sl.text)}</div>
+    <span style="${sepCSS}">｜</span>
+    <div contenteditable="true" spellcheck="false" style="${subCSS};outline:none;cursor:text;pointer-events:auto;" oninput="setLineText('subRightLine',this.textContent)" onblur="setLineText('subRightLine',this.textContent)">${esc(sr.text)}</div>
+    <span style="${sepCSS}">—</span>
+  </div>`;
+  // price (centered) - ¥ + digits + unit, all baseline aligned
+  const priceY=subY+Math.round((sl.size+p.priceOffY)*sc);
+  const pcl=p.priceCurrencyLine,pl=p.priceLine,pul=p.priceUnitLine;
+  html+=`<div style="position:absolute;left:0;top:${priceY}px;width:100%;display:flex;align-items:baseline;justify-content:center;gap:${Math.round(8*sc)}px;pointer-events:none;">
+    <div contenteditable="true" spellcheck="false" style="${applyLineCSS(pcl,Math.round(pcl.size*sc))};line-height:1;outline:none;cursor:text;pointer-events:auto;" oninput="setLineText('priceCurrencyLine',this.textContent)" onblur="setLineText('priceCurrencyLine',this.textContent)">${esc(pcl.text)}</div>
+    <div contenteditable="true" spellcheck="false" style="${applyLineCSS(pl,Math.round(pl.size*sc))};line-height:1;outline:none;cursor:text;pointer-events:auto;" oninput="setLineText('priceLine',this.textContent)" onblur="setLineText('priceLine',this.textContent)">${esc(pl.text)}</div>
+    <div contenteditable="true" spellcheck="false" style="${applyLineCSS(pul,Math.round(pul.size*sc))};outline:none;cursor:text;pointer-events:auto;" oninput="setLineText('priceUnitLine',this.textContent)" onblur="setLineText('priceUnitLine',this.textContent)">${esc(pul.text)}</div>
+  </div>`;
+  // badge - symmetric 3-stop gradient: edge → mid → edge
+  const badgeH=Math.round(p.badgeH*sc),badgeR=Math.round(p.badgeRadius*sc);
+  const badgeY=h-Math.round(p.badgeOffY*sc)-badgeH;
+  const bl2=p.badgeLine;
+  const edgeC=p.badgeColorEdge||'#903060';const midC=p.badgeColorMid||'#e85a85';
+  const badgeWPct=p.badgeW||90;
+  const badgeSide=Math.round(((100-badgeWPct)/2)*w/100);
+  html+=`<div style="position:absolute;left:${badgeSide}px;top:${badgeY}px;right:${badgeSide}px;height:${badgeH}px;border-radius:${badgeR}px;background:linear-gradient(to right,${edgeC} 0%,${midC} 50%,${edgeC} 100%);display:flex;align-items:center;justify-content:center;pointer-events:none;">
+    <div contenteditable="true" spellcheck="false" style="${applyLineCSS(bl2,Math.round(bl2.size*sc))};outline:none;cursor:text;pointer-events:auto;" oninput="setLineText('badgeLine',this.textContent)" onblur="setLineText('badgeLine',this.textContent)">${esc(bl2.text)}</div>
+  </div>`;
+  poster.innerHTML=html;
+  const bgSlot=document.getElementById('bgslot');if(bgSlot&&bgURL){bgSlot.addEventListener('mousedown',onMD);bgSlot.addEventListener('touchstart',onTS,{passive:false});}
+}
+function onMD(e){const p=cur();if(!p||!p.bgImg.imgKey||e.button!==0||e.target.contentEditable==='true')return;dragging=true;dragSX=e.clientX;dragSY=e.clientY;dragPX=p.bgImg.px;dragPY=p.bgImg.py;document.getElementById('bgslot').style.cursor='grabbing';e.preventDefault();}
+function onTS(e){const p=cur();if(!p||!p.bgImg.imgKey||e.target.contentEditable==='true')return;dragging=true;dragSX=e.touches[0].clientX;dragSY=e.touches[0].clientY;dragPX=p.bgImg.px;dragPY=p.bgImg.py;e.preventDefault();}
+document.addEventListener('mousemove',e=>{if(!dragging)return;const p=cur();if(!p)return;const{w,h}=pSz();p.bgImg.px=Math.max(0,Math.min(100,dragPX-(e.clientX-dragSX)/(w*(p.bgImg.zoom||1))*100));p.bgImg.py=Math.max(0,Math.min(100,dragPY-(e.clientY-dragSY)/(h*(p.bgImg.zoom||1))*100));const el=document.getElementById('img-bg');if(el){const l=iLay(p.bgImg.nW,p.bgImg.nH,w,h,p.bgImg.zoom,p.bgImg.px,p.bgImg.py);el.style.left=l.left+'px';el.style.top=l.top+'px';el.style.width=l.width+'px';el.style.height=l.height+'px';}});
+document.addEventListener('mouseup',async()=>{if(!dragging)return;dragging=false;const el=document.getElementById('bgslot');if(el)el.style.cursor='grab';const p=cur();if(p){pushH();await save(p);}});
+document.addEventListener('touchmove',e=>{if(!dragging)return;const p=cur();if(!p)return;const{w,h}=pSz();p.bgImg.px=Math.max(0,Math.min(100,dragPX-(e.touches[0].clientX-dragSX)/(w*(p.bgImg.zoom||1))*100));p.bgImg.py=Math.max(0,Math.min(100,dragPY-(e.touches[0].clientY-dragSY)/(h*(p.bgImg.zoom||1))*100));const el=document.getElementById('img-bg');if(el){const l=iLay(p.bgImg.nW,p.bgImg.nH,w,h,p.bgImg.zoom,p.bgImg.px,p.bgImg.py);el.style.left=l.left+'px';el.style.top=l.top+'px';el.style.width=l.width+'px';el.style.height=l.height+'px';}},{passive:false});
+document.addEventListener('touchend',async()=>{if(!dragging)return;dragging=false;const p=cur();if(p){pushH();await save(p);}});
+function uploadBg(){const fi=document.getElementById('fi');fi.onchange=async e=>{const f=e.target.files[0];if(!f)return;const p=cur();if(!p)return;const img=new Image();const url=URL.createObjectURL(f);img.onload=async()=>{const key=ik(curId);await saveImg(key,f);p.bgImg={imgKey:key,px:50,py:50,zoom:1,nW:img.naturalWidth,nH:img.naturalHeight};URL.revokeObjectURL(url);pushH();await save(p);await render();renderRP();};img.src=url;fi.value='';};fi.click();}
+async function setP(k,v){const p=cur();if(!p)return;pushH();p[k]=v;await save(p);await render();}
+async function setPN(k,v){const p=cur();if(!p)return;pushH();p[k]=+v;await save(p);await render();}
+async function setLineText(k,v){const p=cur();if(!p)return;pushH();p[k].text=v;await save(p);}
+async function setLineProp(k,prop,v){const p=cur();if(!p)return;pushH();p[k][prop]=v;await save(p);await render();}
+async function setLinePropN(k,prop,v){const p=cur();if(!p)return;pushH();p[k][prop]=+v;await save(p);await render();}
+async function setLinkedLineProp(k1,k2,prop,v){const p=cur();if(!p)return;pushH();p[k1][prop]=v;p[k2][prop]=v;await save(p);await render();}
+async function setLinkedLinePropN(k1,k2,prop,v){const p=cur();if(!p)return;pushH();p[k1][prop]=+v;p[k2][prop]=+v;await save(p);await render();}
+async function setBgP(k,v){const p=cur();if(!p)return;p.bgImg[k]=+v;const{w,h}=pSz();const el=document.getElementById('img-bg');if(el){const l=iLay(p.bgImg.nW,p.bgImg.nH,w,h,p.bgImg.zoom,p.bgImg.px,p.bgImg.py);el.style.left=l.left+'px';el.style.top=l.top+'px';el.style.width=l.width+'px';el.style.height=l.height+'px';}await save(p);}
+
+function lineControls(lineKey,label,line,sizeMin,sizeMax){
+  return `<div class="sc tx">
+    <div class="st">${label}</div>
+    <input class="fi" type="text" value="${esc(line.text)}" oninput="setLineText('${lineKey}',this.value)">
+    <div class="lb">字体</div>
+    <select class="sl" onchange="setLineProp('${lineKey}','font',this.value)">${FONT_OPTS.map(f=>`<option value="${f}"${line.font===f?' selected':''}>${f}</option>`).join('')}</select>
+    <div class="rw"><label>字号</label><input class="sld" type="range" min="${sizeMin||16}" max="${sizeMax||200}" value="${line.size}" oninput="setLinePropN('${lineKey}','size',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${line.size}px</span></div>
+    <div class="lb">字重</div>
+    <select class="sl" onchange="setLineProp('${lineKey}','weight',this.value)">${WEIGHT_OPTS.map(([v,l])=>`<option value="${v}"${line.weight===v?' selected':''}>${l} ${v}</option>`).join('')}</select>
+    <div class="lb">字形</div>
+    <select class="sl" onchange="setLineProp('${lineKey}','italic',this.value==='true')"><option value="false"${!line.italic?' selected':''}>正体</option><option value="true"${line.italic?' selected':''}>斜体</option></select>
+    <div class="lb">颜色</div>
+    <div class="cp"><div class="cd" style="background:${toHex(line.color)};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(line.color)}" style="display:none" onchange="setLineProp('${lineKey}','color',this.value);this.previousElementSibling.style.background=this.value"></div>
+    <div class="rw"><label>字间距</label><input class="sld" type="range" min="0" max="0.4" step="0.01" value="${line.ls}" oninput="setLinePropN('${lineKey}','ls',+this.value);this.nextElementSibling.textContent=this.value+'em'"><span class="vl">${line.ls}em</span></div>
+    <div class="lb" style="margin-top:8px;color:#888;">▸ 描边</div>
+    <div class="rw"><label>粗细</label><input class="sld" type="range" min="0" max="6" step="0.5" value="${line.strokeWidth}" oninput="setLinePropN('${lineKey}','strokeWidth',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${line.strokeWidth}px</span></div>
+    <div class="cp"><div class="cd" style="background:${toHex(line.strokeColor)};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(line.strokeColor)}" style="display:none" onchange="setLineProp('${lineKey}','strokeColor',this.value);this.previousElementSibling.style.background=this.value"><span style="font-size:9px;color:#555;">描边色</span></div>
+    <div class="lb" style="margin-top:8px;color:#888;">▸ 发光</div>
+    <div class="rw"><label>强度</label><input class="sld" type="range" min="0" max="50" value="${line.glowBlur}" oninput="setLinePropN('${lineKey}','glowBlur',+this.value);this.nextElementSibling.textContent=this.value"><span class="vl">${line.glowBlur}</span></div>
+    <div class="cp"><div class="cd" style="background:${toHex(line.glowColor)};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(line.glowColor)}" style="display:none" onchange="setLineProp('${lineKey}','glowColor',this.value);this.previousElementSibling.style.background=this.value"><span style="font-size:9px;color:#555;">发光色</span></div>
+  </div>`;
+}
+
+// Linked controls: two text fields share ONE set of style controls (font/size/weight/italic/color/ls/stroke/glow)
+// Style changes write to both lines simultaneously. Default values come from the LEFT line.
+function linkedLineControls(label,leftKey,rightKey,leftLine,rightLine,sizeMin,sizeMax){
+  const line=leftLine; // use left line as the "source of truth" for shared style
+  const keys=`'${leftKey}','${rightKey}'`;
+  return `<div class="sc tx">
+    <div class="st">${label}</div>
+    <div class="lb">左侧文字</div>
+    <input class="fi" type="text" value="${esc(leftLine.text)}" oninput="setLineText('${leftKey}',this.value)">
+    <div class="lb">右侧文字</div>
+    <input class="fi" type="text" value="${esc(rightLine.text)}" oninput="setLineText('${rightKey}',this.value)">
+    <div class="lb" style="margin-top:8px;color:#888;">▸ 共用样式（左右同步）</div>
+    <div class="lb">字体</div>
+    <select class="sl" onchange="setLinkedLineProp(${keys},'font',this.value)">${FONT_OPTS.map(f=>`<option value="${f}"${line.font===f?' selected':''}>${f}</option>`).join('')}</select>
+    <div class="rw"><label>字号</label><input class="sld" type="range" min="${sizeMin||16}" max="${sizeMax||200}" value="${line.size}" oninput="setLinkedLinePropN(${keys},'size',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${line.size}px</span></div>
+    <div class="lb">字重</div>
+    <select class="sl" onchange="setLinkedLineProp(${keys},'weight',this.value)">${WEIGHT_OPTS.map(([v,l])=>`<option value="${v}"${line.weight===v?' selected':''}>${l} ${v}</option>`).join('')}</select>
+    <div class="lb">字形</div>
+    <select class="sl" onchange="setLinkedLineProp(${keys},'italic',this.value==='true')"><option value="false"${!line.italic?' selected':''}>正体</option><option value="true"${line.italic?' selected':''}>斜体</option></select>
+    <div class="lb">颜色</div>
+    <div class="cp"><div class="cd" style="background:${toHex(line.color)};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(line.color)}" style="display:none" onchange="setLinkedLineProp(${keys},'color',this.value);this.previousElementSibling.style.background=this.value"></div>
+    <div class="rw"><label>字间距</label><input class="sld" type="range" min="0" max="0.4" step="0.01" value="${line.ls}" oninput="setLinkedLinePropN(${keys},'ls',+this.value);this.nextElementSibling.textContent=this.value+'em'"><span class="vl">${line.ls}em</span></div>
+    <div class="lb" style="margin-top:8px;color:#888;">▸ 描边</div>
+    <div class="rw"><label>粗细</label><input class="sld" type="range" min="0" max="6" step="0.5" value="${line.strokeWidth}" oninput="setLinkedLinePropN(${keys},'strokeWidth',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${line.strokeWidth}px</span></div>
+    <div class="cp"><div class="cd" style="background:${toHex(line.strokeColor)};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(line.strokeColor)}" style="display:none" onchange="setLinkedLineProp(${keys},'strokeColor',this.value);this.previousElementSibling.style.background=this.value"><span style="font-size:9px;color:#555;">描边色</span></div>
+    <div class="lb" style="margin-top:8px;color:#888;">▸ 发光</div>
+    <div class="rw"><label>强度</label><input class="sld" type="range" min="0" max="50" value="${line.glowBlur}" oninput="setLinkedLinePropN(${keys},'glowBlur',+this.value);this.nextElementSibling.textContent=this.value"><span class="vl">${line.glowBlur}</span></div>
+    <div class="cp"><div class="cd" style="background:${toHex(line.glowColor)};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(line.glowColor)}" style="display:none" onchange="setLinkedLineProp(${keys},'glowColor',this.value);this.previousElementSibling.style.background=this.value"><span style="font-size:9px;color:#555;">发光色</span></div>
+  </div>`;
+}
+
+function renderRP(){
+  const rp=document.getElementById('rp');const p=cur();if(!p){rp.innerHTML='<div class="np"><p>新建或选择项目</p></div>';return;}
+  const bg=p.bgImg;
+  rp.innerHTML=`
+  <div class="sc" style="margin-top:0;padding-top:0;border-top:none;">
+    <div class="st">背景图片</div>
+    <div class="ib" onclick="uploadBg()">${bg.imgKey?'🔄 更换背景图':'＋ 上传背景图片'}</div>
+    ${bg.imgKey?`<div class="rw"><label>缩放</label><input class="sld" type="range" min="0.5" max="3" step="0.05" value="${bg.zoom}" oninput="setBgP('zoom',+this.value);this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"><span class="vl">${Math.round(bg.zoom*100)}%</span></div><div class="rw"><label>横移</label><input class="sld" type="range" min="0" max="100" value="${bg.px}" oninput="setBgP('px',+this.value)"><span class="vl">${Math.round(bg.px)}%</span></div><div class="rw"><label>纵移</label><input class="sld" type="range" min="0" max="100" value="${bg.py}" oninput="setBgP('py',+this.value)"><span class="vl">${Math.round(bg.py)}%</span></div>`:''}
+  </div>
+  ${lineControls('headlineLine','▸ 主标题',p.headlineLine,30,160)}
+  <div class="sc"><div class="st">主标题位置</div>
+    <div class="rw"><label>距顶</label><input class="sld" type="range" min="30" max="400" value="${p.headlineY}" oninput="setPN('headlineY',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.headlineY}px</span></div>
+  </div>
+  ${linkedLineControls('▸ 副标题（左右两段·共用样式）','subLeftLine','subRightLine',p.subLeftLine,p.subRightLine,16,80)}
+  <div class="sc"><div class="rw"><label>副标题距主标题</label><input class="sld" type="range" min="0" max="120" value="${p.subOffY}" oninput="setPN('subOffY',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.subOffY}px</span></div></div>
+  ${lineControls('priceCurrencyLine','▸ 价格符号（如 ¥）',p.priceCurrencyLine,30,260)}
+  ${lineControls('priceLine','▸ 价格数字（如 5880）',p.priceLine,60,280)}
+  ${lineControls('priceUnitLine','▸ 价格单位（如 起/桌）',p.priceUnitLine,16,80)}
+  <div class="sc"><div class="rw"><label>价格距副标题</label><input class="sld" type="range" min="20" max="300" value="${p.priceOffY}" oninput="setPN('priceOffY',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.priceOffY}px</span></div></div>
+  ${lineControls('badgeLine','▸ 底部胶囊标签 · 文字',p.badgeLine,16,80)}
+  <div class="sc">
+    <div class="st">底部胶囊 · 对称渐变（两端→中间）</div>
+    <div class="lb">两端颜色（深）</div><div class="cp"><div class="cd" style="background:${toHex(p.badgeColorEdge||'#903060')};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(p.badgeColorEdge||'#903060')}" style="display:none" onchange="setP('badgeColorEdge',this.value);this.previousElementSibling.style.background=this.value"><span style="font-size:9px;color:#555;">${p.badgeColorEdge||'#903060'}</span></div>
+    <div class="lb">中间颜色（亮）</div><div class="cp"><div class="cd" style="background:${toHex(p.badgeColorMid||'#e85a85')};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(p.badgeColorMid||'#e85a85')}" style="display:none" onchange="setP('badgeColorMid',this.value);this.previousElementSibling.style.background=this.value"><span style="font-size:9px;color:#555;">${p.badgeColorMid||'#e85a85'}</span></div>
+    <div class="rw"><label>标签宽度</label><input class="sld" type="range" min="40" max="100" value="${p.badgeW||90}" oninput="setPN('badgeW',+this.value);this.nextElementSibling.textContent=this.value+'%'"><span class="vl">${p.badgeW||90}%</span></div>
+    <div class="rw"><label>标签高度</label><input class="sld" type="range" min="60" max="200" value="${p.badgeH}" oninput="setPN('badgeH',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.badgeH}px</span></div>
+    <div class="rw"><label>圆角</label><input class="sld" type="range" min="0" max="100" value="${p.badgeRadius}" oninput="setPN('badgeRadius',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.badgeRadius}px</span></div>
+    <div class="rw"><label>距底部</label><input class="sld" type="range" min="20" max="300" value="${p.badgeOffY}" oninput="setPN('badgeOffY',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.badgeOffY}px</span></div>
+  </div>
+  <div class="sc"><div class="st">备份</div><div class="bkr"><button class="bk" onclick="exportJSON()">⬇ 导出JSON</button><button class="bk" onclick="importJSON()">⬆ 导入JSON</button></div></div>`;
+}
+
+async function doExport(){
+  const p=cur();if(!p)return;if(!await checkQuota())return;
+  const btn=document.getElementById('xbtn');btn.textContent='生成中…';btn.disabled=true;
+  try{
+    await document.fonts.ready;
+    // roundRect polyfill (inside doExport — never blocks page load)
+    if(typeof CanvasRenderingContext2D!=='undefined'&&!CanvasRenderingContext2D.prototype.roundRect){
+      CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){r=Math.min(r,w/2,h/2);this.beginPath();this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.arcTo(x+w,y,x+w,y+r,r);this.lineTo(x+w,y+h-r);this.arcTo(x+w,y+h,x+w-r,y+h,r);this.lineTo(x+r,y+h);this.arcTo(x,y+h,x,y+h-r,r);this.lineTo(x,y+r);this.arcTo(x,y,x+r,y,r);this.closePath();};
+    }
+    const W=1200,H=1600;const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,W,H);
+    const bgURL=await getURL(p.bgImg.imgKey);
+    if(bgURL){const img=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=bgURL;});if(img){const l=iLay(p.bgImg.nW||img.naturalWidth,p.bgImg.nH||img.naturalHeight,W,H,p.bgImg.zoom,p.bgImg.px,p.bgImg.py);ctx.drawImage(img,l.left,l.top,l.width,l.height);}}
+    else{const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,'#1a0a1a');g.addColorStop(.5,'#2a0818');g.addColorStop(1,'#1a0828');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
+    // headline (centered) - preview line-height:1.15 → +size*0.075
+    canvasDrawLine(ctx,p.headlineLine,W/2,p.headlineY+p.headlineLine.size*0.075,p.headlineLine.size,'center');
+    // sub line (centered as a unit) - 5 segments share style: — left ｜ right —
+    const subY=p.headlineY+p.headlineLine.size+p.subOffY;
+    const sl=p.subLeftLine,sr=p.subRightLine;
+    const sSz=sl.size;
+    // Set font to measure widths
+    function measureSubW(ctx,text,line){
+      ctx.font=`${line.italic?'italic ':''}${line.weight} ${line.size}px '${line.font}',sans-serif`;
+      const ls=(line.ls||0)*line.size;
+      const chs=[...text];let w=0;
+      chs.forEach((c,i)=>{w+=ctx.measureText(c).width;if(i<chs.length-1)w+=ls;});
+      return w;
+    }
+    const wDashL=measureSubW(ctx,'—',sl);
+    const wSL=measureSubW(ctx,sl.text,sl);
+    const wPipe=measureSubW(ctx,'｜',sl);
+    const wSR=measureSubW(ctx,sr.text,sr);
+    const wDashR=measureSubW(ctx,'—',sl);
+    const gap=12;
+    const totalSubW=wDashL+gap+wSL+gap+wPipe+gap+wSR+gap+wDashR;
+    let xCur=Math.round((W-totalSubW)/2);
+    // Helper line objects for separators (share sl style, no glow/stroke for cleanliness)
+    const sepLine={...sl,text:'—',glowBlur:0,strokeWidth:0};
+    const pipeLine={...sl,text:'｜',glowBlur:0,strokeWidth:0};
+    ctx.save();ctx.globalAlpha=0.55;
+    canvasDrawLine(ctx,sepLine,xCur,subY,sSz,'left');
+    ctx.restore();
+    xCur+=wDashL+gap;
+    canvasDrawLine(ctx,sl,xCur,subY,sl.size,'left');xCur+=wSL+gap;
+    ctx.save();ctx.globalAlpha=0.55;
+    canvasDrawLine(ctx,pipeLine,xCur,subY,sSz,'left');
+    ctx.restore();
+    xCur+=wPipe+gap;
+    canvasDrawLine(ctx,sr,xCur,subY,sr.size,'left');xCur+=wSR+gap;
+    ctx.save();ctx.globalAlpha=0.55;
+    canvasDrawLine(ctx,sepLine,xCur,subY,sSz,'left');
+    ctx.restore();
+    // price (centered as unit) ¥ + digits + unit
+    const priceY=subY+sl.size+p.priceOffY;
+    const pcl=p.priceCurrencyLine,pl=p.priceLine,pul=p.priceUnitLine;
+    // measure widths with proper font + ls
+    function measureLineW(ctx,line){ctx.font=`${line.italic?'italic ':''}${line.weight} ${line.size}px '${line.font}',sans-serif`;const ls=(line.ls||0)*line.size;const chs=[...line.text];let w=0;chs.forEach((c,i)=>{w+=ctx.measureText(c).width;if(i<chs.length-1)w+=ls;});return w;}
+    const wCur=measureLineW(ctx,pcl),wPr=measureLineW(ctx,pl),wUn=measureLineW(ctx,pul);
+    const priceGap=8;
+    const totalPriceW=wCur+priceGap+wPr+priceGap+wUn;
+    let pxCur=Math.round((W-totalPriceW)/2);
+    // Find max size to use as baseline reference
+    const maxPriceSize=Math.max(pcl.size,pl.size,pul.size);
+    // Each line uses textBaseline:'top' inside canvasDrawLine. To baseline-align, offset y so smaller-size text sits on common baseline.
+    // common baseline at priceY + maxPriceSize * 0.85 (approx baseline)
+    canvasDrawLine(ctx,pcl,pxCur,priceY+(maxPriceSize-pcl.size),pcl.size,'left');pxCur+=wCur+priceGap;
+    canvasDrawLine(ctx,pl,pxCur,priceY+(maxPriceSize-pl.size),pl.size,'left');pxCur+=wPr+priceGap;
+    canvasDrawLine(ctx,pul,pxCur,priceY+(maxPriceSize-pul.size)-6,pul.size,'left');
+    // badge - symmetric 3-stop gradient
+    const bH=p.badgeH||108,bR=p.badgeRadius||54,bOff=p.badgeOffY||80;
+    const bWPct=p.badgeW||90;const bW=Math.round(W*bWPct/100);const bX=Math.round((W-bW)/2);const bY=H-bOff-bH;
+    const edgeC=p.badgeColorEdge||'#903060',midC=p.badgeColorMid||'#e85a85';
+    const g2=ctx.createLinearGradient(bX,0,bX+bW,0);
+    g2.addColorStop(0,edgeC);g2.addColorStop(0.5,midC);g2.addColorStop(1,edgeC);
+    ctx.beginPath();ctx.roundRect(bX,bY,bW,bH,bR);ctx.fillStyle=g2;ctx.fill();
+    canvasDrawLine(ctx,p.badgeLine,bX+bW/2,bY+(bH-p.badgeLine.size)/2,p.badgeLine.size,'center');
+    canvas.toBlob(blob=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.download=`${p.name||'poster'}_1200x1600.png`;a.href=url;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);},'image/png');
+  }catch(err){console.error(err);alert('导出失败');}
+  finally{btn.textContent='↓ 导出 PNG 1200×1600';btn.disabled=false;}
+}
+window.addEventListener('resize',()=>{if(curId)render();});
+(async()=>{await wpCheckAuth();await openDB();await loadAll();renderList();})();
+</script>
+</body>
+</html>

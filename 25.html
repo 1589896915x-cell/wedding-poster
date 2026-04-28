@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>双图叠字版（增强）</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Great+Vibes&family=Pacifico&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@400;700;900&family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Cormorant+Garamond:ital,wght@1,400;1,700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0e0e0e;color:#fff;height:100vh;overflow:hidden;display:flex;padding-top:40px;}
+.sb{width:186px;flex-shrink:0;background:#161616;border-right:1px solid #222;display:flex;flex-direction:column;}
+.sb-h{padding:12px;border-bottom:1px solid #222;}.sb-h h2{font-size:12px;font-weight:500;color:#ddd;}.sb-h p{font-size:9px;color:#444;margin-top:2px;}
+.nb{margin:8px 10px;padding:6px;background:#1c1c1c;border:1px dashed #2e2e2e;border-radius:5px;color:#666;font-size:10px;cursor:pointer;text-align:center;}.nb:hover{border-color:#555;color:#bbb;}
+.pl{flex:1;overflow-y:auto;padding:4px 7px;}.pi{padding:7px 9px;border-radius:5px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;}.pi:hover{background:#1c1c1c;}.pi.on{background:#1c1c1c;border-color:#2e2e2e;}.pi h3{font-size:11px;font-weight:400;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.pi .mt{font-size:9px;color:#444;margin-top:2px;}.pa{display:flex;gap:3px;margin-top:4px;}.pb2{padding:2px 6px;background:none;border:1px solid #222;border-radius:3px;color:#555;font-size:9px;cursor:pointer;font-family:inherit;}.pb2:hover{border-color:#555;color:#aaa;}.pb2.del:hover{border-color:#b00;color:#f44;}
+.ed{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.tb{height:44px;background:#161616;border-bottom:1px solid #222;display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;}
+.pn{background:none;border:none;outline:none;color:#fff;font-size:13px;font-weight:500;font-family:inherit;flex:1;max-width:240px;}.pn::placeholder{color:#333;}.sp{flex:1;}
+.xb{padding:6px 16px;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;background:#c8392b;color:#fff;}.xb:hover{background:#a02d22;}.xb:disabled{background:#6a1f17;cursor:default;}
+.bd{display:flex;flex:1;overflow:hidden;}.ca{flex:1;background:#0a0a0a;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.rp{width:280px;flex-shrink:0;background:#161616;border-left:1px solid #222;overflow-y:auto;padding:10px 10px 24px;}
+.rp::-webkit-scrollbar{width:3px;}.rp::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px;}
+.sc{margin-top:10px;padding-top:9px;border-top:1px solid #1e1e1e;}.st{font-size:9px;color:#666;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;font-weight:600;}
+.sc.tx{background:#0e0e0e;padding:8px;border-radius:5px;border:1px solid #1a1a1a;}.sc.tx .st{color:#c8a96a;}
+.lb{font-size:9px;color:#555;margin-bottom:2px;margin-top:5px;}
+.fi{width:100%;padding:5px 7px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;margin-bottom:3px;}.fi:focus{border-color:#444;}
+.sl{width:100%;padding:4px 6px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;margin-bottom:3px;}
+.rw{display:flex;gap:5px;align-items:center;margin-bottom:4px;}.rw label{font-size:9px;color:#555;min-width:36px;flex-shrink:0;}.sld{flex:1;accent-color:#c8392b;cursor:pointer;}.vl{font-size:9px;color:#555;min-width:34px;text-align:right;}
+.cp{display:flex;gap:5px;align-items:center;}.cd{width:20px;height:20px;border-radius:3px;border:1px solid #333;cursor:pointer;flex-shrink:0;}
+.ib{width:100%;padding:6px;border:1px dashed #2a2a2a;border-radius:4px;background:none;color:#666;font-size:10px;cursor:pointer;font-family:inherit;text-align:center;margin-bottom:3px;}.ib:hover{border-color:#555;color:#aaa;}
+.bkr{display:flex;gap:5px;margin-top:6px;}.bk{flex:1;padding:5px 4px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:9px;cursor:pointer;font-family:inherit;}.bk:hover{border-color:#555;color:#aaa;}
+.np{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#2a2a2a;}.np p{font-size:12px;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;}.ov.open{display:flex;}
+.md{background:#1c1c1c;border:1px solid #2e2e2e;border-radius:10px;padding:22px;width:300px;}.md h3{font-size:14px;font-weight:500;margin-bottom:16px;color:#ddd;}.ml{font-size:10px;color:#777;margin-bottom:4px;}
+.mi{width:100%;padding:8px 10px;background:#111;border:1px solid #2e2e2e;border-radius:5px;color:#fff;font-size:13px;font-family:inherit;outline:none;margin-bottom:16px;}.mi:focus{border-color:#555;}
+.ma{display:flex;gap:8px;}.ma button{flex:1;padding:8px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
+</style>
+</head>
+<body>
+<div style="height:40px;background:#0a0a0a;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;padding:0 14px;gap:10px;position:fixed;top:0;left:0;right:0;z-index:100;">
+  <a href="index.html" style="font-size:18px;color:#555;text-decoration:none;">←</a>
+  <span style="font-size:11px;color:#444;">双图叠字版（增强）</span><div style="flex:1;"></div>
+  <span id="credits" style="background:#1a1a1a;padding:3px 10px;border-radius:4px;font-size:11px;color:#c8a96a;"></span>
+  <button onclick="wpLogout()" style="padding:4px 12px;border:1px solid #222;border-radius:4px;background:none;color:#555;font-size:11px;cursor:pointer;font-family:inherit;">退出</button>
+</div>
+<div class="sb"><div class="sb-h"><h2>项目</h2><p>Ctrl+Z 撤销 · 自动保存</p></div><div class="nb" onclick="openModal()">＋ 新建项目</div><div class="pl" id="pl"></div></div>
+<div class="ed">
+  <div class="tb"><input class="pn" id="pname" type="text" placeholder="项目名称" oninput="onNC()"><div class="sp"></div><button class="xb" id="xbtn" onclick="doExport()">↓ 导出 PNG 1200×1600</button></div>
+  <div class="bd"><div class="ca" id="ca"><div id="poster" style="position:relative;overflow:hidden;"></div></div><div class="rp" id="rp"><div class="np"><p>新建或选择项目</p></div></div></div>
+</div>
+<input type="file" id="fi" accept="image/*" style="display:none">
+<input type="file" id="jfi" accept=".json" style="display:none">
+<div class="ov" id="modal"><div class="md"><h3>新建项目</h3><div class="ml">名称</div><input class="mi" id="mn" type="text" placeholder="未命名"><div class="ma"><button onclick="closeModal()" style="background:#2a2a2a;color:#aaa;border:1px solid #333;">取消</button><button onclick="createProj()" style="background:#fff;color:#000;">创建</button></div></div></div>
+<script>
+const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+let _lic=null;
+async function wpCheckAuth(){if(location.protocol==='file:'||location.hostname==='localhost'){_lic={credits:999,id:'test'};const e=document.getElementById('credits');if(e)e.textContent='测试模式';return true;}const code=localStorage.getItem('wp-license');if(!code){location.href='index.html';return false;}try{const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});const d=await r.json();if(!d||!d[0]||!d[0].is_active){location.href='index.html';return false;}const lic=d[0];if((lic.credits||0)<=0||(lic.expires_at&&new Date(lic.expires_at)<new Date())){location.href='index.html';return false;}_lic=lic;updC();return true;}catch{return true;}}
+function updC(){const e=document.getElementById('credits');if(e&&_lic)e.textContent=`剩余 ${_lic.credits||0} 次`;}
+async function checkQuota(){if(location.protocol==='file:'||location.hostname==='localhost')return true;if(!_lic||(_lic.credits||0)<=0){alert('次数不足');return false;}try{const nc=(_lic.credits||0)-1;const r=await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${_lic.id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({credits:nc})});const d=await r.json();if(d&&d[0])_lic=d[0];else _lic.credits=nc;updC();return true;}catch{_lic.credits=Math.max(0,(_lic.credits||0)-1);updC();return true;}}
+function wpLogout(){localStorage.removeItem('wp-license');location.href='index.html';}
+function drawTextLS(ctx,text,cx,y,lsEm,align){if(!text)return;ctx.textBaseline='top';const m=ctx.font.match(/([\d.]+)px/);const fs=m?parseFloat(m[1]):16;const ls=lsEm*fs;const chars=[...text];let tw=0;chars.forEach((c,i)=>{tw+=ctx.measureText(c).width;if(i<chars.length-1)tw+=ls;});let sx=align==='center'?cx-tw/2:align==='right'?cx-tw:cx;chars.forEach((c,i)=>{ctx.fillText(c,sx,y);sx+=ctx.measureText(c).width+(i<chars.length-1?ls:0);});}
+function drawTextLSstk(ctx,text,cx,y,lsEm,align,strokeWidth){if(!text)return;ctx.textBaseline='top';const m=ctx.font.match(/([\d.]+)px/);const fs=m?parseFloat(m[1]):16;const ls=lsEm*fs;const chars=[...text];let tw=0;chars.forEach((c,i)=>{tw+=ctx.measureText(c).width;if(i<chars.length-1)tw+=ls;});let sx=align==='center'?cx-tw/2:align==='right'?cx-tw:cx;ctx.lineWidth=strokeWidth;ctx.lineJoin='round';chars.forEach((c,i)=>{ctx.strokeText(c,sx,y);sx+=ctx.measureText(c).width+(i<chars.length-1?ls:0);});}
+function iLay(nW,nH,cW,cH,zoom,px,py){if(!nW||!nH)return{left:0,top:0,width:cW,height:cH};const s=Math.max(cW/nW,cH/nH)*(zoom||1);const rW=nW*s,rH=nH*s;return{left:-((px||50)/100)*Math.max(0,rW-cW),top:-((py||50)/100)*Math.max(0,rH-cH),width:rW,height:rH};}
+function toHex(c){if(!c)return'#ffffff';if(c.startsWith('#'))return c;const m=c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);if(m)return'#'+[m[1],m[2],m[3]].map(x=>parseInt(x).toString(16).padStart(2,'0')).join('');return'#ffffff';}
+const DB='wedding-2photo-overlay-v1';let db=null;
+function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB,1);req.onupgradeneeded=e=>{const d=e.target.result;['P','I'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,s==='P'?{keyPath:'id'}:undefined);});};req.onsuccess=e=>{db=e.target.result;res();};req.onerror=rej;});}
+const TX=(s,m='readonly')=>db.transaction(s,m).objectStore(s);
+const dbGet=(s,k)=>new Promise((r,j)=>{const q=TX(s).get(k);q.onsuccess=()=>r(q.result);q.onerror=j;});
+const dbPut=(s,v,k)=>new Promise((r,j)=>{const q=k!==undefined?TX(s,'readwrite').put(v,k):TX(s,'readwrite').put(v);q.onsuccess=r;q.onerror=j;});
+const dbDel=(s,k)=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=r;t.onerror=j;});
+const dbAll=(s)=>new Promise((r,j)=>{const q=TX(s).getAll();q.onsuccess=()=>r(q.result);q.onerror=j;});
+let projs=[],curId=null;const imgCache={};let dragging=false,dragSlot='',dragSX=0,dragSY=0,dragPX=50,dragPY=50;let _hist=[],_hi=-1;
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const cur=()=>projs.find(p=>p.id===curId)||null;
+const ik=(pid,s)=>`e2p-${pid}-${s}`;
+function pushH(){const p=cur();if(!p)return;_hist=_hist.slice(0,_hi+1);_hist.push(JSON.stringify(p));if(_hist.length>20)_hist.shift();_hi=_hist.length-1;}
+async function undo(){if(_hi<=0)return;_hi--;const p=JSON.parse(_hist[_hi]);const i=projs.findIndex(x=>x.id===p.id);if(i>=0)projs[i]=p;await dbPut('P',p);await render();renderRP();}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+async function loadAll(){projs=await dbAll('P');projs.sort((a,b)=>b.at-a.at);}
+async function save(p){p.at=Date.now();await dbPut('P',p);}
+async function saveImg(key,blob){await dbPut('I',blob,key);if(imgCache[key])URL.revokeObjectURL(imgCache[key]);imgCache[key]=URL.createObjectURL(blob);}
+async function delImg(key){if(!key)return;await dbDel('I',key);if(imgCache[key]){URL.revokeObjectURL(imgCache[key]);delete imgCache[key];}}
+async function getURL(key){if(!key)return null;if(imgCache[key])return imgCache[key];const b=await dbGet('I',key);if(!b)return null;imgCache[key]=URL.createObjectURL(b);return imgCache[key];}
+function exportJSON(){const p=cur();if(!p)return;const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(p.name||'p')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+function importJSON(){const fi=document.getElementById('jfi');fi.onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const p=JSON.parse(await f.text());p.id=uid();p.name=(p.name||'导入')+' (导入)';p.ct=p.at=Date.now();await save(p);projs.unshift(p);renderList();openProj(p.id);}catch{alert('格式错误');}fi.value='';};fi.click();}
+
+// ═══ Per-line text style: ROOT SPEC ═══════════════════════════════════
+// Each editable line carries: text, font, weight, italic, size, color, ls,
+// strokeColor, strokeWidth, glowColor, glowBlur
+function defLine(text,opts){return Object.assign({
+  text:text||'',font:'Noto Sans SC',weight:'400',italic:false,
+  size:36,color:'#ffffff',ls:0.02,
+  strokeColor:'#000000',strokeWidth:0,
+  glowColor:'#000000',glowBlur:0,
+},opts||{});}
+const FONT_OPTS=['Noto Sans SC','Noto Serif SC','Ma Shan Zheng','ZCOOL XiaoWei','Cormorant Garamond','Dancing Script','Great Vibes','Pacifico','STSong','SimSun','Microsoft YaHei','KaiTi'];
+const WEIGHT_OPTS=[['300','细 300'],['400','常规 400'],['500','中等 500'],['700','粗 700'],['900','超粗 900']];
+function applyLineCSS(line,sizePx){
+  const sty=[`font-family:'${line.font}',sans-serif`,`font-size:${sizePx}px`,`font-weight:${line.weight}`,`color:${line.color}`,`letter-spacing:${line.ls}em`,`line-height:1`];
+  if(line.italic)sty.push('font-style:italic');
+  if(line.strokeWidth>0)sty.push(`-webkit-text-stroke:${line.strokeWidth}px ${line.strokeColor}`);
+  if(line.glowBlur>0)sty.push(`text-shadow:0 0 ${line.glowBlur}px ${line.glowColor},0 0 ${line.glowBlur*1.6}px ${line.glowColor}`);
+  return sty.join(';');
+}
+function canvasDrawLine(ctx,line,cx,y,sizePx){
+  if(!line.text)return;
+  const styleStr=line.italic?'italic ':'';
+  ctx.font=`${styleStr}${line.weight} ${sizePx}px '${line.font}',sans-serif`;
+  if(line.glowBlur>0){ctx.shadowColor=line.glowColor;ctx.shadowBlur=line.glowBlur*(sizePx/line.size||1);ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;}else{ctx.shadowBlur=0;}
+  if(line.strokeWidth>0){ctx.strokeStyle=line.strokeColor;drawTextLSstk(ctx,line.text,cx,y,line.ls,'center',line.strokeWidth*2*(sizePx/line.size||1));}
+  ctx.fillStyle=line.color;
+  drawTextLS(ctx,line.text,cx,y,line.ls,'center');
+  ctx.shadowBlur=0;
+}
+
+// Cute SVG five-pointed star — rounded with Q-curves at all 10 vertices, dual highlights
+const STAR_PATH='M 56.91 16.13 L 61.52 21.54 Q 66.46 27.35 73.50 30.25 L 80.08 32.96 Q 89.94 37.02 84.35 46.11 L 80.62 52.16 Q 76.63 58.65 76.05 66.25 L 75.50 73.34 Q 74.69 83.98 64.32 81.47 L 57.41 79.79 Q 50.00 78.00 42.59 79.79 L 35.68 81.47 Q 25.31 83.98 24.50 73.34 L 23.95 66.25 Q 23.37 58.65 19.38 52.16 L 15.65 46.11 Q 10.06 37.02 19.92 32.96 L 26.50 30.25 Q 33.54 27.35 38.48 21.54 L 43.09 16.13 Q 50.00 8.00 56.91 16.13 Z';
+const STAR_CHAR_MAP={emoji_star:'⭐',unicode_star:'★',unicode_outline:'☆',emoji_sparkle:'✨',emoji_glow:'🌟',emoji_flower:'🌸'};
+function cuteStarSVG(size,fillColor){
+  const sz=Math.round(size);
+  return `<svg viewBox="0 0 100 100" width="${sz}" height="${sz}" style="display:inline-block;vertical-align:middle;flex-shrink:0;">
+    <path d="${STAR_PATH}" fill="${fillColor||'#FFD700'}" stroke="rgba(120,80,20,0.45)" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="38" cy="36" rx="7" ry="4" fill="rgba(255,255,255,0.85)" transform="rotate(-22 38 36)"/>
+    <circle cx="62" cy="58" r="2.5" fill="rgba(255,255,255,0.55)"/>
+  </svg>`;
+}
+// Canvas: traverse the same Q-curves to draw a matching path
+function canvasDrawCuteStar(ctx,cx,cy,size,fillColor){
+  const sc=size/100;
+  const ox=cx-size/2,oy=cy-size/2;
+  // segments parsed from STAR_PATH (M then 10 × {L Q})
+  const M=[56.91,16.13];
+  const segs=[
+    [[61.52,21.54],[66.46,27.35],[73.50,30.25]],
+    [[80.08,32.96],[89.94,37.02],[84.35,46.11]],
+    [[80.62,52.16],[76.63,58.65],[76.05,66.25]],
+    [[75.50,73.34],[74.69,83.98],[64.32,81.47]],
+    [[57.41,79.79],[50.00,78.00],[42.59,79.79]],
+    [[35.68,81.47],[25.31,83.98],[24.50,73.34]],
+    [[23.95,66.25],[23.37,58.65],[19.38,52.16]],
+    [[15.65,46.11],[10.06,37.02],[19.92,32.96]],
+    [[26.50,30.25],[33.54,27.35],[38.48,21.54]],
+    [[43.09,16.13],[50.00, 8.00],[56.91,16.13]],
+  ];
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(ox+M[0]*sc,oy+M[1]*sc);
+  segs.forEach(([L,Qc,Qe])=>{
+    ctx.lineTo(ox+L[0]*sc,oy+L[1]*sc);
+    ctx.quadraticCurveTo(ox+Qc[0]*sc,oy+Qc[1]*sc,ox+Qe[0]*sc,oy+Qe[1]*sc);
+  });
+  ctx.closePath();
+  ctx.fillStyle=fillColor||'#FFD700';
+  ctx.fill();
+  ctx.lineJoin='round';
+  ctx.lineWidth=3*sc;
+  ctx.strokeStyle='rgba(120,80,20,0.45)';
+  ctx.stroke();
+  // Big highlight ellipse (rotated -22°)
+  ctx.translate(ox+38*sc,oy+36*sc);
+  ctx.rotate(-22*Math.PI/180);
+  ctx.beginPath();
+  ctx.ellipse(0,0,7*sc,4*sc,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,0.85)';
+  ctx.fill();
+  ctx.restore();
+  // Small highlight dot
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(ox+62*sc,oy+58*sc,2.5*sc,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,0.55)';
+  ctx.fill();
+  ctx.restore();
+}
+
+function defProject(){return{
+  split:800,gap:0,
+  overlayBgEnabled:false,overlayBg:'rgba(0,0,0,0.25)',
+  overlayH:340,overlayOffY:0,gap2:14,
+  scriptLine:defLine('green',{font:'Dancing Script',italic:true,weight:'300',size:88,color:'#ffffff',ls:0.02,strokeColor:'#000000',strokeWidth:0,glowColor:'#000000',glowBlur:2}),
+  titleLine:defLine('✅ 宁波小预算森系精灵婚礼～',{font:'Noto Sans SC',weight:'900',size:54,color:'#ffffff',ls:0.04,strokeColor:'#000000',strokeWidth:0,glowColor:'#000000',glowBlur:0}),
+  ratingLine:defLine('推荐指数：',{font:'Noto Sans SC',weight:'700',size:42,color:'#ffffff',ls:0.04,strokeColor:'#000000',strokeWidth:0,glowColor:'#000000',glowBlur:0}),
+  showRating:true,
+  starStyle:'cute',stars:5,starChar:'⭐',starColor:'#FFD700',starSize:45,
+  topImg:{imgKey:null,px:50,py:50,zoom:1,nW:0,nH:0},
+  botImg:{imgKey:null,px:50,py:50,zoom:1,nW:0,nH:0},
+};}
+
+function openModal(){document.getElementById('mn').value='';document.getElementById('modal').classList.add('open');setTimeout(()=>document.getElementById('mn').focus(),50);}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+async function createProj(){const name=document.getElementById('mn').value.trim()||'未命名';const p={id:uid(),name,ct:Date.now(),at:Date.now(),...defProject()};await save(p);projs.unshift(p);closeModal();renderList();openProj(p.id);}
+document.getElementById('mn').addEventListener('keydown',e=>{if(e.key==='Enter')createProj();});
+function renderList(){const el=document.getElementById('pl');if(!projs.length){el.innerHTML='<div style="font-size:10px;color:#333;padding:8px;">暂无项目</div>';return;}el.innerHTML=projs.map(p=>`<div class="pi${p.id===curId?' on':''}" onclick="openProj('${p.id}')"><h3>${esc(p.name)}</h3><div class="mt">${new Date(p.at).toLocaleDateString('zh-CN')}</div><div class="pa"><button class="pb2" onclick="event.stopPropagation();renameProj('${p.id}')">改名</button><button class="pb2" onclick="event.stopPropagation();dupProj('${p.id}')">复制</button><button class="pb2 del" onclick="event.stopPropagation();delProj('${p.id}')">删除</button></div></div>`).join('');}
+async function renameProj(id){const p=projs.find(x=>x.id===id);if(!p)return;const n=prompt('新名称：',p.name);if(!n||!n.trim())return;p.name=n.trim();await save(p);if(curId===id)document.getElementById('pname').value=p.name;renderList();}
+async function openProj(id){curId=id;const p=cur();if(!p)return;document.getElementById('pname').value=p.name;_hist=[];_hi=-1;renderList();await render();renderRP();}
+async function dupProj(id){const p=projs.find(x=>x.id===id);if(!p)return;const nid=uid();const np={...JSON.parse(JSON.stringify(p)),id:nid,name:p.name+' 副本',ct:Date.now(),at:Date.now()};for(const s of['top','bot']){const b=await dbGet('I',ik(id,s));if(b){await dbPut('I',b,ik(nid,s));np[s+'Img'].imgKey=ik(nid,s);}}await save(np);projs.unshift(np);renderList();}
+async function delProj(id){if(!confirm('确认删除？'))return;for(const s of['top','bot'])await delImg(ik(id,s));await dbDel('P',id);projs=projs.filter(p=>p.id!==id);if(curId===id){curId=null;document.getElementById('poster').innerHTML='';renderRP();}renderList();}
+async function onNC(){const p=cur();if(!p)return;p.name=document.getElementById('pname').value;await save(p);renderList();}
+function pSz(){const a=document.getElementById('ca');const aH=a.clientHeight-24,aW=a.clientWidth-24;let h,w;if(aH*.75<aW){h=Math.floor(aH);w=Math.floor(h*.75);}else{w=Math.floor(aW);h=Math.floor(w/.75);}return{w,h};}
+
+async function render(){
+  const poster=document.getElementById('poster');const p=cur();if(!p){poster.innerHTML='';return;}
+  const{w,h}=pSz();const sc=w/1200;
+  poster.style.cssText=`width:${w}px;height:${h}px;background:#111;position:relative;overflow:hidden;flex-shrink:0;box-shadow:0 20px 60px rgba(0,0,0,.6);`;
+  const split=Math.round(p.split*sc),gap=Math.round((p.gap||0)*sc),botY=split+gap;
+  const topURL=await getURL(p.topImg.imgKey),botURL=await getURL(p.botImg.imgKey);
+  const ti=p.topImg,bi=p.botImg;
+  const tl=topURL?iLay(ti.nW,ti.nH,w,split,ti.zoom,ti.px,ti.py):{left:0,top:0,width:w,height:split};
+  const bl=botURL?iLay(bi.nW,bi.nH,w,h-botY,bi.zoom,bi.px,bi.py):{left:0,top:0,width:w,height:h-botY};
+  const oH=Math.round(p.overlayH*sc);
+  const oY=split-oH/2+Math.round((p.overlayOffY||0)*sc);
+  let html=`
+    <div id="slot-top" data-s="top" style="position:absolute;left:0;top:0;width:${w}px;height:${split}px;overflow:hidden;cursor:${topURL?'grab':'pointer'};">
+      ${topURL?`<img id="img-top" src="${topURL}" draggable="false" style="position:absolute;left:${tl.left}px;top:${tl.top}px;width:${tl.width}px;height:${tl.height}px;pointer-events:none;">`:`<div onclick="uploadImg('top')" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1a2a1a;color:#555;flex-direction:column;gap:8px;cursor:pointer;"><span style="font-size:28px;opacity:.5;">＋</span><span style="font-size:10px;">上传顶部图片</span></div>`}
+    </div>
+    <div id="slot-bot" data-s="bot" style="position:absolute;left:0;top:${botY}px;width:${w}px;height:${h-botY}px;overflow:hidden;cursor:${botURL?'grab':'pointer'};">
+      ${botURL?`<img id="img-bot" src="${botURL}" draggable="false" style="position:absolute;left:${bl.left}px;top:${bl.top}px;width:${bl.width}px;height:${bl.height}px;pointer-events:none;">`:`<div onclick="uploadImg('bot')" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1a2a1a;color:#555;flex-direction:column;gap:8px;cursor:pointer;"><span style="font-size:28px;opacity:.5;">＋</span><span style="font-size:10px;">上传底部图片</span></div>`}
+    </div>`;
+  const bgStyle=p.overlayBgEnabled?`background:${p.overlayBg||'rgba(0,0,0,0.25)'};`:'';
+  html+=`<div style="position:absolute;left:0;top:${oY}px;width:100%;height:${oH}px;${bgStyle}display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${Math.round((p.gap2||14)*sc)}px;pointer-events:none;">`;
+  html+=`<div contenteditable="true" spellcheck="false" style="${applyLineCSS(p.scriptLine,Math.round(p.scriptLine.size*sc))};line-height:1;outline:none;cursor:text;pointer-events:auto;text-align:center;" oninput="setLineText('scriptLine',this.textContent)" onblur="setLineText('scriptLine',this.textContent)">${esc(p.scriptLine.text)}</div>`;
+  html+=`<div contenteditable="true" spellcheck="false" style="${applyLineCSS(p.titleLine,Math.round(p.titleLine.size*sc))};line-height:1.3;outline:none;cursor:text;pointer-events:auto;text-align:center;padding:0 ${Math.round(24*sc)}px;white-space:pre-wrap;" oninput="setLineText('titleLine',this.textContent)" onblur="setLineText('titleLine',this.textContent)">${esc(p.titleLine.text)}</div>`;
+  if(p.showRating){
+    const nStars=Math.max(1,Math.min(7,p.stars||5));
+    const starSz=Math.round((p.starSize||45)*sc);
+    const ss=p.starStyle||'cute';
+    html+=`<div style="display:flex;align-items:center;justify-content:center;gap:${Math.round(8*sc)}px;flex-wrap:wrap;">`;
+    html+=`<span contenteditable="true" spellcheck="false" style="${applyLineCSS(p.ratingLine,Math.round(p.ratingLine.size*sc))};outline:none;cursor:text;pointer-events:auto;" oninput="setLineText('ratingLine',this.textContent)">${esc(p.ratingLine.text)}</span>`;
+    if(ss==='cute'){
+      let svgHTML='<span style="display:inline-flex;align-items:center;gap:'+Math.round(4*sc)+'px;">';
+      for(let i=0;i<nStars;i++)svgHTML+=cuteStarSVG(starSz,p.starColor||'#FFD700');
+      svgHTML+='</span>';
+      html+=svgHTML;
+    }else{
+      const ch=STAR_CHAR_MAP[ss]||'⭐';
+      const stars=ch.repeat(nStars);
+      html+=`<span style="font-size:${starSz}px;color:${p.starColor||'#FFD700'};letter-spacing:2px;line-height:1;${p.ratingLine.glowBlur>0?`text-shadow:0 0 ${p.ratingLine.glowBlur}px ${p.ratingLine.glowColor};`:''}">${stars}</span>`;
+    }
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+  poster.innerHTML=html;
+  ['top','bot'].forEach(s=>{const el=document.getElementById(`slot-${s}`);if(el){el.addEventListener('mousedown',onMD);el.addEventListener('touchstart',onTS,{passive:false});}});
+}
+
+function onMD(e){const s=this.dataset.s;const p=cur();const img=p?p[s+'Img']:null;if(!img||!img.imgKey||e.button!==0||e.target.contentEditable==='true')return;dragging=true;dragSlot=s;dragSX=e.clientX;dragSY=e.clientY;dragPX=img.px;dragPY=img.py;this.style.cursor='grabbing';e.preventDefault();}
+function onTS(e){const s=this.dataset.s;const p=cur();const img=p?p[s+'Img']:null;if(!img||!img.imgKey||e.target.contentEditable==='true')return;dragging=true;dragSlot=s;dragSX=e.touches[0].clientX;dragSY=e.touches[0].clientY;dragPX=img.px;dragPY=img.py;e.preventDefault();}
+document.addEventListener('mousemove',e=>{if(!dragging)return;moveDrag(e.clientX,e.clientY);});
+document.addEventListener('touchmove',e=>{if(!dragging)return;moveDrag(e.touches[0].clientX,e.touches[0].clientY);e.preventDefault();},{passive:false});
+function moveDrag(cx,cy){const p=cur();if(!p)return;const img=p[dragSlot+'Img'];const{w,h}=pSz();const sc=w/1200;const split=Math.round(p.split*sc);const bH=dragSlot==='top'?split:h-split;img.px=Math.max(0,Math.min(100,dragPX-(cx-dragSX)/(w*(img.zoom||1))*100));img.py=Math.max(0,Math.min(100,dragPY-(cy-dragSY)/(bH*(img.zoom||1))*100));const el=document.getElementById(`img-${dragSlot}`);if(el){const l=iLay(img.nW,img.nH,w,bH,img.zoom,img.px,img.py);el.style.left=l.left+'px';el.style.top=l.top+'px';el.style.width=l.width+'px';el.style.height=l.height+'px';}}
+document.addEventListener('mouseup',async()=>{if(!dragging)return;dragging=false;const el=document.getElementById(`slot-${dragSlot}`);if(el)el.style.cursor='grab';const p=cur();if(p){pushH();await save(p);}});
+document.addEventListener('touchend',async()=>{if(!dragging)return;dragging=false;const p=cur();if(p){pushH();await save(p);}});
+function uploadImg(slot){const fi=document.getElementById('fi');fi.onchange=async e=>{const f=e.target.files[0];if(!f)return;const p=cur();if(!p)return;const img=new Image();const url=URL.createObjectURL(f);img.onload=async()=>{const key=ik(curId,slot);await saveImg(key,f);p[slot+'Img']={imgKey:key,px:50,py:50,zoom:1,nW:img.naturalWidth,nH:img.naturalHeight};URL.revokeObjectURL(url);pushH();await save(p);await render();renderRP();};img.src=url;fi.value='';};fi.click();}
+
+async function setP(k,v){const p=cur();if(!p)return;pushH();p[k]=v;await save(p);await render();renderRP();}
+async function setPN(k,v){const p=cur();if(!p)return;pushH();p[k]=+v;await save(p);await render();}
+async function setLineText(lineKey,v){const p=cur();if(!p)return;pushH();p[lineKey].text=v;await save(p);}
+async function setLineProp(lineKey,k,v){const p=cur();if(!p)return;pushH();p[lineKey][k]=v;await save(p);await render();}
+async function setLinePropN(lineKey,k,v){const p=cur();if(!p)return;pushH();p[lineKey][k]=+v;await save(p);await render();}
+async function setImgP(slot,k,v){const p=cur();if(!p)return;p[slot+'Img'][k]=+v;const{w,h}=pSz();const sc=w/1200;const split=Math.round(p.split*sc);const bH=slot==='top'?split:h-split;const img=p[slot+'Img'];const el=document.getElementById(`img-${slot}`);if(el){const l=iLay(img.nW,img.nH,w,bH,img.zoom,img.px,img.py);el.style.left=l.left+'px';el.style.top=l.top+'px';el.style.width=l.width+'px';el.style.height=l.height+'px';}await save(p);}
+
+function lineControls(lineKey,label,line,sizeMin,sizeMax){
+  return `<div class="sc tx">
+    <div class="st">${label}</div>
+    <input class="fi" type="text" value="${esc(line.text)}" oninput="setLineText('${lineKey}',this.value)">
+    <div class="lb">字体</div>
+    <select class="sl" onchange="setLineProp('${lineKey}','font',this.value)">
+      ${FONT_OPTS.map(f=>`<option value="${f}"${line.font===f?' selected':''}>${f}</option>`).join('')}
+    </select>
+    <div class="rw"><label>字号</label><input class="sld" type="range" min="${sizeMin||16}" max="${sizeMax||160}" value="${line.size}" oninput="setLinePropN('${lineKey}','size',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${line.size}px</span></div>
+    <div class="lb">字重</div>
+    <select class="sl" onchange="setLineProp('${lineKey}','weight',this.value)">
+      ${WEIGHT_OPTS.map(([v,l])=>`<option value="${v}"${line.weight===v?' selected':''}>${l}</option>`).join('')}
+    </select>
+    <div class="lb">字形</div>
+    <select class="sl" onchange="setLineProp('${lineKey}','italic',this.value==='true')">
+      <option value="false"${!line.italic?' selected':''}>正体</option>
+      <option value="true"${line.italic?' selected':''}>斜体</option>
+    </select>
+    <div class="lb">颜色</div>
+    <div class="cp"><div class="cd" style="background:${toHex(line.color)};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(line.color)}" style="display:none" onchange="setLineProp('${lineKey}','color',this.value);this.previousElementSibling.style.background=this.value"><span style="font-size:9px;color:#555;">${line.color}</span></div>
+    <div class="rw"><label>字间距</label><input class="sld" type="range" min="0" max="0.4" step="0.01" value="${line.ls}" oninput="setLinePropN('${lineKey}','ls',+this.value);this.nextElementSibling.textContent=this.value+'em'"><span class="vl">${line.ls}em</span></div>
+    <div class="lb" style="margin-top:8px;color:#888;">▸ 描边</div>
+    <div class="rw"><label>粗细</label><input class="sld" type="range" min="0" max="6" step="0.5" value="${line.strokeWidth}" oninput="setLinePropN('${lineKey}','strokeWidth',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${line.strokeWidth}px</span></div>
+    <div class="cp"><div class="cd" style="background:${toHex(line.strokeColor)};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(line.strokeColor)}" style="display:none" onchange="setLineProp('${lineKey}','strokeColor',this.value);this.previousElementSibling.style.background=this.value"><span style="font-size:9px;color:#555;">描边色</span></div>
+    <div class="lb" style="margin-top:8px;color:#888;">▸ 发光</div>
+    <div class="rw"><label>强度</label><input class="sld" type="range" min="0" max="50" value="${line.glowBlur}" oninput="setLinePropN('${lineKey}','glowBlur',+this.value);this.nextElementSibling.textContent=this.value"><span class="vl">${line.glowBlur}</span></div>
+    <div class="cp"><div class="cd" style="background:${toHex(line.glowColor)};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(line.glowColor)}" style="display:none" onchange="setLineProp('${lineKey}','glowColor',this.value);this.previousElementSibling.style.background=this.value"><span style="font-size:9px;color:#555;">发光色</span></div>
+  </div>`;
+}
+
+function renderRP(){
+  const rp=document.getElementById('rp');const p=cur();if(!p){rp.innerHTML='<div class="np"><p>新建或选择项目</p></div>';return;}
+  const ti=p.topImg,bi=p.botImg;
+  rp.innerHTML=`
+  <div class="sc" style="margin-top:0;padding-top:0;border-top:none;">
+    <div class="st">顶部图片</div>
+    <div class="ib" onclick="uploadImg('top')">${ti.imgKey?'🔄 更换':'＋ 上传顶部图片'}</div>
+    ${ti.imgKey?`<div class="rw"><label>缩放</label><input class="sld" type="range" min="0.5" max="3" step="0.05" value="${ti.zoom}" oninput="setImgP('top','zoom',+this.value);this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"><span class="vl">${Math.round(ti.zoom*100)}%</span></div><div class="rw"><label>横移</label><input class="sld" type="range" min="0" max="100" value="${ti.px}" oninput="setImgP('top','px',+this.value)"><span class="vl">${Math.round(ti.px)}%</span></div><div class="rw"><label>纵移</label><input class="sld" type="range" min="0" max="100" value="${ti.py}" oninput="setImgP('top','py',+this.value)"><span class="vl">${Math.round(ti.py)}%</span></div>`:''}
+  </div>
+  <div class="sc">
+    <div class="st">底部图片</div>
+    <div class="ib" onclick="uploadImg('bot')">${bi.imgKey?'🔄 更换':'＋ 上传底部图片'}</div>
+    ${bi.imgKey?`<div class="rw"><label>缩放</label><input class="sld" type="range" min="0.5" max="3" step="0.05" value="${bi.zoom}" oninput="setImgP('bot','zoom',+this.value);this.nextElementSibling.textContent=Math.round(this.value*100)+'%'"><span class="vl">${Math.round(bi.zoom*100)}%</span></div><div class="rw"><label>横移</label><input class="sld" type="range" min="0" max="100" value="${bi.px}" oninput="setImgP('bot','px',+this.value)"><span class="vl">${Math.round(bi.px)}%</span></div><div class="rw"><label>纵移</label><input class="sld" type="range" min="0" max="100" value="${bi.py}" oninput="setImgP('bot','py',+this.value)"><span class="vl">${Math.round(bi.py)}%</span></div>`:''}
+  </div>
+  <div class="sc">
+    <div class="st">布局</div>
+    <div class="rw"><label>分割点</label><input class="sld" type="range" min="400" max="1200" value="${p.split}" oninput="setPN('split',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.split}px</span></div>
+    <div class="rw"><label>图片间隙</label><input class="sld" type="range" min="0" max="40" value="${p.gap}" oninput="setPN('gap',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.gap}px</span></div>
+  </div>
+  <div class="sc">
+    <div class="st">文字叠加区</div>
+    <div class="lb">叠加区背景遮罩</div>
+    <select class="sl" onchange="setP('overlayBgEnabled',this.value==='true')">
+      <option value="false"${!p.overlayBgEnabled?' selected':''}>关闭（无遮罩）</option>
+      <option value="true"${p.overlayBgEnabled?' selected':''}>开启</option>
+    </select>
+    ${p.overlayBgEnabled?`<input class="fi" type="text" value="${esc(p.overlayBg)}" oninput="setP('overlayBg',this.value)" placeholder="rgba(0,0,0,0.25)">`:''}
+    <div class="rw"><label>区高度</label><input class="sld" type="range" min="100" max="600" value="${p.overlayH}" oninput="setPN('overlayH',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.overlayH}px</span></div>
+    <div class="rw"><label>上下偏移</label><input class="sld" type="range" min="-300" max="300" value="${p.overlayOffY||0}" oninput="setPN('overlayOffY',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.overlayOffY||0}px</span></div>
+    <div class="rw"><label>行间距</label><input class="sld" type="range" min="0" max="60" value="${p.gap2||14}" oninput="setPN('gap2',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.gap2||14}px</span></div>
+  </div>
+  ${lineControls('scriptLine','▸ 第1行 · 手写体英文',p.scriptLine,24,180)}
+  ${lineControls('titleLine','▸ 第2行 · 主标题',p.titleLine,16,120)}
+  ${lineControls('ratingLine','▸ 第3行 · 推荐指数',p.ratingLine,14,80)}
+  <div class="sc">
+    <div class="st">星级评分</div>
+    <div class="lb">显示评分行</div>
+    <select class="sl" onchange="setP('showRating',this.value==='true')">
+      <option value="true"${p.showRating?' selected':''}>显示</option>
+      <option value="false"${!p.showRating?' selected':''}>隐藏</option>
+    </select>
+    <div class="lb">星星样式</div>
+    <select class="sl" onchange="setP('starStyle',this.value)">
+      <option value="cute"${(p.starStyle||'cute')==='cute'?' selected':''}>★ 卡通可爱（圆角+高光·推荐）</option>
+      <option value="emoji_star"${p.starStyle==='emoji_star'?' selected':''}>⭐ Emoji 黄星</option>
+      <option value="unicode_star"${p.starStyle==='unicode_star'?' selected':''}>★ 实心星（颜色可调）</option>
+      <option value="unicode_outline"${p.starStyle==='unicode_outline'?' selected':''}>☆ 空心星（颜色可调）</option>
+      <option value="emoji_sparkle"${p.starStyle==='emoji_sparkle'?' selected':''}>✨ Emoji 闪光</option>
+      <option value="emoji_glow"${p.starStyle==='emoji_glow'?' selected':''}>🌟 Emoji 发光星</option>
+      <option value="emoji_flower"${p.starStyle==='emoji_flower'?' selected':''}>🌸 Emoji 樱花</option>
+    </select>
+    <div class="rw"><label>颗数</label><input class="sld" type="range" min="1" max="7" step="1" value="${p.stars||5}" oninput="setPN('stars',+this.value);this.nextElementSibling.textContent=this.value+'颗'"><span class="vl">${p.stars||5}颗</span></div>
+    <div class="rw"><label>大小</label><input class="sld" type="range" min="20" max="100" value="${p.starSize||45}" oninput="setPN('starSize',+this.value);this.nextElementSibling.textContent=this.value+'px'"><span class="vl">${p.starSize||45}px</span></div>
+    <div class="lb">星星颜色（卡通星 / 实心★ / 空心☆ 专用）</div>
+    <div class="cp"><div class="cd" style="background:${toHex(p.starColor||'#FFD700')};" onclick="this.nextElementSibling.click()"></div><input type="color" value="${toHex(p.starColor||'#FFD700')}" style="display:none" onchange="setP('starColor',this.value);this.previousElementSibling.style.background=this.value"></div>
+  </div>
+  <div class="sc"><div class="st">备份</div><div class="bkr"><button class="bk" onclick="exportJSON()">⬇ 导出JSON</button><button class="bk" onclick="importJSON()">⬆ 导入JSON</button></div></div>`;
+}
+
+async function doExport(){
+  const p=cur();if(!p)return;if(!await checkQuota())return;
+  const btn=document.getElementById('xbtn');btn.textContent='生成中…';btn.disabled=true;
+  try{
+    await document.fonts.ready;
+    const W=1200,H=1600;const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#111';ctx.fillRect(0,0,W,H);
+    const split=p.split,gap=p.gap||0,botY=split+gap;
+    async function loadImg(key){const url=await getURL(key);if(!url)return null;return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=url;});}
+    const ti=await loadImg(p.topImg.imgKey),bi=await loadImg(p.botImg.imgKey);
+    if(ti){ctx.save();ctx.beginPath();ctx.rect(0,0,W,split);ctx.clip();const l=iLay(p.topImg.nW||ti.naturalWidth,p.topImg.nH||ti.naturalHeight,W,split,p.topImg.zoom,p.topImg.px,p.topImg.py);ctx.drawImage(ti,l.left,l.top,l.width,l.height);ctx.restore();}
+    if(bi){ctx.save();ctx.beginPath();ctx.rect(0,botY,W,H-botY);ctx.clip();const l=iLay(p.botImg.nW||bi.naturalWidth,p.botImg.nH||bi.naturalHeight,W,H-botY,p.botImg.zoom,p.botImg.px,p.botImg.py);ctx.drawImage(bi,l.left,botY+l.top,l.width,l.height);ctx.restore();}
+    const oH=p.overlayH,oY=split-oH/2+(p.overlayOffY||0);
+    if(p.overlayBgEnabled){const bgStr=p.overlayBg||'rgba(0,0,0,0.25)';const m=bgStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);if(m){ctx.save();ctx.globalAlpha=m[4]!==undefined?parseFloat(m[4]):1;ctx.fillStyle=`rgb(${m[1]},${m[2]},${m[3]})`;ctx.fillRect(0,oY,W,oH);ctx.restore();}}
+    const ln1=p.scriptLine,ln2=p.titleLine,ln3=p.ratingLine;
+    const lines2=(ln2.text||'').split('\n');const h2=ln2.size*1.3*lines2.length;
+    const h1=ln1.size;
+    const h3=p.showRating?Math.max(ln3.size,p.starSize||45)*1.2:0;
+    const gap2=p.gap2||14;
+    const totalH=h1+gap2+h2+(p.showRating?gap2+h3:0);
+    let curY=oY+(oH-totalH)/2;
+    canvasDrawLine(ctx,ln1,W/2,curY,ln1.size);
+    curY+=h1+gap2;
+    // title preview line-height:1.3 → each line text top = lineBoxTop + 0.15*size
+    lines2.forEach((line,li)=>{const ln={...ln2,text:line};canvasDrawLine(ctx,ln,W/2,curY+li*ln2.size*1.3+ln2.size*0.15,ln2.size);});
+    curY+=h2;
+    if(p.showRating){
+      curY+=gap2;
+      ctx.save();
+      ctx.font=`${ln3.italic?'italic ':''}${ln3.weight} ${ln3.size}px '${ln3.font}',sans-serif`;
+      const textM=ctx.measureText(ln3.text);
+      const nStars=Math.max(1,Math.min(7,p.stars||5));
+      const starSz=p.starSize||45;
+      const ss=p.starStyle||'cute';
+      const isCute=ss==='cute';
+      let starsW;
+      let starsChar='';
+      if(isCute){
+        starsW=nStars*starSz+(nStars-1)*4;
+      }else{
+        starsChar=(STAR_CHAR_MAP[ss]||'⭐').repeat(nStars);
+        ctx.font=`${starSz}px sans-serif`;
+        starsW=ctx.measureText(starsChar).width;
+      }
+      const totalW=textM.width+8+starsW;
+      const xStart=W/2-totalW/2;
+      const ln3T={...ln3};
+      canvasDrawLine(ctx,ln3T,xStart+textM.width/2,curY,ln3.size);
+      const starsY=curY+(ln3.size-starSz)/2;
+      if(isCute){
+        let sx=xStart+textM.width+8;
+        for(let i=0;i<nStars;i++){
+          canvasDrawCuteStar(ctx,sx+starSz/2,starsY+starSz/2,starSz,p.starColor||'#FFD700');
+          sx+=starSz+4;
+        }
+      }else{
+        ctx.font=`${starSz}px sans-serif`;
+        ctx.fillStyle=p.starColor||'#FFD700';
+        if(ln3.glowBlur>0){ctx.shadowColor=ln3.glowColor;ctx.shadowBlur=ln3.glowBlur;}
+        ctx.textBaseline='top';ctx.textAlign='left';
+        ctx.fillText(starsChar,xStart+textM.width+8,starsY);
+        ctx.shadowBlur=0;
+      }
+      ctx.restore();
+    }
+    canvas.toBlob(blob=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.download=`${p.name||'poster'}_1200x1600.png`;a.href=url;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);},'image/png');
+  }catch(err){console.error(err);alert('导出失败');}
+  finally{btn.textContent='↓ 导出 PNG 1200×1600';btn.disabled=false;}
+}
+window.addEventListener('resize',()=>{if(curId)render();});
+(async()=>{await wpCheckAuth();await openDB();await loadAll();renderList();})();
+</script>
+</body>
+</html>
