@@ -200,7 +200,7 @@ function defProject(){return{
   brandColor:'#ffffff',brandCNSize:28,brandENSize:22,
   brandCNLS:0.32,brandENLS:0.18,showBrand:true,
   // 4格图片
-  cells:[0,1,2,3].map(()=>({imgKey:null,px:50,py:50,zoom:1,nW:0,nH:0})),
+  cells:[0,1,2,3].map((_, i)=>({imgKey:null,px:50,py:50,zoom:1,nW:0,nH:0, zhName:'仙境花园', enName:'Wonderland Garden'})),
 };}
 
 // ═══ State ════════════════════════════════════════════════════════════
@@ -311,17 +311,17 @@ async function renderPoster(){
         ?`<img id="img-${i}" src="${url}" draggable="false" style="position:absolute;left:${lout.left}px;top:${lout.top}px;width:${lout.width}px;height:${lout.height}px;pointer-events:none;">`
         :`<div onclick="uploadImg(${i})" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1a1a;color:#444;gap:8px;cursor:pointer;"><span style="font-size:24px;opacity:.4;">＋</span><span style="font-size:10px;">点击上传第${i+1}张图</span></div>`}
 
-      <!-- 中文（左上角，全局同步） -->
+      <!-- 中文（样式同步，内容独立） -->
       <div id="zh-${i}" contenteditable="true" spellcheck="false" title="点击编辑文字"
         style="position:absolute;left:${zhX}px;top:${zhY}px;font-family:'${p.zhFont||'Noto Serif SC'}',serif;font-size:${zhSz}px;font-weight:${p.zhWeight||'900'};color:${p.zhColor||'#fff'};letter-spacing:${zhLS}em;line-height:1.1;text-shadow:${textShadow};white-space:nowrap;outline:none;cursor:text;user-select:text;pointer-events:auto;"
-        oninput="syncText('zh',this.textContent)"
-        onblur="syncText('zh',this.textContent)">${esc(p.zhName||'')}</div>
+        oninput="setCellText(${i},'zh',this.textContent)"
+        onblur="setCellText(${i},'zh',this.textContent)">${esc(c.zhName||p.zhName||'')}</div>
 
-      <!-- 英文（中文下方，全局同步） -->
+      <!-- 英文（样式同步，内容独立） -->
       <div id="en-${i}" contenteditable="true" spellcheck="false" title="点击编辑英文"
         style="position:absolute;left:${enX}px;top:${enY}px;font-family:'${p.enFont||'Cormorant Garamond'}',serif;font-size:${enSz}px;font-weight:${p.enWeight||'400'};font-style:${p.enStyle||'italic'};color:${p.enColor||'#fff'};letter-spacing:${enLS}em;line-height:1.2;text-shadow:${textShadow};white-space:nowrap;outline:none;cursor:text;user-select:text;pointer-events:auto;"
-        oninput="syncText('en',this.textContent)"
-        onblur="syncText('en',this.textContent)">${esc(p.enName||'')}</div>
+        oninput="setCellText(${i},'en',this.textContent)"
+        onblur="setCellText(${i},'en',this.textContent)">${esc(c.enName||p.enName||'')}</div>
     </div>`;
   }
 
@@ -345,20 +345,14 @@ async function renderPoster(){
   }
 }
 
-// 全局文字同步：修改任意一格的文字，其余三格同步更新
-function syncText(type,val){
+// 文字样式全局同步，内容各格独立
+function setCellText(i,type,val){
   const p=cur();if(!p)return;
   const key=type==='zh'?'zhName':'enName';
-  p[key]=val;save(p);
-  // 同步其余三格的 DOM（不触发 oninput 避免循环）
-  for(let i=0;i<4;i++){
-    const el=document.getElementById(`${type}-${i}`);
-    if(el&&el!==document.activeElement)el.textContent=val;
-  }
-  // 同步右面板输入框
-  const rpEl=document.getElementById(`rp-${key}`);
-  if(rpEl&&rpEl!==document.activeElement)rpEl.value=val;
+  p.cells[i][key]=val;
+  save(p);
 }
+
 
 // ═══ Drag ════════════════════════════════════════════════════════════
 function onMD(e){
@@ -422,17 +416,17 @@ function renderRP(){
 
   rp.innerHTML=`
   <!-- ★ 全局文字（四格同步） -->
-  <div class="sync-note">⚡ 中文和英文各改一处 → 四格同步更新</div>
+  <div class="sync-note">📝 文字内容各格独立 · 切换上方图1-4分别编辑</div>
 
   <div style="margin-bottom:6px;">
-    <div class="lbl">中文名称（四格同步）</div>
-    <input id="rp-zhName" class="fi" type="text" value="${esc(p.zhName||'')}"
-      oninput="setP('zhName',this.value);for(let i=0;i<4;i++){const e=document.getElementById('zh-'+i);if(e&&e!==document.activeElement)e.textContent=this.value;}"
-      onblur="setP('zhName',this.value)">
-    <div class="lbl">英文名称（四格同步）</div>
-    <input id="rp-enName" class="fi" type="text" value="${esc(p.enName||'')}"
-      oninput="setP('enName',this.value);for(let i=0;i<4;i++){const e=document.getElementById('en-'+i);if(e&&e!==document.activeElement)e.textContent=this.value;}"
-      onblur="setP('enName',this.value)">
+    <div class="lbl">中文（当前图${selCell+1}独立编辑）</div>
+    <input id="rp-zhName" class="fi" type="text" value="${esc(p.cells[selCell].zhName||p.zhName||'')}"
+      oninput="p=cur();if(p){p.cells[selCell].zhName=this.value;save(p);const e=document.getElementById('zh-'+selCell);if(e)e.textContent=this.value;}"
+      onblur="const p=cur();if(p){p.cells[selCell].zhName=this.value;save(p);}">
+    <div class="lbl">英文（当前图${selCell+1}独立编辑）</div>
+    <input id="rp-enName" class="fi" type="text" value="${esc(p.cells[selCell].enName||p.enName||'')}"
+      oninput="const p=cur();if(p){p.cells[selCell].enName=this.value;save(p);const e=document.getElementById('en-'+selCell);if(e)e.textContent=this.value;}"
+      onblur="const p=cur();if(p){p.cells[selCell].enName=this.value;save(p);}">
   </div>
 
   <!-- 图片选择 -->
@@ -463,7 +457,7 @@ function renderRP(){
 
   <!-- 中文样式（全局） -->
   <div class="sec">
-    <div class="sync-note">⚡ 以下文字样式四格同步</div>
+    <div class="sync-note">🎨 字体/字号/颜色样式 → 四格同步</div>
     <div class="sec-t">中文样式</div>
     <div class="lbl">字体</div>
     <select class="sel" onchange="setP('zhFont',this.value)">${fZhOpts(p.zhFont||'Noto Serif SC')}</select>
@@ -644,7 +638,7 @@ async function doExport(){
       const zhSz=p.zhSize||60;
       ctx.font=`${p.zhWeight||'900'} ${zhSz}px '${p.zhFont||'Noto Serif SC'}',serif`;
       ctx.fillStyle=p.zhColor||'#ffffff';
-      drawTextLS(ctx,p.zhName||'',cx+(p.zhOffX||175),cy+(p.zhOffY||34),p.zhLS||0.08,'left');
+      drawTextLS(ctx,(c.zhName!==undefined?c.zhName:p.zhName)||'',cx+(p.zhOffX||175),cy+(p.zhOffY||34),p.zhLS||0.08,'left');
 
       // 英文
       const enSz=p.enSize||26;
@@ -653,7 +647,7 @@ async function doExport(){
       const enFS=p.enStyle||'italic';
       ctx.font=`${enFS} ${enFW} ${enSz}px '${p.enFont||'Cormorant Garamond'}',serif`;
       ctx.fillStyle=p.enColor||'#ffffff';
-      drawTextLS(ctx,p.enName||'',cx+(p.enOffX||200),enY,p.enLS||0.05,'left');
+      drawTextLS(ctx,(c.enName!==undefined?c.enName:p.enName)||'',cx+(p.enOffX||200),enY,p.enLS||0.05,'left');
 
       ctx.shadowBlur=0;ctx.shadowOffsetY=0;
     }

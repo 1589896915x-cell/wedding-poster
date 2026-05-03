@@ -304,6 +304,7 @@ function makeDefaultState(name='未命名作品'){
     /* 副标题 / 引言 */
     subtitle:'"Things do not change we change."',
     subFont:'Cormorant Garamond', subSize:37, subWeight:400, subItalic:true, subColor:'#ffffff',
+    subGlowOn:false, subGlowColor:'#ffd9a3', subGlowBlur:18, subGlowIntensity:1,
     subLs:0.04, subX:600, subY:57, subAlign:'center',
     /* 底部 logo（默认隐藏，需要时再开启）*/
     logoShow:false, logoMode:'text',  // 'text' | 'image' | 'off'
@@ -591,7 +592,17 @@ async function renderPreview(){
   if(s.subtitle){
     const t=document.createElement('div');
     t.className='txt';t.contentEditable='true';t.dataset.role='subtitle';t.spellcheck=false;
-    t.style.cssText = textCSS(s.subX, s.subY, s.subAlign, s.subFont, s.subSize*sc, s.subWeight, s.subColor, s.subLs, s.subItalic) + shCss;
+    let subShCss = shCss;
+    if(s.subGlowOn){
+      const gb = (s.subGlowBlur||18)*sc;
+      const gI = s.subGlowIntensity||1;
+      const layers=[];
+      for(let k=1;k<=Math.max(1,Math.round(gI*3));k++){
+        layers.push(`0 0 ${gb*k}px ${s.subGlowColor||'#ffd9a3'}`);
+      }
+      subShCss = `text-shadow:${layers.join(',')};`;
+    }
+    t.style.cssText = textCSS(s.subX, s.subY, s.subAlign, s.subFont, s.subSize*sc, s.subWeight, s.subColor, s.subLs, s.subItalic) + subShCss;
     t.textContent=s.subtitle;
     bindContentEdit(t,'subtitle','subText');
     cv.appendChild(t);
@@ -850,6 +861,17 @@ function secSub(){
       </div>
       ${sliderF('字间距', s.subLs, -0.05, 0.4, 0.01, v=>setP('subLs',+v.toFixed(2)))}
       <div class="row"><label>颜色</label>${cpInput(s.subColor, v=>setP('subColor',v))}</div>
+      <div class="row"><label>发光</label>
+        <div class="seg">
+          <button class="${s.subGlowOn?'on':''}" onclick="setP('subGlowOn',true)">开</button>
+          <button class="${!s.subGlowOn?'on':''}" onclick="setP('subGlowOn',false)">关</button>
+        </div>
+      </div>
+      ${s.subGlowOn?`
+        <div class="row"><label>发光色</label>${cpInput(s.subGlowColor||'#ffd9a3', v=>setP('subGlowColor',v))}</div>
+        ${slider('模糊', s.subGlowBlur, 0, 60, 1, v=>setP('subGlowBlur',v))}
+        ${sliderF('强度', s.subGlowIntensity||1, 0.3, 3, 0.1, v=>setP('subGlowIntensity',+v.toFixed(1)))}
+      `:''}
       <div class="row"><label>对齐</label>
         <div class="seg">
           ${['left','center','right'].map(a=>`<button class="${s.subAlign===a?'on':''}" onclick="setP('subAlign','${a}')">${({left:'左',center:'中',right:'右'})[a]}</button>`).join('')}
@@ -1014,6 +1036,9 @@ function cpOpen(trig,value,onChange){
       <div><input type="number" id="cpaa" min="0" max="100"><div>A</div></div>
     </div>
     <input class="cp-txt" id="cptxt" type="text" placeholder="#fff 或 rgba(...)">
+    <button id="cpdrop" type="button" style="width:100%;margin-top:6px;padding:6px;background:#2a2418;border:1px solid #3a3220;border-radius:4px;color:#d4b87a;font-size:11px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+      <span style="font-size:14px">🎯</span><span>吸管 · 从画面取色</span>
+    </button>
     <div class="cp-pre">${PRESETS.map(p=>`<div data-c="${p}" style="--c:${p}" title="${p}"></div>`).join('')}</div>
   `;
   document.body.appendChild(pop);
@@ -1076,6 +1101,27 @@ function cpOpen(trig,value,onChange){
     state.h=h.h;state.s=h.s;state.v=h.v;state.a=c.a;
     update();
   };
+  // 吸管
+  const dropBtn=pop.querySelector('#cpdrop');
+  if(dropBtn){
+    if(!('EyeDropper' in window)){
+      dropBtn.style.opacity='0.5';dropBtn.style.cursor='not-allowed';
+      dropBtn.title='当前浏览器不支持吸管，请用 Chrome/Edge 95+';
+      dropBtn.onclick=()=>toast('当前浏览器不支持吸管功能');
+    } else {
+      dropBtn.onclick=async()=>{
+        try{
+          const ed=new EyeDropper();
+          const r=await ed.open();
+          const c=parseColor(r.sRGBHex);
+          const h=rgbToHsv(c.r,c.g,c.b);
+          state.h=h.h;state.s=h.s;state.v=h.v;state.a=1;
+          update();
+        }catch(e){/* user cancelled */}
+      };
+    }
+  }
+
   pop.querySelectorAll('.cp-pre div').forEach(d=>{
     d.onclick=()=>{
       const c=parseColor(d.dataset.c);
@@ -1219,13 +1265,35 @@ async function doExport(){
     drawTextLS(ctx, s.title, s.titleX, s.titleY/100*EXP_H, s.titleLs, s.titleAlign);
   }
 
-  // 副标题
+  // 副标题（带发光）
   if(s.subtitle){
-    applyShadow();
     const it = s.subItalic?'italic ':'';
     ctx.font=`${it}${s.subWeight||400} ${s.subSize}px "${s.subFont}",serif`;
+    const subY_px = s.subY/100*EXP_H;
+    // 发光：多次 shadow 叠加
+    if(s.subGlowOn){
+      const gColor=toCss(parseColor(s.subGlowColor||'#ffd9a3'));
+      const gBlur=s.subGlowBlur||18;
+      const gI=s.subGlowIntensity||1;
+      const layers=Math.max(1,Math.round(gI*3));
+      ctx.save();
+      ctx.fillStyle=gColor;
+      ctx.shadowColor=gColor;ctx.shadowOffsetX=0;ctx.shadowOffsetY=0;
+      // 多层叠加增强光晕
+      for(let k=layers;k>=1;k--){
+        ctx.shadowBlur=gBlur*k;
+        drawTextLS(ctx, s.subtitle, s.subX, subY_px, s.subLs, s.subAlign);
+      }
+      ctx.restore();
+    } else {
+      applyShadow();
+    }
+    // 主体文字（覆盖在发光之上）
+    ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+    if(!s.subGlowOn) applyShadow();
     ctx.fillStyle=toCss(parseColor(s.subColor));
-    drawTextLS(ctx, s.subtitle, s.subX, s.subY/100*EXP_H, s.subLs, s.subAlign);
+    drawTextLS(ctx, s.subtitle, s.subX, subY_px, s.subLs, s.subAlign);
+    ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
   }
 
   // 底部 LOGO
