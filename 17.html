@@ -200,7 +200,12 @@ function defProject(){return{
   brandColor:'#ffffff',brandCNSize:28,brandENSize:22,
   brandCNLS:0.32,brandENLS:0.18,showBrand:true,
   // 4格图片
-  cells:[0,1,2,3].map((_, i)=>({imgKey:null,px:50,py:50,zoom:1,nW:0,nH:0, zhName:'仙境花园', enName:'Wonderland Garden'})),
+  cells:[0,1,2,3].map((_, i)=>({
+    imgKey:null,px:50,py:50,zoom:1,nW:0,nH:0,
+    zhName:'仙境花园', enName:'Wonderland Garden',
+    zhFont:'Noto Serif SC',zhSize:60,zhWeight:'900',zhColor:'#ffffff',zhLS:0.08,zhOffY:34,
+    enFont:'Cormorant Garamond',enSize:26,enWeight:'400',enStyle:'italic',enColor:'#ffffff',enLS:0.05,enGap:10,
+  })),
 };}
 
 // ═══ State ════════════════════════════════════════════════════════════
@@ -287,10 +292,7 @@ async function renderPoster(){
   const shColor=p.shadowColor||'rgba(0,0,0,0.6)';
   const textShadow=`${shOffY}px ${shOffY}px ${shBlur}px ${shColor}, 0 0 ${shBlur*2}px ${shColor}`;
 
-  const zhSz=Math.round((p.zhSize||60)*sc);
-  const enSz=Math.round((p.enSize||26)*sc);
-  const zhLS=p.zhLS||0.08;
-  const enLS=p.enLS||0.05;
+  // 样式各格独立，下面在循环中按 c 取
 
   let html='';
   for(let i=0;i<4;i++){
@@ -300,11 +302,13 @@ async function renderPoster(){
     const url=urls[i];
     const lout=c.imgKey?iLay(c.nW,c.nH,cW,cH,c.zoom,c.px,c.py):{left:0,top:0,width:cW,height:cH};
 
-    // 文字位置（基于格子左上角偏移）
-    const zhX=(p.zhOffX||175)*sc;
-    const zhY=(p.zhOffY||34)*sc;
-    const enX=(p.enOffX||200)*sc;
-    const enY=zhY+zhSz+(p.enGap||10)*sc;
+    // 每格独立样式
+    const zhSz=Math.round((c.zhSize||p.zhSize||60)*sc);
+    const enSz=Math.round((c.enSize||p.enSize||26)*sc);
+    const zhLS=c.zhLS!==undefined?c.zhLS:(p.zhLS||0.08);
+    const enLS=c.enLS!==undefined?c.enLS:(p.enLS||0.05);
+    const zhY=(c.zhOffY||p.zhOffY||34)*sc;
+    const enY=zhY+zhSz+((c.enGap||p.enGap||10)*sc);
 
     html+=`<div id="cell-${i}" data-i="${i}" style="position:absolute;left:${cx}px;top:${cy}px;width:${cW}px;height:${cH}px;overflow:hidden;cursor:${url?'grab':'pointer'};">
       ${url
@@ -313,13 +317,13 @@ async function renderPoster(){
 
       <!-- 中文（水平居中于本格图片，内容独立） -->
       <div id="zh-${i}" contenteditable="true" spellcheck="false" title="点击编辑文字"
-        style="position:absolute;left:0;right:0;top:${zhY}px;text-align:center;font-family:'${p.zhFont||'Noto Serif SC'}',serif;font-size:${zhSz}px;font-weight:${p.zhWeight||'900'};color:${p.zhColor||'#fff'};letter-spacing:${zhLS}em;line-height:1.1;text-shadow:${textShadow};outline:none;cursor:text;user-select:text;pointer-events:auto;"
+        style="position:absolute;left:0;right:0;top:${zhY}px;text-align:center;font-family:'${c.zhFont||p.zhFont||'Noto Serif SC'}',serif;font-size:${zhSz}px;font-weight:${c.zhWeight||p.zhWeight||'900'};color:${c.zhColor||p.zhColor||'#fff'};letter-spacing:${zhLS}em;line-height:1.1;text-shadow:${textShadow};outline:none;cursor:text;user-select:text;pointer-events:auto;"
         oninput="setCellText(${i},'zh',this.textContent)"
         onblur="setCellText(${i},'zh',this.textContent)">${esc(c.zhName||p.zhName||'')}</div>
 
       <!-- 英文（水平居中于本格图片，内容独立） -->
       <div id="en-${i}" contenteditable="true" spellcheck="false" title="点击编辑英文"
-        style="position:absolute;left:0;right:0;top:${enY}px;text-align:center;font-family:'${p.enFont||'Cormorant Garamond'}',serif;font-size:${enSz}px;font-weight:${p.enWeight||'400'};font-style:${p.enStyle||'italic'};color:${p.enColor||'#fff'};letter-spacing:${enLS}em;line-height:1.2;text-shadow:${textShadow};outline:none;cursor:text;user-select:text;pointer-events:auto;"
+        style="position:absolute;left:0;right:0;top:${enY}px;text-align:center;font-family:'${c.enFont||p.enFont||'Cormorant Garamond'}',serif;font-size:${enSz}px;font-weight:${c.enWeight||p.enWeight||'400'};font-style:${c.enStyle||p.enStyle||'italic'};color:${c.enColor||p.enColor||'#fff'};letter-spacing:${enLS}em;line-height:1.2;text-shadow:${textShadow};outline:none;cursor:text;user-select:text;pointer-events:auto;"
         oninput="setCellText(${i},'en',this.textContent)"
         onblur="setCellText(${i},'en',this.textContent)">${esc(c.enName||p.enName||'')}</div>
     </div>`;
@@ -351,6 +355,17 @@ function setCellText(i,type,val){
   const key=type==='zh'?'zhName':'enName';
   p.cells[i][key]=val;
   save(p);
+}
+// 当前选中格子的样式 setter
+function setCellP(k,v){
+  const p=cur();if(!p)return;
+  p.cells[selCell][k]=v;
+  pushH();save(p);renderPoster();
+}
+function setCellPN(k,v){
+  const p=cur();if(!p)return;
+  p.cells[selCell][k]=v;
+  save(p);renderPoster();
 }
 
 
@@ -457,59 +472,59 @@ function renderRP(){
 
   <!-- 中文样式（全局） -->
   <div class="sec">
-    <div class="sync-note">🎨 字体/字号/颜色样式 → 四格同步</div>
+    <div class="sync-note">🎨 每格文字样式独立 · 切换图1-4分别编辑</div>
     <div class="sec-t">中文样式</div>
     <div class="lbl">字体</div>
-    <select class="sel" onchange="setP('zhFont',this.value)">${fZhOpts(p.zhFont||'Noto Serif SC')}</select>
+    <select class="sel" onchange="setCellP('zhFont',this.value)">${fZhOpts((p.cells[selCell]||{}).zhFont||p.zhFont||'Noto Serif SC')}</select>
     <div class="srow">
-      <input class="num" type="number" min="12" max="200" value="${p.zhSize||60}" oninput="setPN('zhSize',+this.value)">
+      <input class="num" type="number" min="12" max="200" value="${(p.cells[selCell]||{}).zhSize||p.zhSize||60}" oninput="setCellPN('zhSize',+this.value)">
       <span class="unit">px</span>
-      <select class="sel-sm" onchange="setP('zhWeight',this.value)">${wOpts(p.zhWeight||'900')}</select>
+      <select class="sel-sm" onchange="setCellP('zhWeight',this.value)">${wOpts((p.cells[selCell]||{}).zhWeight||p.zhWeight||'900')}</select>
     </div>
     <div class="lbl">颜色</div>
     <div class="cp-wrap">
-      <div class="cp-dot" style="background:${toHex(p.zhColor||'#ffffff')};" onclick="document.getElementById('zhc').click()"></div>
-      <input id="zhc" type="color" value="${toHex(p.zhColor||'#ffffff')}" style="display:none" onchange="setP('zhColor',this.value);this.previousElementSibling.style.background=this.value">
-      <span class="unit">${p.zhColor||'#ffffff'}</span>
+      <div class="cp-dot" style="background:${toHex((p.cells[selCell]||{}).zhColor||p.zhColor||'#ffffff')};" onclick="document.getElementById('zhc').click()"></div>
+      <input id="zhc" type="color" value="${toHex((p.cells[selCell]||{}).zhColor||p.zhColor||'#ffffff')}" style="display:none" onchange="setCellP('zhColor',this.value);this.previousElementSibling.style.background=this.value">
+      <span class="unit">${(p.cells[selCell]||{}).zhColor||p.zhColor||'#ffffff'}</span>
     </div>
     <div class="row"><label>字间距</label>
-      <input class="sld" type="range" min="0" max="0.5" step="0.01" value="${p.zhLS||0.08}" oninput="setPN('zhLS',+this.value);document.getElementById('v-zhls').textContent=this.value+'em'">
-      <span class="val" id="v-zhls">${p.zhLS||0.08}em</span>
+      <input class="sld" type="range" min="0" max="0.5" step="0.01" value="${(p.cells[selCell]||{}).zhLS!==undefined?p.cells[selCell].zhLS:(p.zhLS||0.08)}" oninput="setCellPN('zhLS',+this.value);document.getElementById('v-zhls').textContent=this.value+'em'">
+      <span class="val" id="v-zhls">${(p.cells[selCell]||{}).zhLS!==undefined?p.cells[selCell].zhLS:(p.zhLS||0.08)}em</span>
     </div>
     <div class="row"><label>距顶</label>
-      <input class="sld" type="range" min="0" max="200" value="${p.zhOffY||34}" oninput="setPN('zhOffY',+this.value);document.getElementById('ni-zhoy').value=this.value">
-      <input id="ni-zhoy" type="number" min="0" max="200" value="${p.zhOffY||34}" class="num" oninput="setPN('zhOffY',+this.value);this.previousElementSibling.value=this.value">
+      <input class="sld" type="range" min="0" max="200" value="${(p.cells[selCell]||{}).zhOffY||p.zhOffY||34}" oninput="setCellPN('zhOffY',+this.value);document.getElementById('ni-zhoy').value=this.value">
+      <input id="ni-zhoy" type="number" min="0" max="200" value="${(p.cells[selCell]||{}).zhOffY||p.zhOffY||34}" class="num" oninput="setCellPN('zhOffY',+this.value);this.previousElementSibling.value=this.value">
       <span class="unit">px</span>
     </div>
   </div>
 
   <!-- 英文样式（全局） -->
   <div class="sec">
-    <div class="sec-t">英文样式</div>
+    <div class="sec-t">英文样式（图${selCell+1}独立）</div>
     <div class="lbl">字体</div>
-    <select class="sel" onchange="setP('enFont',this.value)">${fEnOpts(p.enFont||'Cormorant Garamond')}</select>
+    <select class="sel" onchange="setCellP('enFont',this.value)">${fEnOpts((p.cells[selCell]||{}).enFont||p.enFont||'Cormorant Garamond')}</select>
     <div class="srow">
-      <input class="num" type="number" min="8" max="120" value="${p.enSize||26}" oninput="setPN('enSize',+this.value)">
+      <input class="num" type="number" min="8" max="120" value="${(p.cells[selCell]||{}).enSize||p.enSize||26}" oninput="setCellPN('enSize',+this.value)">
       <span class="unit">px</span>
-      <select class="sel-sm" onchange="setP('enWeight',this.value)">${wOpts(p.enWeight||'400')}</select>
+      <select class="sel-sm" onchange="setCellP('enWeight',this.value)">${wOpts((p.cells[selCell]||{}).enWeight||p.enWeight||'400')}</select>
     </div>
     <div class="lbl">字形</div>
-    <select class="sel" onchange="setP('enStyle',this.value)">
-      <option value="normal"${(p.enStyle||'italic')==='normal'?' selected':''}>正体</option>
-      <option value="italic"${(p.enStyle||'italic')==='italic'?' selected':''}>斜体</option>
+    <select class="sel" onchange="setCellP('enStyle',this.value)">
+      <option value="normal"${((p.cells[selCell]||{}).enStyle||p.enStyle||'italic')==='normal'?' selected':''}>正体</option>
+      <option value="italic"${((p.cells[selCell]||{}).enStyle||p.enStyle||'italic')==='italic'?' selected':''}>斜体</option>
     </select>
     <div class="lbl">颜色</div>
     <div class="cp-wrap">
-      <div class="cp-dot" style="background:${toHex(p.enColor||'#ffffff')};" onclick="document.getElementById('enc').click()"></div>
-      <input id="enc" type="color" value="${toHex(p.enColor||'#ffffff')}" style="display:none" onchange="setP('enColor',this.value);this.previousElementSibling.style.background=this.value">
+      <div class="cp-dot" style="background:${toHex((p.cells[selCell]||{}).enColor||p.enColor||'#ffffff')};" onclick="document.getElementById('enc').click()"></div>
+      <input id="enc" type="color" value="${toHex((p.cells[selCell]||{}).enColor||p.enColor||'#ffffff')}" style="display:none" onchange="setCellP('enColor',this.value);this.previousElementSibling.style.background=this.value">
     </div>
     <div class="row"><label>字间距</label>
-      <input class="sld" type="range" min="0" max="0.4" step="0.01" value="${p.enLS||0.05}" oninput="setPN('enLS',+this.value);document.getElementById('v-enls').textContent=this.value+'em'">
-      <span class="val" id="v-enls">${p.enLS||0.05}em</span>
+      <input class="sld" type="range" min="0" max="0.4" step="0.01" value="${(p.cells[selCell]||{}).enLS!==undefined?p.cells[selCell].enLS:(p.enLS||0.05)}" oninput="setCellPN('enLS',+this.value);document.getElementById('v-enls').textContent=this.value+'em'">
+      <span class="val" id="v-enls">${(p.cells[selCell]||{}).enLS!==undefined?p.cells[selCell].enLS:(p.enLS||0.05)}em</span>
     </div>
     <div class="row"><label>中英间距</label>
-      <input class="sld" type="range" min="0" max="60" value="${p.enGap||10}" oninput="setPN('enGap',+this.value);document.getElementById('ni-eng').value=this.value">
-      <input id="ni-eng" type="number" min="0" max="60" value="${p.enGap||10}" class="num" oninput="setPN('enGap',+this.value);this.previousElementSibling.value=this.value">
+      <input class="sld" type="range" min="0" max="60" value="${(p.cells[selCell]||{}).enGap||p.enGap||10}" oninput="setCellPN('enGap',+this.value);document.getElementById('ni-eng').value=this.value">
+      <input id="ni-eng" type="number" min="0" max="60" value="${(p.cells[selCell]||{}).enGap||p.enGap||10}" class="num" oninput="setCellPN('enGap',+this.value);this.previousElementSibling.value=this.value">
       <span class="unit">px</span>
     </div>
   </div>
@@ -624,20 +639,29 @@ async function doExport(){
       ctx.shadowColor=p.shadowColor||'rgba(0,0,0,0.6)';
       ctx.shadowBlur=shBlur;ctx.shadowOffsetX=0;ctx.shadowOffsetY=shOffY;
 
-      // 中文
-      const zhSz=p.zhSize||60;
-      ctx.font=`${p.zhWeight||'900'} ${zhSz}px '${p.zhFont||'Noto Serif SC'}',serif`;
-      ctx.fillStyle=p.zhColor||'#ffffff';
-      drawTextLS(ctx,(c.zhName!==undefined?c.zhName:p.zhName)||'',cx+cW/2,cy+(p.zhOffY||34),p.zhLS||0.08,'center');
+      // 中文（每格独立样式）
+      const zhSz=c.zhSize||p.zhSize||60;
+      const zhFont=c.zhFont||p.zhFont||'Noto Serif SC';
+      const zhWeight=c.zhWeight||p.zhWeight||'900';
+      const zhColor=c.zhColor||p.zhColor||'#ffffff';
+      const zhLS=c.zhLS!==undefined?c.zhLS:(p.zhLS||0.08);
+      const zhOffY=c.zhOffY||p.zhOffY||34;
+      ctx.font=`${zhWeight} ${zhSz}px '${zhFont}',serif`;
+      ctx.fillStyle=zhColor;
+      drawTextLS(ctx,(c.zhName!==undefined?c.zhName:p.zhName)||'',cx+cW/2,cy+zhOffY,zhLS,'center');
 
-      // 英文
-      const enSz=p.enSize||26;
-      const enY=cy+(p.zhOffY||34)+zhSz+(p.enGap||10);
-      const enFW=p.enWeight||'400';
-      const enFS=p.enStyle||'italic';
-      ctx.font=`${enFS} ${enFW} ${enSz}px '${p.enFont||'Cormorant Garamond'}',serif`;
-      ctx.fillStyle=p.enColor||'#ffffff';
-      drawTextLS(ctx,(c.enName!==undefined?c.enName:p.enName)||'',cx+cW/2,enY,p.enLS||0.05,'center');
+      // 英文（每格独立样式）
+      const enSz=c.enSize||p.enSize||26;
+      const enFont=c.enFont||p.enFont||'Cormorant Garamond';
+      const enFW=c.enWeight||p.enWeight||'400';
+      const enFS=c.enStyle||p.enStyle||'italic';
+      const enColor=c.enColor||p.enColor||'#ffffff';
+      const enLS=c.enLS!==undefined?c.enLS:(p.enLS||0.05);
+      const enGap=c.enGap||p.enGap||10;
+      const enY=cy+zhOffY+zhSz+enGap;
+      ctx.font=`${enFS} ${enFW} ${enSz}px '${enFont}',serif`;
+      ctx.fillStyle=enColor;
+      drawTextLS(ctx,(c.enName!==undefined?c.enName:p.enName)||'',cx+cW/2,enY,enLS,'center');
 
       ctx.shadowBlur=0;ctx.shadowOffsetY=0;
     }
