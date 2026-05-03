@@ -311,15 +311,15 @@ async function renderPoster(){
         ?`<img id="img-${i}" src="${url}" draggable="false" style="position:absolute;left:${lout.left}px;top:${lout.top}px;width:${lout.width}px;height:${lout.height}px;pointer-events:none;">`
         :`<div onclick="uploadImg(${i})" style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a1a1a;color:#444;gap:8px;cursor:pointer;"><span style="font-size:24px;opacity:.4;">＋</span><span style="font-size:10px;">点击上传第${i+1}张图</span></div>`}
 
-      <!-- 中文（样式同步，内容独立） -->
+      <!-- 中文（水平居中于本格图片，内容独立） -->
       <div id="zh-${i}" contenteditable="true" spellcheck="false" title="点击编辑文字"
-        style="position:absolute;left:${zhX}px;top:${zhY}px;font-family:'${p.zhFont||'Noto Serif SC'}',serif;font-size:${zhSz}px;font-weight:${p.zhWeight||'900'};color:${p.zhColor||'#fff'};letter-spacing:${zhLS}em;line-height:1.1;text-shadow:${textShadow};white-space:nowrap;outline:none;cursor:text;user-select:text;pointer-events:auto;"
+        style="position:absolute;left:0;right:0;top:${zhY}px;text-align:center;font-family:'${p.zhFont||'Noto Serif SC'}',serif;font-size:${zhSz}px;font-weight:${p.zhWeight||'900'};color:${p.zhColor||'#fff'};letter-spacing:${zhLS}em;line-height:1.1;text-shadow:${textShadow};outline:none;cursor:text;user-select:text;pointer-events:auto;"
         oninput="setCellText(${i},'zh',this.textContent)"
         onblur="setCellText(${i},'zh',this.textContent)">${esc(c.zhName||p.zhName||'')}</div>
 
-      <!-- 英文（样式同步，内容独立） -->
+      <!-- 英文（水平居中于本格图片，内容独立） -->
       <div id="en-${i}" contenteditable="true" spellcheck="false" title="点击编辑英文"
-        style="position:absolute;left:${enX}px;top:${enY}px;font-family:'${p.enFont||'Cormorant Garamond'}',serif;font-size:${enSz}px;font-weight:${p.enWeight||'400'};font-style:${p.enStyle||'italic'};color:${p.enColor||'#fff'};letter-spacing:${enLS}em;line-height:1.2;text-shadow:${textShadow};white-space:nowrap;outline:none;cursor:text;user-select:text;pointer-events:auto;"
+        style="position:absolute;left:0;right:0;top:${enY}px;text-align:center;font-family:'${p.enFont||'Cormorant Garamond'}',serif;font-size:${enSz}px;font-weight:${p.enWeight||'400'};font-style:${p.enStyle||'italic'};color:${p.enColor||'#fff'};letter-spacing:${enLS}em;line-height:1.2;text-shadow:${textShadow};outline:none;cursor:text;user-select:text;pointer-events:auto;"
         oninput="setCellText(${i},'en',this.textContent)"
         onblur="setCellText(${i},'en',this.textContent)">${esc(c.enName||p.enName||'')}</div>
     </div>`;
@@ -476,11 +476,6 @@ function renderRP(){
       <input class="sld" type="range" min="0" max="0.5" step="0.01" value="${p.zhLS||0.08}" oninput="setPN('zhLS',+this.value);document.getElementById('v-zhls').textContent=this.value+'em'">
       <span class="val" id="v-zhls">${p.zhLS||0.08}em</span>
     </div>
-    <div class="row"><label>距左</label>
-      <input class="sld" type="range" min="0" max="200" value="${p.zhOffX||175}" oninput="setPN('zhOffX',+this.value);document.getElementById('ni-zhox').value=this.value">
-      <input id="ni-zhox" type="number" min="0" max="200" value="${p.zhOffX||175}" class="num" oninput="setPN('zhOffX',+this.value);this.previousElementSibling.value=this.value">
-      <span class="unit">px</span>
-    </div>
     <div class="row"><label>距顶</label>
       <input class="sld" type="range" min="0" max="200" value="${p.zhOffY||34}" oninput="setPN('zhOffY',+this.value);document.getElementById('ni-zhoy').value=this.value">
       <input id="ni-zhoy" type="number" min="0" max="200" value="${p.zhOffY||34}" class="num" oninput="setPN('zhOffY',+this.value);this.previousElementSibling.value=this.value">
@@ -511,11 +506,6 @@ function renderRP(){
     <div class="row"><label>字间距</label>
       <input class="sld" type="range" min="0" max="0.4" step="0.01" value="${p.enLS||0.05}" oninput="setPN('enLS',+this.value);document.getElementById('v-enls').textContent=this.value+'em'">
       <span class="val" id="v-enls">${p.enLS||0.05}em</span>
-    </div>
-    <div class="row"><label>距左</label>
-      <input class="sld" type="range" min="0" max="200" value="${p.enOffX||200}" oninput="setPN('enOffX',+this.value);document.getElementById('ni-enox').value=this.value">
-      <input id="ni-enox" type="number" min="0" max="200" value="${p.enOffX||200}" class="num" oninput="setPN('enOffX',+this.value);this.previousElementSibling.value=this.value">
-      <span class="unit">px</span>
     </div>
     <div class="row"><label>中英间距</label>
       <input class="sld" type="range" min="0" max="60" value="${p.enGap||10}" oninput="setPN('enGap',+this.value);document.getElementById('ni-eng').value=this.value">
@@ -638,7 +628,7 @@ async function doExport(){
       const zhSz=p.zhSize||60;
       ctx.font=`${p.zhWeight||'900'} ${zhSz}px '${p.zhFont||'Noto Serif SC'}',serif`;
       ctx.fillStyle=p.zhColor||'#ffffff';
-      drawTextLS(ctx,(c.zhName!==undefined?c.zhName:p.zhName)||'',cx+(p.zhOffX||175),cy+(p.zhOffY||34),p.zhLS||0.08,'left');
+      drawTextLS(ctx,(c.zhName!==undefined?c.zhName:p.zhName)||'',cx+cW/2,cy+(p.zhOffY||34),p.zhLS||0.08,'center');
 
       // 英文
       const enSz=p.enSize||26;
@@ -647,7 +637,7 @@ async function doExport(){
       const enFS=p.enStyle||'italic';
       ctx.font=`${enFS} ${enFW} ${enSz}px '${p.enFont||'Cormorant Garamond'}',serif`;
       ctx.fillStyle=p.enColor||'#ffffff';
-      drawTextLS(ctx,(c.enName!==undefined?c.enName:p.enName)||'',cx+(p.enOffX||200),enY,p.enLS||0.05,'left');
+      drawTextLS(ctx,(c.enName!==undefined?c.enName:p.enName)||'',cx+cW/2,enY,p.enLS||0.05,'center');
 
       ctx.shadowBlur=0;ctx.shadowOffsetY=0;
     }
