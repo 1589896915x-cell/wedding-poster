@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>场地推荐列表版 - 婚礼海报</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Great+Vibes&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0e0e0e;color:#fff;height:100vh;overflow:hidden;display:flex;padding-top:40px;}
+.psb{width:186px;flex-shrink:0;background:#161616;border-right:1px solid #222;display:flex;flex-direction:column;}
+.psb-head{padding:12px 12px 8px;border-bottom:1px solid #222;}
+.psb-head h2{font-size:12px;font-weight:500;color:#ddd;}
+.psb-head p{font-size:9px;color:#444;margin-top:2px;}
+.psb-new{margin:8px 10px;padding:6px;background:#1c1c1c;border:1px dashed #2e2e2e;border-radius:5px;color:#666;font-size:10px;cursor:pointer;text-align:center;}
+.psb-new:hover{border-color:#555;color:#bbb;}
+.proj-list{flex:1;overflow-y:auto;padding:4px 7px;}
+.pi{padding:7px 9px;border-radius:5px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;}
+.pi:hover{background:#1c1c1c;}
+.pi.on{background:#1c1c1c;border-color:#2e2e2e;}
+.pi h3{font-size:11px;font-weight:400;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pi .meta{font-size:9px;color:#444;margin-top:2px;}
+.pi-act{display:flex;gap:3px;margin-top:4px;}
+.pb{padding:2px 6px;background:none;border:1px solid #222;border-radius:3px;color:#555;font-size:9px;cursor:pointer;font-family:inherit;}
+.pb:hover{border-color:#555;color:#aaa;}
+.pb.del:hover{border-color:#b00;color:#f44;}
+.editor{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:44px;background:#161616;border-bottom:1px solid #222;display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;}
+.pname{background:none;border:none;outline:none;color:#fff;font-size:13px;font-weight:500;font-family:inherit;flex:1;max-width:240px;}
+.pname::placeholder{color:#333;}
+.sp{flex:1;}
+.exp-btn{padding:6px 16px;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;background:#c8392b;color:#fff;}
+.exp-btn:hover{background:#a02d22;}
+.exp-btn:disabled{background:#6a1f17;cursor:default;}
+.body-wrap{display:flex;flex:1;overflow:hidden;}
+.ca{flex:1;background:#0a0a0a;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.rp{width:276px;flex-shrink:0;background:#161616;border-left:1px solid #222;overflow-y:auto;padding:10px 10px 32px;}
+.rp::-webkit-scrollbar{width:3px;}.rp::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px;}
+.sc{margin-top:16px;padding:12px;background:#141414;border-radius:8px;border:1px solid #1f1f1f;}
+.sc:first-child{margin-top:0;}
+.st{font-size:11px;color:#c8a96a;font-weight:600;letter-spacing:.5px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;gap:6px;}
+.st-icon{display:inline-block;width:6px;height:14px;background:#c8392b;border-radius:2px;flex-shrink:0;}
+.lbl{font-size:9px;color:#555;margin-bottom:2px;margin-top:6px;}
+.fi{width:100%;padding:5px 7px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;margin-bottom:3px;}
+.fi:focus{border-color:#444;}
+.fi-ta{width:100%;padding:5px 7px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;resize:vertical;min-height:52px;line-height:1.5;}
+.sel{width:100%;padding:4px 6px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;margin-bottom:3px;}
+.sel-sm{flex:1;padding:3px 4px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;}
+.num{width:52px;padding:4px 5px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;}
+.unit{font-size:9px;color:#444;white-space:nowrap;}
+.row{display:flex;gap:5px;align-items:center;margin-bottom:4px;}
+.row label{font-size:9px;color:#555;min-width:26px;flex-shrink:0;}
+.sld{flex:1;accent-color:#c8392b;cursor:pointer;}
+.srow{display:flex;gap:4px;align-items:center;margin-bottom:4px;}
+.poskit{background:#0a0a0a;padding:9px;border-radius:5px;border:1px solid #1f1f1f;margin-top:6px;}
+.poskit-row{display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+.poskit-row:last-child{margin-bottom:0;}
+.pk-lbl{font-size:10px;color:#aaa;width:52px;flex-shrink:0;}
+.pk-sld{flex:1;accent-color:#c8392b;cursor:pointer;}
+.pk-num{width:54px;padding:4px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#ddd;font-size:11px;font-family:inherit;outline:none;text-align:center;flex-shrink:0;}
+.pk-num:focus{border-color:#c8392b;}
+.cd{width:22px;height:22px;border-radius:3px;border:1px solid #333;cursor:pointer;flex-shrink:0;}
+.cd:hover{border-color:#666;}
+.img-btn{width:100%;padding:6px;border:1px dashed #2a2a2a;border-radius:4px;background:none;color:#666;font-size:10px;cursor:pointer;font-family:inherit;text-align:center;margin-bottom:3px;}
+.img-btn:hover{border-color:#555;color:#aaa;}
+.vtabs{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px;}
+.vtab{flex:1;padding:4px 2px;border:1px solid #222;border-radius:4px;background:none;color:#555;font-size:9px;cursor:pointer;font-family:inherit;text-align:center;min-width:44px;}
+.vtab.on{background:#222;color:#ddd;border-color:#444;}
+.bk-row{display:flex;gap:5px;margin-top:6px;}
+.bk-btn{flex:1;padding:5px 4px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:9px;cursor:pointer;font-family:inherit;}
+.bk-btn:hover{border-color:#555;color:#aaa;}
+.no-proj{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#2a2a2a;}
+.no-proj p{font-size:12px;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;}
+.ov.open{display:flex;}
+.modal{background:#1c1c1c;border:1px solid #2e2e2e;border-radius:10px;padding:22px;width:300px;}
+.modal h3{font-size:14px;font-weight:500;margin-bottom:16px;color:#ddd;}
+.ml{font-size:10px;color:#777;margin-bottom:4px;}
+.mi{width:100%;padding:8px 10px;background:#111;border:1px solid #2e2e2e;border-radius:5px;color:#fff;font-size:13px;font-family:inherit;outline:none;margin-bottom:16px;}
+.mi:focus{border-color:#555;}
+.ma{display:flex;gap:8px;}
+.ma button{flex:1;padding:8px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
+.hint{font-size:9px;color:#c8a96a;background:#1a150a;border:1px solid #3a2c0a;border-radius:4px;padding:4px 7px;margin-bottom:6px;}
+.cnt-row{display:flex;gap:4px;}
+.cnt-btn{flex:1;padding:5px 4px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:10px;cursor:pointer;font-family:inherit;text-align:center;}
+.cnt-btn.on{background:#c8392b;color:#fff;border-color:#c8392b;}
+.cnt-btn:not(.on):hover{border-color:#555;color:#aaa;}
+.tx-edit{pointer-events:none;}
+.tx-edit:hover,.tx-edit:focus{pointer-events:auto;}
+</style>
+</head>
+<body>
+
+<div style="height:40px;background:#0a0a0a;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;padding:0 14px;gap:10px;position:fixed;top:0;left:0;right:0;z-index:100;">
+  <a href="index.html" style="font-size:18px;color:#555;text-decoration:none;line-height:1;">←</a>
+  <span style="font-size:11px;color:#444;">场地推荐列表版</span>
+  <div style="flex:1;"></div>
+  <span id="wp-credits" style="background:#1a1a1a;padding:3px 10px;border-radius:4px;font-size:11px;color:#c8a96a;"></span>
+  <button onclick="wpLogout()" style="padding:4px 12px;border:1px solid #222;border-radius:4px;background:none;color:#555;font-size:11px;cursor:pointer;font-family:inherit;">退出</button>
+</div>
+
+<div class="psb">
+  <div class="psb-head"><h2>项目</h2><p>Ctrl+Z 撤销 · 自动保存</p></div>
+  <div class="psb-new" onclick="openModal()">＋ 新建项目</div>
+  <div class="proj-list" id="proj-list"><div style="font-size:10px;color:#333;padding:8px;">加载中…</div></div>
+</div>
+
+<div class="editor">
+  <div class="topbar">
+    <input class="pname" id="pname" type="text" placeholder="项目名称" oninput="onNameChange()">
+    <div class="sp"></div>
+    <button class="exp-btn" id="exp-btn" onclick="doExport()">↓ 导出 PNG 1200×1600</button>
+  </div>
+  <div class="body-wrap">
+    <div class="ca" id="ca">
+      <div id="poster" style="position:relative;overflow:hidden;"></div>
+    </div>
+    <div class="rp" id="rp"><div class="no-proj"><p>新建或选择项目</p></div></div>
+  </div>
+</div>
+
+<input type="file" id="fi" accept="image/*" style="display:none">
+<input type="file" id="json-fi" accept=".json" style="display:none">
+
+<div class="ov" id="modal">
+  <div class="modal">
+    <h3>新建项目</h3>
+    <div class="ml">项目名称</div>
+    <input class="mi" id="m-name" type="text" placeholder="未命名">
+    <div class="ma">
+      <button onclick="closeModal()" style="background:#2a2a2a;color:#aaa;border:1px solid #333;">取消</button>
+      <button onclick="createProj()" style="background:#fff;color:#000;">创建</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── AUTH ──────────────────────────────────────────────────────────
+const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+let _lic=null;
+async function wpCheckAuth(){
+  if(location.protocol==='file:'||location.hostname==='localhost'){_lic={credits:999,id:'test'};const el=document.getElementById('wp-credits');if(el)el.textContent='测试模式';return true;}
+  const code=localStorage.getItem('wp-license');if(!code){location.href='index.html';return false;}
+  try{const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});const d=await r.json();if(!d||!d[0]||!d[0].is_active){location.href='index.html';return false;}const lic=d[0];if((lic.credits||0)<=0){location.href='index.html';return false;}if(lic.expires_at&&new Date(lic.expires_at)<new Date()){location.href='index.html';return false;}_lic=lic;updCredits();return true;}catch(e){return true;}
+}
+function updCredits(){const el=document.getElementById('wp-credits');if(el&&_lic)el.textContent=`剩余 ${_lic.credits||0} 次`;}
+async function checkQuota(){
+  if(location.protocol==='file:'||location.hostname==='localhost')return true;
+  if(!_lic){alert('请先登录');return false;}if((_lic.credits||0)<=0){alert('导出次数已用完');return false;}
+  try{const newC=(_lic.credits||0)-1;const r=await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${_lic.id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({credits:newC})});const d=await r.json();if(d&&d[0])_lic=d[0];else _lic.credits=newC;updCredits();return true;}catch(e){_lic.credits=Math.max(0,(_lic.credits||0)-1);updCredits();return true;}
+}
+function wpLogout(){localStorage.removeItem('wp-license');location.href='index.html';}
+
+// ── drawTextLS + iLay（规范必须函数） ─────────────────────────────
+function drawTextLS(ctx,text,cx,y,lsEm,align){
+  if(!text)return 0;
+  ctx.textBaseline='top';
+  const m=ctx.font.match(/([\d.]+)px/);const fs=m?parseFloat(m[1]):16;const ls=lsEm*fs;
+  const chars=[...text];let tw=0;
+  chars.forEach((ch,i)=>{tw+=ctx.measureText(ch).width;if(i<chars.length-1)tw+=ls;});
+  let sx=align==='center'?cx-tw/2:align==='right'?cx-tw:cx;
+  chars.forEach((ch,i)=>{ctx.fillText(ch,sx,y);sx+=ctx.measureText(ch).width+(i<chars.length-1?ls:0);});
+  return tw;
+}
+function measureTextLS(ctx,text,lsEm){
+  if(!text)return 0;
+  const m=ctx.font.match(/([\d.]+)px/);const fs=m?parseFloat(m[1]):16;const ls=lsEm*fs;
+  const chars=[...text];let tw=0;
+  chars.forEach((ch,i)=>{tw+=ctx.measureText(ch).width;if(i<chars.length-1)tw+=ls;});
+  return tw;
+}
+function iLay(nW,nH,cW,cH,zoom,px,py){
+  if(!nW||!nH)return{left:0,top:0,width:cW,height:cH};
+  const s=Math.max(cW/nW,cH/nH)*(zoom||1);const rW=nW*s,rH=nH*s;
+  return{left:-((px||50)/100)*Math.max(0,rW-cW),top:-((py||50)/100)*Math.max(0,rH-cH),width:rW,height:rH};
+}
+
+// ── IndexedDB ─────────────────────────────────────────────────────
+const DB='wedding-venuelist-v1';let db=null;
+function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB,1);req.onupgradeneeded=e=>{const d=e.target.result;['P','I'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,s==='P'?{keyPath:'id'}:undefined);});};req.onsuccess=e=>{db=e.target.result;res();};req.onerror=rej;});}
+const TX=(s,m='readonly')=>db.transaction(s,m).objectStore(s);
+const dbGet=(s,k)=>new Promise((r,j)=>{const q=TX(s).get(k);q.onsuccess=()=>r(q.result);q.onerror=j;});
+const dbPut=(s,v,k)=>new Promise((r,j)=>{const q=k!==undefined?TX(s,'readwrite').put(v,k):TX(s,'readwrite').put(v);q.onsuccess=r;q.onerror=j;});
+const dbDel=(s,k)=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=r;t.onerror=j;});
+const dbAll=(s)=>new Promise((r,j)=>{const q=TX(s).getAll();q.onsuccess=()=>r(q.result);q.onerror=j;});
+
+// ── 字体 & 默认数据 ───────────────────────────────────────────────
+const FONTS_ZH=['Noto Serif SC','Noto Sans SC','STSong','STKaiti','PingFang SC','Microsoft YaHei','SimHei'];
+const FONTS_EN=['Cormorant Garamond','Playfair Display','EB Garamond','Great Vibes','Dancing Script','Times New Roman','Georgia','Arial'];
+const WTS=[['300','细 300'],['400','常规 400'],['500','中 500'],['700','粗 700'],['900','超粗 900']];
+
+function defVenue(i){
+  const defs=[
+    {en:'JING SPACE',zh:'璟空间',type:'沉浸式婚礼',desc:'3-33桌 场地面积520m² 厅高8m\n婚礼配色:浪漫粉/优雅白\n全厅无柱 独立新娘房 不可住宿'},
+    {en:'SEN AUDITORIUM',zh:'森之堂',type:'沉浸式婚礼',desc:'场地面积100m²\n婚礼类型：教堂风、纯白、阳光房'},
+    {en:'CASTLE GARDEN',zh:'古堡花园',type:'沉浸式婚礼',desc:'3-18桌 场地面积330m² 厅高8米\n婚礼配色：古铜金/森林绿\n全厅无柱 独立新娘房 不可住宿'},
+    {en:'GILDED SECRET REALM',zh:'鎏金秘境',type:'沉浸式婚礼',desc:'3-18桌 场地面积330m² 厅高8m\n婚礼配色：璀璨金\n全厅无柱 独立新娘房 不可住宿'},
+  ];
+  const d=defs[i%4];
+  return{imgKey:null,px:50,py:50,zoom:1,nW:0,nH:0,en:d.en,zh:d.zh,type:d.type,desc:d.desc};
+}
+
+// 4厅布局默认参数（截图校准）
+const DEFAULTS_4={venueImgW:425,venueImgH:260,cardX:52,cardY:428,cardW:1096,cardPad:35,cardRadius:28,venueGap:22};
+// 3厅布局默认参数
+const DEFAULTS_3={venueImgW:545,venueImgH:350,cardX:52,cardY:411,cardW:1096,cardPad:35,cardRadius:28,venueGap:22};
+
+function defProject(cnt){
+  cnt=cnt||4;
+  const D=cnt===3?DEFAULTS_3:DEFAULTS_4;
+  return{
+  venueCount:cnt,
+  // 背景渐变（截图：#fef1f7 → #ddb8ca → #ac6c8f）
+  bgTop:'#fef1f7', bgMid:'#ddb8ca', bgBot:'#ac6c8f',
+  // 英文大标题
+  titleEN:'BLOOM ART CENTER',
+  titleENFont:'Cormorant Garamond',titleENSize:70,titleENWeight:'400',titleENColor:'#a03060',titleENLS:0.15,
+  titleENX:600,titleENY:58,
+  // 中文主标题（{花括号}内变色）
+  titleZH:'北京｛婚礼场地推荐｝',
+  titleZHFont:'Noto Serif SC',titleZHSize:100,titleZHWeight:'900',titleZHColor:'#1a1010',
+  titleZHLS:0.01,bracketColor:'#c8392b',
+  titleZHX:600,titleZHY:144,
+  // 场馆中文名
+  venueZH:'繁景艺术中心',
+  venueZHFont:'Noto Serif SC',venueZHSize:46,venueZHWeight:'500',venueZHColor:'#3a1a28',venueZHLS:0.28,
+  venueZHY:292,underlineW:230,
+  // 场馆英文名
+  venueEN:'BLOOM ART CENTER ART VENUE',
+  venueENFont:'Cormorant Garamond',venueENSize:26,venueENWeight:'400',venueENColor:'#a03060',venueENLS:0.2,
+  venueENY:362,
+  // 卡片（随厅数切换）
+  cardX:D.cardX,cardY:D.cardY,cardW:D.cardW,cardPad:D.cardPad,cardRadius:D.cardRadius,
+  cardBg:'#ffffff',cardBgAlpha:97,
+  // 图片（随厅数切换）
+  venueImgW:D.venueImgW,venueImgH:D.venueImgH,imgRadius:8,
+  venueGap:D.venueGap,txtGap:26,
+  // 英文厅名（全局，31px 截图）
+  enNameFont:'Cormorant Garamond',enNameSize:31,enNameWeight:'400',enNameColor:'#a03060',enNameLS:0.18,
+  lineColor:'#a03060',
+  // 中文厅名（全局，46px 截图）
+  zhNameFont:'Noto Serif SC',zhNameSize:46,zhNameWeight:'700',zhNameColor:'#1a1010',zhNameLS:0.02,
+  // 类型（48px 截图）
+  typeFont:'Noto Sans SC',typeSize:48,typeWeight:'400',typeColor:'#555555',typeLS:0.0,
+  // 描述（24px 截图）
+  descFont:'Noto Sans SC',descSize:24,descWeight:'400',descColor:'#666666',descLS:0.02,descLineH:1.68,
+  venues:Array.from({length:4},(_,i)=>defVenue(i)),
+};}
+
+// ── 状态 ──────────────────────────────────────────────────────────
+let projs=[],curId=null;
+const imgCache={};
+let _hist=[],_hIdx=-1;
+let selVenue=0;
+let dragging=false,dragV=0,dragSX=0,dragSY=0,dragPX=50,dragPY=50;
+
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const escH=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const cur=()=>projs.find(p=>p.id===curId)||null;
+const ik=(pid,vi)=>`vl-${pid}-${vi}`;
+
+// ── History ───────────────────────────────────────────────────────
+function pushH(){const p=cur();if(!p)return;_hist=_hist.slice(0,_hIdx+1);_hist.push(JSON.stringify(p));if(_hist.length>20)_hist.shift();_hIdx=_hist.length-1;}
+async function undo(){if(_hIdx<=0)return;_hIdx--;const p=JSON.parse(_hist[_hIdx]);const i=projs.findIndex(x=>x.id===p.id);if(i>=0)projs[i]=p;await dbPut('P',p);renderPoster();renderRP();}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+
+// ── Storage ───────────────────────────────────────────────────────
+async function loadAll(){projs=await dbAll('P');projs.sort((a,b)=>b.at-a.at);}
+async function save(p){p.at=Date.now();await dbPut('P',p);}
+async function saveImg(key,blob){await dbPut('I',blob,key);if(imgCache[key])URL.revokeObjectURL(imgCache[key]);imgCache[key]=URL.createObjectURL(blob);}
+async function delImg(key){await dbDel('I',key);if(imgCache[key]){URL.revokeObjectURL(imgCache[key]);delete imgCache[key];}}
+async function getURL(key){if(!key)return null;if(imgCache[key])return imgCache[key];const b=await dbGet('I',key);if(!b)return null;imgCache[key]=URL.createObjectURL(b);return imgCache[key];}
+function exportJSON(){const p=cur();if(!p)return;const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(p.name||'project')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+function importJSON(){const fi=document.getElementById('json-fi');fi.onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const p=JSON.parse(await file.text());p.id=uid();p.name=(p.name||'导入')+' (导入)';p.ct=p.at=Date.now();await save(p);projs.unshift(p);renderList();openProj(p.id);}catch{alert('JSON格式错误');}fi.value='';};fi.click();}
+
+// ── Modal ─────────────────────────────────────────────────────────
+function openModal(){document.getElementById('m-name').value='';document.getElementById('modal').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),50);}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+async function createProj(){const name=document.getElementById('m-name').value.trim()||'未命名';const p={id:uid(),name,ct:Date.now(),at:Date.now(),...defProject(4)};await save(p);projs.unshift(p);closeModal();renderList();openProj(p.id);}
+document.getElementById('m-name').addEventListener('keydown',e=>{if(e.key==='Enter')createProj();});
+
+// ── 项目列表 ──────────────────────────────────────────────────────
+function renderList(){
+  const el=document.getElementById('proj-list');
+  if(!projs.length){el.innerHTML='<div style="font-size:10px;color:#333;padding:8px;">暂无项目</div>';return;}
+  el.innerHTML=projs.map(p=>`<div class="pi${p.id===curId?' on':''}" onclick="openProj('${p.id}')">
+    <h3>${escH(p.name)}</h3><div class="meta">${new Date(p.at).toLocaleDateString('zh-CN')}</div>
+    <div class="pi-act">
+      <button class="pb" onclick="event.stopPropagation();renameProj('${p.id}')">改名</button>
+      <button class="pb" onclick="event.stopPropagation();dupProj('${p.id}')">复制</button>
+      <button class="pb del" onclick="event.stopPropagation();delProj('${p.id}')">删除</button>
+    </div></div>`).join('');
+}
+async function renameProj(id){const p=projs.find(x=>x.id===id);if(!p)return;const n=prompt('新名称：',p.name);if(!n||!n.trim())return;p.name=n.trim();await save(p);if(curId===id)document.getElementById('pname').value=p.name;renderList();}
+async function openProj(id){curId=id;selVenue=0;const p=cur();if(!p)return;document.getElementById('pname').value=p.name;_hist=[];_hIdx=-1;renderList();renderPoster();renderRP();}
+async function dupProj(id){const p=projs.find(x=>x.id===id);if(!p)return;const nid=uid();const np={...JSON.parse(JSON.stringify(p)),id:nid,name:p.name+' 副本',ct:Date.now(),at:Date.now()};for(let i=0;i<4;i++){const b=await dbGet('I',ik(id,i));if(b){const nk=ik(nid,i);await dbPut('I',b,nk);np.venues[i].imgKey=nk;}}await save(np);projs.unshift(np);renderList();}
+async function delProj(id){if(!confirm('确认删除？'))return;for(let i=0;i<4;i++)await delImg(ik(id,i));await dbDel('P',id);projs=projs.filter(x=>x.id!==id);if(curId===id){curId=null;document.getElementById('poster').style.cssText='';document.getElementById('poster').innerHTML='';renderRP();}renderList();}
+async function onNameChange(){const p=cur();if(!p)return;p.name=document.getElementById('pname').value;await save(p);renderList();}
+
+// ── 海报尺寸 ──────────────────────────────────────────────────────
+function pSz(){const a=document.getElementById('ca');const aH=a.clientHeight-24,aW=a.clientWidth-24;let h,w;if(aH*.75<aW){h=Math.floor(aH);w=Math.floor(h*.75);}else{w=Math.floor(aW);h=Math.floor(w/.75);}return{w,h};}
+
+// ── 颜色工具 ──────────────────────────────────────────────────────
+function toHex(c){if(!c)return'#000000';if(c.startsWith('#'))return c;const m=c.match(/[\d.]+/g);if(!m||m.length<3)return'#000000';return'#'+[m[0],m[1],m[2]].map(x=>Math.round(+x).toString(16).padStart(2,'0')).join('');}
+function hexToRgb(h){const hex=(h||'#000').replace('#','');return{r:parseInt(hex.slice(0,2),16)||0,g:parseInt(hex.slice(2,4),16)||0,b:parseInt(hex.slice(4,6),16)||0};}
+
+// ── 渲染定时器 ───────────────────────────────────────────────────
+let _rt=null;
+function scheduleRender(){clearTimeout(_rt);_rt=setTimeout(()=>renderPoster(),100);}
+
+// ═══════════════════════════════════════════════════════════════════
+// 核心渲染（DOM预览）
+// ═══════════════════════════════════════════════════════════════════
+async function renderPoster(){
+  const poster=document.getElementById('poster');
+  const p=cur();if(!p){poster.style.cssText='';poster.innerHTML='';return;}
+  const{w,h}=pSz();const sc=w/1200;
+  const cnt=p.venueCount||4;
+
+  poster.style.cssText=`width:${w}px;height:${h}px;
+    background:linear-gradient(180deg,${p.bgTop} 0%,${p.bgMid||p.bgTop} 50%,${p.bgBot} 100%);
+    position:relative;flex-shrink:0;box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden;`;
+
+  // 卡片尺寸
+  const cX=Math.round(p.cardX*sc);
+  const cY=Math.round(p.cardY*sc);
+  const cW=Math.round(p.cardW*sc);
+  const pad=Math.round(p.cardPad*sc);
+  const cr=Math.round(p.cardRadius*sc);
+  const innerW=cW-pad*2;
+  const imgW=Math.round(p.venueImgW*sc);
+  const imgH=Math.round(p.venueImgH*sc);
+  const gap=Math.round(p.venueGap*sc);
+  const tgap=Math.round(p.txtGap*sc);
+  const txtX=imgW+tgap;
+  const txtW=innerW-imgW-tgap;
+  const imgRad=Math.round((p.imgRadius||8)*sc);
+  const bc=hexToRgb(p.cardBg||'#ffffff');
+  const cardBgStr=`rgba(${bc.r},${bc.g},${bc.b},${(p.cardBgAlpha||97)/100})`;
+
+  // 字号
+  const enFs=Math.round(p.enNameSize*sc);
+  const zhFs=Math.round(p.zhNameSize*sc);
+  const typeFs=Math.round(p.typeSize*sc);
+  const descFs=Math.round(p.descSize*sc);
+  const descLH=p.descLineH||1.68;
+
+  // 花括号标题拆分
+  function bracketHTML(text,mc,bc2){
+    return text.split(/([{｛][^}｝]*[}｝])/g).map(part=>{
+      const isBk=/^[{｛]/.test(part);
+      return`<span style="color:${isBk?bc2:mc};">${escH(part)}</span>`;
+    }).join('');
+  }
+
+  // 各厅行
+  let rows='';let curVY=pad;
+  for(let i=0;i<cnt;i++){
+    const v=p.venues[i];
+    const url=await getURL(v.imgKey);
+    const lout=v.imgKey?iLay(v.nW,v.nH,imgW,imgH,v.zoom,v.px,v.py):{left:0,top:0,width:imgW,height:imgH};
+    const descLines=(v.desc||'').split('\n');
+    const isLast=i===cnt-1;
+    const sepLineY=curVY+imgH+Math.round(gap/2);
+
+    rows+=`
+    <div style="position:absolute;left:0;top:${curVY}px;width:${innerW}px;height:${imgH}px;">
+      <!-- 图片 z-index:1 -->
+      <div data-vi="${i}" style="position:absolute;left:0;top:0;width:${imgW}px;height:${imgH}px;
+          overflow:hidden;border-radius:${imgRad}px;z-index:1;cursor:${url?'grab':'pointer'};"
+        ${url?`onmousedown="onMD(event,${i})" ontouchstart="onTS(event,${i})"`:
+               `onclick="uploadImg(${i})"`}>
+        ${url
+          ?`<img draggable="false" src="${url}" style="position:absolute;left:${lout.left}px;top:${lout.top}px;width:${lout.width}px;height:${lout.height}px;pointer-events:none;">`
+          :`<div style="width:100%;height:100%;background:#f5eaee;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c8a0b0;gap:6px;cursor:pointer;">
+              <span style="font-size:${Math.round(20*sc)}px;">＋</span>
+              <span style="font-size:${Math.round(10*sc)}px;font-family:'Noto Sans SC',sans-serif;">上传第${i+1}张图</span>
+            </div>`}
+      </div>
+      <!-- 文字区 z-index:3 -->
+      <div style="position:absolute;left:${txtX}px;top:0;width:${txtW}px;height:${imgH}px;
+          z-index:3;display:flex;flex-direction:column;justify-content:center;">
+        <!-- 英文厅名 -->
+        <div class="tx-edit" contenteditable="true" spellcheck="false"
+          style="font-family:'${p.enNameFont}',serif;font-size:${enFs}px;font-weight:${p.enNameWeight};
+            color:${p.enNameColor};letter-spacing:${p.enNameLS}em;margin-right:-${p.enNameLS}em;
+            line-height:1.1;outline:none;cursor:text;margin-bottom:${Math.round(5*sc)}px;"
+          oninput="setVP(${i},'en',this.textContent)"
+          onblur="setVP(${i},'en',this.textContent)">${escH(v.en)}</div>
+        <!-- 英文名下横线 + 圆点 -->
+        <div style="display:flex;align-items:center;margin-bottom:${Math.round(7*sc)}px;">
+          <div style="flex:1;height:1px;background:${p.lineColor};"></div>
+          <div style="width:${Math.round(7*sc)}px;height:${Math.round(7*sc)}px;border-radius:50%;background:${p.lineColor};margin-left:${Math.round(3*sc)}px;flex-shrink:0;"></div>
+        </div>
+        <!-- 中文厅名 + 类型 -->
+        <div style="display:flex;align-items:baseline;gap:${Math.round(10*sc)}px;flex-wrap:nowrap;margin-bottom:${Math.round(7*sc)}px;">
+          <span class="tx-edit" contenteditable="true" spellcheck="false"
+            style="font-family:'${p.zhNameFont}',serif;font-size:${zhFs}px;font-weight:${p.zhNameWeight};
+              color:${p.zhNameColor};letter-spacing:${p.zhNameLS}em;
+              line-height:1;outline:none;cursor:text;white-space:nowrap;flex-shrink:0;"
+            oninput="setVP(${i},'zh',this.textContent)"
+            onblur="setVP(${i},'zh',this.textContent)">${escH(v.zh)}</span>
+          <span class="tx-edit" contenteditable="true" spellcheck="false"
+            style="font-family:'${p.typeFont}',sans-serif;font-size:${typeFs}px;font-weight:${p.typeWeight};
+              color:${p.typeColor};letter-spacing:${p.typeLS}em;
+              line-height:1;outline:none;cursor:text;white-space:nowrap;"
+            oninput="setVP(${i},'type',this.textContent)"
+            onblur="setVP(${i},'type',this.textContent)">${escH(v.type)}</span>
+        </div>
+        <!-- 描述 -->
+        <div class="tx-edit" contenteditable="true" spellcheck="false"
+          style="font-family:'${p.descFont}',sans-serif;font-size:${descFs}px;font-weight:${p.descWeight};
+            color:${p.descColor};letter-spacing:${p.descLS}em;line-height:${descLH};outline:none;cursor:text;"
+          oninput="setVPDescEl(${i},this)"
+          onblur="setVPDescEl(${i},this)">${descLines.map(l=>escH(l)).join('<br>')}</div>
+      </div>
+    </div>
+    ${!isLast?`<div style="position:absolute;left:0;top:${sepLineY}px;width:${innerW}px;height:1px;background:#e0c8d0;opacity:.55;"></div>`:''}`;
+
+    curVY+=imgH+gap;
+  }
+  const cardH=curVY-gap+pad;
+
+  // 标题坐标
+  const teY=Math.round(p.titleENY*sc);
+  const teFs=Math.round(p.titleENSize*sc);
+  const tzY=Math.round(p.titleZHY*sc);
+  const tzFs=Math.round(p.titleZHSize*sc);
+  const vzY=Math.round(p.venueZHY*sc);
+  const vzFs=Math.round(p.venueZHSize*sc);
+  const veY=Math.round(p.venueENY*sc);
+  const veFs=Math.round(p.venueENSize*sc);
+  const ulY=vzY+vzFs+Math.round(5*sc);
+  const ulW=Math.round((p.underlineW||230)*sc);
+
+  poster.innerHTML=`
+    <!-- 英文大标题 -->
+    <div class="tx-edit" contenteditable="true" spellcheck="false"
+      style="position:absolute;left:0;right:0;top:${teY}px;text-align:center;
+        letter-spacing:${p.titleENLS}em;margin-right:-${p.titleENLS}em;
+        font-family:'${p.titleENFont}',serif;font-size:${teFs}px;font-weight:${p.titleENWeight};
+        color:${p.titleENColor};line-height:1;outline:none;cursor:text;"
+      oninput="setP('titleEN',this.textContent)"
+      onblur="setP('titleEN',this.textContent)">${escH(p.titleEN)}</div>
+
+    <!-- 中文主标题（花括号变色） -->
+    <div style="position:absolute;left:0;right:0;top:${tzY}px;
+        display:flex;justify-content:center;line-height:1;
+        font-family:'${p.titleZHFont}',serif;font-size:${tzFs}px;font-weight:${p.titleZHWeight};
+        letter-spacing:${p.titleZHLS}em;margin-right:-${p.titleZHLS}em;">
+      <div>${bracketHTML(p.titleZH,p.titleZHColor,p.bracketColor)}</div>
+    </div>
+
+    <!-- 场馆中文名 -->
+    <div class="tx-edit" contenteditable="true" spellcheck="false"
+      style="position:absolute;left:0;right:0;top:${vzY}px;text-align:center;
+        letter-spacing:${p.venueZHLS}em;margin-right:-${p.venueZHLS}em;
+        font-family:'${p.venueZHFont}',serif;font-size:${vzFs}px;font-weight:${p.venueZHWeight};
+        color:${p.venueZHColor};line-height:1;outline:none;cursor:text;"
+      oninput="setP('venueZH',this.textContent)"
+      onblur="setP('venueZH',this.textContent)">${escH(p.venueZH)}</div>
+
+    <!-- 下划线 -->
+    <div style="position:absolute;left:50%;transform:translateX(-50%);top:${ulY}px;
+        width:${ulW}px;height:${Math.round(1.5*sc)}px;background:${p.venueZHColor};"></div>
+
+    <!-- 场馆英文名 -->
+    <div class="tx-edit" contenteditable="true" spellcheck="false"
+      style="position:absolute;left:0;right:0;top:${veY}px;text-align:center;
+        letter-spacing:${p.venueENLS}em;margin-right:-${p.venueENLS}em;
+        font-family:'${p.venueENFont}',serif;font-size:${veFs}px;font-weight:${p.venueENWeight};
+        color:${p.venueENColor};line-height:1;outline:none;cursor:text;"
+      oninput="setP('venueEN',this.textContent)"
+      onblur="setP('venueEN',this.textContent)">${escH(p.venueEN)}</div>
+
+    <!-- 白色卡片 -->
+    <div style="position:absolute;left:${cX}px;top:${cY}px;width:${cW}px;height:${cardH}px;
+        background:${cardBgStr};border-radius:${cr}px;overflow:hidden;">
+      <div style="position:absolute;left:${pad}px;top:0;width:${innerW}px;height:${cardH}px;">
+        ${rows}
+      </div>
+    </div>`;
+}
+
+// ── 拖拽 ──────────────────────────────────────────────────────────
+function onMD(e,vi){const p=cur();const v=p?.venues[vi];if(!v||!v.imgKey||e.button!==0)return;dragging=true;dragV=vi;dragSX=e.clientX;dragSY=e.clientY;dragPX=v.px;dragPY=v.py;e.currentTarget.style.cursor='grabbing';if(selVenue!==vi){selVenue=vi;renderRP();}e.preventDefault();}
+function onTS(e,vi){const p=cur();const v=p?.venues[vi];if(!v||!v.imgKey)return;dragging=true;dragV=vi;dragSX=e.touches[0].clientX;dragSY=e.touches[0].clientY;dragPX=v.px;dragPY=v.py;if(selVenue!==vi){selVenue=vi;renderRP();}e.preventDefault();}
+document.addEventListener('mousemove',async e=>{
+  if(!dragging)return;const p=cur();if(!p)return;
+  const{w}=pSz();const sc=w/1200;
+  const imgW=Math.round(p.venueImgW*sc),imgH=Math.round(p.venueImgH*sc);
+  const v=p.venues[dragV];
+  v.px=Math.max(0,Math.min(100,dragPX-(e.clientX-dragSX)/imgW*100));
+  v.py=Math.max(0,Math.min(100,dragPY-(e.clientY-dragSY)/imgH*100));
+  const slx=document.getElementById('sl-vpx'),sly=document.getElementById('sl-vpy');
+  const nix=document.getElementById('ni-vpx'),niy=document.getElementById('ni-vpy');
+  if(slx)slx.value=v.px;if(sly)sly.value=v.py;if(nix)nix.value=Math.round(v.px);if(niy)niy.value=Math.round(v.py);
+  renderPoster();
+});
+document.addEventListener('touchmove',async e=>{if(!dragging)return;const p=cur();if(!p)return;const{w}=pSz();const sc=w/1200;const imgW=Math.round(p.venueImgW*sc);const v=p.venues[dragV];v.px=Math.max(0,Math.min(100,dragPX-(e.touches[0].clientX-dragSX)/imgW*100));v.py=Math.max(0,Math.min(100,dragPY-(e.touches[0].clientY-dragSY)/imgW*100));renderPoster();},{passive:false});
+document.addEventListener('mouseup',async()=>{if(!dragging)return;dragging=false;const p=cur();if(p){pushH();await save(p);}});
+document.addEventListener('touchend',async()=>{if(!dragging)return;dragging=false;const p=cur();if(p){pushH();await save(p);}});
+
+// ── 上传 ──────────────────────────────────────────────────────────
+function uploadImg(vi){const fi=document.getElementById('fi');fi.onchange=async e=>{const file=e.target.files[0];if(!file)return;const p=cur();if(!p)return;const img=new Image();const url=URL.createObjectURL(file);img.onload=async()=>{const key=ik(curId,vi);await saveImg(key,file);const v=p.venues[vi];v.imgKey=key;v.nW=img.naturalWidth;v.nH=img.naturalHeight;v.px=50;v.py=50;v.zoom=1;URL.revokeObjectURL(url);pushH();await save(p);renderPoster();renderRP();};img.src=url;fi.value='';};fi.click();}
+
+// ── Setters ───────────────────────────────────────────────────────
+async function setP(k,v){const p=cur();if(!p)return;pushH();p[k]=v;await save(p);scheduleRender();}
+async function setPN(k,v){const p=cur();if(!p)return;pushH();p[k]=+v;await save(p);renderPoster();}
+async function setVP(vi,k,v){const p=cur();if(!p)return;pushH();p.venues[vi][k]=v;await save(p);}
+async function setVPDescEl(vi,el){const p=cur();if(!p)return;pushH();const raw=el.innerHTML.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'');p.venues[vi].desc=raw;await save(p);}
+async function setVPTA(vi,val){const p=cur();if(!p)return;pushH();p.venues[vi].desc=val;await save(p);scheduleRender();}
+async function setImgP(k,v){const p=cur();if(!p)return;p.venues[selVenue][k]=+v;renderPoster();await save(p);}
+async function setVenueCount(n){
+  const p=cur();if(!p)return;pushH();
+  p.venueCount=n;
+  // 切换厅数时同步更新图片/卡片尺寸默认值
+  const D=n===3?DEFAULTS_3:DEFAULTS_4;
+  p.venueImgW=D.venueImgW;p.venueImgH=D.venueImgH;
+  p.cardX=D.cardX;p.cardY=D.cardY;p.cardW=D.cardW;
+  p.cardPad=D.cardPad;p.cardRadius=D.cardRadius;p.venueGap=D.venueGap;
+  await save(p);renderPoster();renderRP();
+}
+function selV(i){selVenue=i;renderRP();}
+
+// ═══════════════════════════════════════════════════════════════════
+// 右侧面板
+// ═══════════════════════════════════════════════════════════════════
+function renderRP(){
+  const rp=document.getElementById('rp');const p=cur();
+  if(!p){rp.innerHTML='<div class="no-proj"><p>新建或选择项目</p></div>';return;}
+  const cnt=p.venueCount||4;const v=p.venues[selVenue];
+  const fZh=sel=>FONTS_ZH.map(f=>`<option value="${f}"${sel===f?' selected':''}>${f}</option>`).join('');
+  const fEn=sel=>FONTS_EN.map(f=>`<option value="${f}"${sel===f?' selected':''}>${f}</option>`).join('');
+  const wO=sel=>WTS.map(([va,l])=>`<option value="${va}"${sel===va?' selected':''}>${l}</option>`).join('');
+  const cRow=(key,val,lbl)=>`
+    <div class="row"><label>${lbl||'颜色'}</label>
+      <div class="cd" id="cd-${key}" style="background:${toHex(val)};" onclick="document.getElementById('ci-${key}').click()"></div>
+      <input id="ci-${key}" type="color" value="${toHex(val)}" style="display:none"
+        onchange="setP('${key}',this.value);document.getElementById('cd-${key}').style.background=this.value;document.getElementById('ct-${key}').value=this.value">
+      <input id="ct-${key}" class="fi" style="flex:1;margin:0;" type="text" value="${val}"
+        oninput="setP('${key}',this.value);document.getElementById('cd-${key}').style.background=this.value">
+    </div>`;
+  const pkY=(key,val,lbl,mn,mx)=>`
+    <div class="poskit-row"><span class="pk-lbl">${lbl||'↕ Y'}</span>
+      <input id="pks-${key}" class="pk-sld" type="range" min="${mn||0}" max="${mx||1600}" value="${val}"
+        oninput="setPN('${key}',+this.value);document.getElementById('pkn-${key}').value=this.value">
+      <input id="pkn-${key}" class="pk-num" type="number" value="${val}"
+        oninput="setPN('${key}',+this.value);document.getElementById('pks-${key}').value=this.value">
+    </div>`;
+
+  rp.innerHTML=`
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>厅数量</div>
+    <div class="cnt-row">
+      <div class="cnt-btn${cnt===3?' on':''}" onclick="setVenueCount(3)">3个厅</div>
+      <div class="cnt-btn${cnt===4?' on':''}" onclick="setVenueCount(4)">4个厅</div>
+    </div>
+  </div>
+
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>当前编辑厅</div>
+    <div class="hint">⚡ 英文名/中文名/类型/描述 各厅独立</div>
+    <div class="vtabs">
+      ${Array.from({length:cnt},(_,i)=>`<button class="vtab${selVenue===i?' on':''}" onclick="selV(${i})">厅${i+1}${p.venues[i].imgKey?'✓':''}</button>`).join('')}
+    </div>
+    <div class="img-btn" onclick="uploadImg(${selVenue})">${v.imgKey?'🔄 更换图片':'＋ 上传图片（建议横图）'}</div>
+    ${v.imgKey?`
+    <div class="row"><label>缩放</label>
+      <input id="sl-vzoom" class="sld" type="range" min="0.1" max="8" step="0.05" value="${v.zoom||1}"
+        oninput="setImgP('zoom',+this.value);document.getElementById('ni-vzoom').value=Math.round(this.value*100)">
+      <input id="ni-vzoom" type="number" value="${Math.round((v.zoom||1)*100)}" class="num"
+        oninput="setImgP('zoom',this.value/100);this.previousElementSibling.value=this.value/100">
+      <span class="unit">%</span></div>
+    <div class="row"><label>横移</label>
+      <input id="sl-vpx" class="sld" type="range" min="0" max="100" value="${v.px}"
+        oninput="setImgP('px',+this.value);document.getElementById('ni-vpx').value=this.value">
+      <input id="ni-vpx" type="number" min="0" max="100" value="${Math.round(v.px)}" class="num"
+        oninput="setImgP('px',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">%</span></div>
+    <div class="row"><label>纵移</label>
+      <input id="sl-vpy" class="sld" type="range" min="0" max="100" value="${v.py}"
+        oninput="setImgP('py',+this.value);document.getElementById('ni-vpy').value=this.value">
+      <input id="ni-vpy" type="number" min="0" max="100" value="${Math.round(v.py)}" class="num"
+        oninput="setImgP('py',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">%</span></div>`:''}
+    <div style="height:1px;background:#1e1e1e;margin:8px 0;"></div>
+    <div class="lbl">英文厅名（独立）</div>
+    <input class="fi" type="text" value="${escH(v.en)}"
+      oninput="setVP(${selVenue},'en',this.value);scheduleRender()">
+    <div class="lbl">中文厅名（独立）</div>
+    <input class="fi" type="text" value="${escH(v.zh)}"
+      oninput="setVP(${selVenue},'zh',this.value);scheduleRender()">
+    <div class="lbl">类型（独立）</div>
+    <input class="fi" type="text" value="${escH(v.type)}"
+      oninput="setVP(${selVenue},'type',this.value);scheduleRender()">
+    <div class="lbl">描述（独立，回车换行）</div>
+    <textarea class="fi-ta" oninput="setVPTA(${selVenue},this.value)">${escH(v.desc)}</textarea>
+  </div>
+
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>英文厅名样式（全局）</div>
+    <div class="hint">⚡ 改这里 → 所有厅英文名同步</div>
+    <div class="lbl">字体</div>
+    <select class="sel" onchange="setP('enNameFont',this.value)">${fEn(p.enNameFont)}</select>
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.enNameSize}" oninput="setPN('enNameSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('enNameWeight',this.value)">${wO(p.enNameWeight)}</select>
+    </div>
+    ${cRow('enNameColor',p.enNameColor,'颜色')}
+    <div class="row"><label>字间距</label>
+      <input class="sld" type="range" min="-0.1" max="1" step="0.01" value="${p.enNameLS}"
+        oninput="setPN('enNameLS',+this.value);document.getElementById('v-enls').textContent=this.value">
+      <span style="font-size:9px;color:#555;min-width:30px;" id="v-enls">${p.enNameLS}</span>
+    </div>
+    <div style="height:1px;background:#1e1e1e;margin:6px 0;"></div>
+    ${cRow('lineColor',p.lineColor,'横线色')}
+  </div>
+
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>中文厅名样式（全局）</div>
+    <div class="hint">⚡ 改这里 → 所有厅中文名同步</div>
+    <div class="lbl">字体</div>
+    <select class="sel" onchange="setP('zhNameFont',this.value)">${fZh(p.zhNameFont)}</select>
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.zhNameSize}" oninput="setPN('zhNameSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('zhNameWeight',this.value)">${wO(p.zhNameWeight)}</select>
+    </div>
+    ${cRow('zhNameColor',p.zhNameColor,'颜色')}
+  </div>
+
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>类型 & 描述样式（全局）</div>
+    <div class="lbl">类型字体</div>
+    <select class="sel" onchange="setP('typeFont',this.value)">${fZh(p.typeFont)}</select>
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.typeSize}" oninput="setPN('typeSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('typeWeight',this.value)">${wO(p.typeWeight)}</select>
+    </div>
+    ${cRow('typeColor',p.typeColor,'类型色')}
+    <div style="height:1px;background:#1e1e1e;margin:6px 0;"></div>
+    <div class="lbl">描述字体</div>
+    <select class="sel" onchange="setP('descFont',this.value)">${fZh(p.descFont)}</select>
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.descSize}" oninput="setPN('descSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('descWeight',this.value)">${wO(p.descWeight)}</select>
+    </div>
+    ${cRow('descColor',p.descColor,'描述色')}
+    <div class="row"><label>行间距</label>
+      <input class="sld" type="range" min="0.8" max="4" step="0.05" value="${p.descLineH||1.68}"
+        oninput="setPN('descLineH',+this.value);document.getElementById('v-dlh').textContent=this.value">
+      <span style="font-size:9px;color:#555;min-width:30px;" id="v-dlh">${p.descLineH||1.68}</span>
+    </div>
+  </div>
+
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>顶部标题</div>
+    <div class="lbl">英文大标题</div>
+    <input class="fi" type="text" value="${escH(p.titleEN)}" oninput="setP('titleEN',this.value)">
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.titleENSize}" oninput="setPN('titleENSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('titleENFont',this.value)">${fEn(p.titleENFont)}</select>
+    </div>
+    ${cRow('titleENColor',p.titleENColor,'颜色')}
+    <div class="poskit">${pkY('titleENY',p.titleENY,'↕ Y')}</div>
+    <div style="height:1px;background:#1e1e1e;margin:8px 0;"></div>
+    <div class="lbl">中文主标题（{花括号}内变括号色）</div>
+    <input class="fi" type="text" value="${escH(p.titleZH)}" oninput="setP('titleZH',this.value)">
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.titleZHSize}" oninput="setPN('titleZHSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('titleZHFont',this.value)">${fZh(p.titleZHFont)}</select>
+    </div>
+    ${cRow('titleZHColor',p.titleZHColor,'普通色')}
+    ${cRow('bracketColor',p.bracketColor,'括号色')}
+    <div class="poskit">${pkY('titleZHY',p.titleZHY,'↕ Y')}</div>
+    <div style="height:1px;background:#1e1e1e;margin:8px 0;"></div>
+    <div class="lbl">场馆中文名</div>
+    <input class="fi" type="text" value="${escH(p.venueZH)}" oninput="setP('venueZH',this.value)">
+    ${cRow('venueZHColor',p.venueZHColor,'颜色')}
+    <div class="poskit">${pkY('venueZHY',p.venueZHY,'↕ Y')}</div>
+    <div class="lbl">场馆英文名</div>
+    <input class="fi" type="text" value="${escH(p.venueEN)}" oninput="setP('venueEN',this.value)">
+    ${cRow('venueENColor',p.venueENColor,'颜色')}
+    <div class="poskit">${pkY('venueENY',p.venueENY,'↕ Y')}</div>
+  </div>
+
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>背景 & 卡片</div>
+    <div class="lbl">背景渐变</div>
+    ${cRow('bgTop',p.bgTop,'顶色')}
+    ${cRow('bgMid',p.bgMid||p.bgTop,'中色')}
+    ${cRow('bgBot',p.bgBot,'底色')}
+    <div style="height:1px;background:#1e1e1e;margin:6px 0;"></div>
+    <div class="poskit">
+      ${pkY('cardY',p.cardY,'卡片Y',0,1600)}
+      <div class="poskit-row"><span class="pk-lbl">卡片X</span>
+        <input id="pks-cardX" class="pk-sld" type="range" min="0" max="400" value="${p.cardX}"
+          oninput="setPN('cardX',+this.value);document.getElementById('pkn-cardX').value=this.value">
+        <input id="pkn-cardX" class="pk-num" type="number" value="${p.cardX}"
+          oninput="setPN('cardX',+this.value);document.getElementById('pks-cardX').value=this.value">
+      </div>
+      <div class="poskit-row"><span class="pk-lbl">卡片宽</span>
+        <input id="pks-cardW" class="pk-sld" type="range" min="400" max="1200" value="${p.cardW}"
+          oninput="setPN('cardW',+this.value);document.getElementById('pkn-cardW').value=this.value">
+        <input id="pkn-cardW" class="pk-num" type="number" value="${p.cardW}"
+          oninput="setPN('cardW',+this.value);document.getElementById('pks-cardW').value=this.value">
+      </div>
+    </div>
+    <div class="row" style="margin-top:6px;"><label>图片宽</label>
+      <input class="sld" type="range" min="0" max="1600" value="${p.venueImgW}"
+        oninput="setPN('venueImgW',+this.value);document.getElementById('ni-imgw').value=this.value">
+      <input id="ni-imgw" class="num" type="number" value="${p.venueImgW}"
+        oninput="setPN('venueImgW',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span></div>
+    <div class="row"><label>图片高</label>
+      <input class="sld" type="range" min="0" max="2000" value="${p.venueImgH}"
+        oninput="setPN('venueImgH',+this.value);document.getElementById('ni-imgh').value=this.value">
+      <input id="ni-imgh" class="num" type="number" value="${p.venueImgH}"
+        oninput="setPN('venueImgH',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span></div>
+    <div class="row"><label>厅间距</label>
+      <input class="sld" type="range" min="0" max="200" value="${p.venueGap}"
+        oninput="setPN('venueGap',+this.value);document.getElementById('ni-vgap').value=this.value">
+      <input id="ni-vgap" class="num" type="number" value="${p.venueGap}"
+        oninput="setPN('venueGap',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span></div>
+    <div class="row"><label>内边距</label>
+      <input class="sld" type="range" min="0" max="200" value="${p.cardPad}"
+        oninput="setPN('cardPad',+this.value);document.getElementById('ni-cpad').value=this.value">
+      <input id="ni-cpad" class="num" type="number" value="${p.cardPad}"
+        oninput="setPN('cardPad',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span></div>
+    <div class="row"><label>卡片圆角</label>
+      <input class="sld" type="range" min="0" max="200" value="${p.cardRadius}"
+        oninput="setPN('cardRadius',+this.value);document.getElementById('ni-crad').value=this.value">
+      <input id="ni-crad" class="num" type="number" value="${p.cardRadius}"
+        oninput="setPN('cardRadius',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span></div>
+  </div>
+
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>项目备份</div>
+    <div class="bk-row">
+      <button class="bk-btn" onclick="exportJSON()">⬇ 导出备份</button>
+      <button class="bk-btn" onclick="importJSON()">⬆ 导入备份</button>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 导出 PNG 1200×1600
+// ═══════════════════════════════════════════════════════════════════
+async function doExport(){
+  const p=cur();if(!p)return;
+  if(!await checkQuota())return;
+  const btn=document.getElementById('exp-btn');btn.textContent='生成中…';btn.disabled=true;
+  try{
+    await document.fonts.ready;
+    const W=1200,H=1600;const cnt=p.venueCount||4;
+    const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+    const ctx=canvas.getContext('2d');
+
+    // 背景渐变
+    const bg=ctx.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,p.bgTop||'#f2dce6');
+    bg.addColorStop(0.5,p.bgMid||p.bgTop||'#ddb8ca');
+    bg.addColorStop(1,p.bgBot||'#c498b0');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+    async function loadImgEl(key){const url=await getURL(key);if(!url)return null;return new Promise(res=>{const img=new Image();img.onload=()=>res(img);img.onerror=()=>res(null);img.src=url;});}
+
+    // ── 英文大标题 ──
+    ctx.save();
+    ctx.font=`${p.titleENWeight} ${p.titleENSize}px '${p.titleENFont}',serif`;
+    ctx.fillStyle=p.titleENColor;
+    ctx.shadowColor='rgba(0,0,0,0.06)';ctx.shadowBlur=3;
+    drawTextLS(ctx,p.titleEN||'',W/2,p.titleENY,p.titleENLS,'center');
+    ctx.shadowBlur=0;ctx.restore();
+
+    // ── 中文主标题（花括号分段） ──
+    {
+      const fs=p.titleZHSize,ls=p.titleZHLS;
+      const parts=(p.titleZH||'').split(/([{｛][^}｝]*[}｝])/g);
+      ctx.save();
+      ctx.font=`${p.titleZHWeight} ${fs}px '${p.titleZHFont}',serif`;
+      ctx.textBaseline='top';
+      // 量总宽
+      let totalW=0;
+      parts.forEach(part=>{const chars=[...part];chars.forEach((ch,i)=>{totalW+=ctx.measureText(ch).width;if(i<chars.length-1)totalW+=ls*fs;});});
+      let sx=W/2-totalW/2;
+      parts.forEach(part=>{
+        const isBk=/^[{｛]/.test(part);
+        ctx.fillStyle=isBk?(p.bracketColor||'#c8392b'):(p.titleZHColor||'#1a1010');
+        const chars=[...part];
+        chars.forEach((ch,i)=>{ctx.fillText(ch,sx,p.titleZHY);sx+=ctx.measureText(ch).width+(i<chars.length-1?ls*fs:0);});
+      });
+      ctx.restore();
+    }
+
+    // ── 场馆中文名 ──
+    ctx.save();
+    ctx.font=`${p.venueZHWeight} ${p.venueZHSize}px '${p.venueZHFont}',serif`;
+    ctx.fillStyle=p.venueZHColor;
+    drawTextLS(ctx,p.venueZH||'',W/2,p.venueZHY,p.venueZHLS,'center');
+    ctx.restore();
+    // 下划线
+    {const ulY=p.venueZHY+p.venueZHSize+6;const rgb=hexToRgb(p.venueZHColor);ctx.fillStyle=`rgb(${rgb.r},${rgb.g},${rgb.b})`;ctx.fillRect(W/2-(p.underlineW||230)/2,ulY,(p.underlineW||230),2);}
+
+    // ── 场馆英文名 ──
+    ctx.save();
+    ctx.font=`${p.venueENWeight} ${p.venueENSize}px '${p.venueENFont}',serif`;
+    ctx.fillStyle=p.venueENColor;
+    drawTextLS(ctx,p.venueEN||'',W/2,p.venueENY,p.venueENLS,'center');
+    ctx.restore();
+
+    // ── 卡片 ──
+    const cX=p.cardX,cY=p.cardY,cW=p.cardW;
+    const pad=p.cardPad,cr=p.cardRadius;
+    const imgW=p.venueImgW,imgH=p.venueImgH;
+    const gap=p.venueGap,tgap=p.txtGap||26;
+    const innerW=cW-pad*2;
+    const txtX_=imgW+tgap,txtW_=innerW-imgW-tgap;
+    const enFs=p.enNameSize,zhFs=p.zhNameSize,typeFs=p.typeSize,descFs=p.descSize;
+    const descLH=p.descLineH||1.68;
+    const lineRgb=hexToRgb(p.lineColor||'#a03060');
+
+    // 卡片总高
+    let totalH=pad;
+    for(let i=0;i<cnt;i++){totalH+=imgH;if(i<cnt-1)totalH+=gap;}totalH+=pad;
+    const bc2=hexToRgb(p.cardBg||'#ffffff');
+    ctx.save();ctx.beginPath();ctx.roundRect(cX,cY,cW,totalH,cr);
+    ctx.fillStyle=`rgba(${bc2.r},${bc2.g},${bc2.b},${(p.cardBgAlpha||97)/100})`;ctx.fill();ctx.restore();
+
+    let vY=cY+pad;
+    for(let i=0;i<cnt;i++){
+      const v=p.venues[i];
+      const vX=cX+pad;
+      // 图片
+      const imgEl=await loadImgEl(v.imgKey);
+      ctx.save();ctx.beginPath();ctx.roundRect(vX,vY,imgW,imgH,p.imgRadius||8);ctx.clip();
+      if(imgEl){const l=iLay(v.nW||imgEl.naturalWidth,v.nH||imgEl.naturalHeight,imgW,imgH,v.zoom,v.px,v.py);ctx.drawImage(imgEl,vX+l.left,vY+l.top,l.width,l.height);}
+      else{ctx.fillStyle='#f5eaee';ctx.fillRect(vX,vY,imgW,imgH);ctx.fillStyle='#c8a0b0';ctx.font=`400 24px 'Noto Sans SC',sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(`第${i+1}张图`,vX+imgW/2,vY+imgH/2);ctx.textAlign='left';}
+      ctx.restore();
+
+      // 文字垂直居中
+      const txX=vX+txtX_;
+      const descLines=(v.desc||'').split('\n').filter(l=>l.trim());
+      const descH=descLines.length*descFs*descLH;
+      const enH=enFs+5;
+      const sepH=14; // 横线+间距
+      const zhH=Math.max(zhFs,typeFs)+7;
+      const totalTxtH=enH+sepH+zhH+descH;
+      let tyY=vY+(imgH-totalTxtH)/2;
+      if(tyY<vY+6)tyY=vY+6;
+
+      // 英文名
+      ctx.save();
+      ctx.font=`${p.enNameWeight} ${enFs}px '${p.enNameFont}',serif`;
+      ctx.fillStyle=p.enNameColor;
+      drawTextLS(ctx,v.en||'',txX,tyY,p.enNameLS,'left');
+      tyY+=enFs+5;
+
+      // 横线+圆点
+      const lY=tyY+3;const dotR=4;const lineEndX=cX+cW-pad;
+      ctx.strokeStyle=`rgb(${lineRgb.r},${lineRgb.g},${lineRgb.b})`;ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(txX,lY);ctx.lineTo(lineEndX-dotR*2-3,lY);ctx.stroke();
+      ctx.fillStyle=`rgb(${lineRgb.r},${lineRgb.g},${lineRgb.b})`;
+      ctx.beginPath();ctx.arc(lineEndX-dotR,lY,dotR,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+      tyY+=sepH;
+
+      // 中文名
+      ctx.save();
+      ctx.font=`${p.zhNameWeight} ${zhFs}px '${p.zhNameFont}',serif`;
+      ctx.fillStyle=p.zhNameColor;
+      const zhW=measureTextLS(ctx,v.zh||'',p.zhNameLS);
+      drawTextLS(ctx,v.zh||'',txX,tyY,p.zhNameLS,'left');
+      ctx.restore();
+      // 类型
+      ctx.save();
+      ctx.font=`${p.typeWeight} ${typeFs}px '${p.typeFont}',sans-serif`;
+      ctx.fillStyle=p.typeColor;
+      drawTextLS(ctx,v.type||'',txX+zhW+12,tyY,p.typeLS||0,'left');
+      ctx.restore();
+      tyY+=Math.max(zhFs,typeFs)+7;
+
+      // 描述
+      ctx.save();
+      ctx.font=`${p.descWeight} ${descFs}px '${p.descFont}',sans-serif`;
+      ctx.fillStyle=p.descColor;
+      (v.desc||'').split('\n').forEach(line=>{
+        if(line.trim())drawTextLS(ctx,line,txX,tyY,p.descLS||0.02,'left');
+        tyY+=descFs*descLH;
+      });
+      ctx.restore();
+
+      // 厅间分隔线
+      if(i<cnt-1){
+        const sepY=vY+imgH+gap/2;
+        ctx.save();ctx.strokeStyle='rgba(224,200,208,0.6)';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(cX+pad,sepY);ctx.lineTo(cX+cW-pad,sepY);ctx.stroke();ctx.restore();
+      }
+      vY+=imgH+gap;
+    }
+
+    canvas.toBlob(blob=>{
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.download=`${p.name||'poster'}_1200x1600.png`;a.href=url;a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+    },'image/png');
+
+  }catch(err){console.error(err);alert('导出失败：'+err.message);}
+  finally{btn.textContent='↓ 导出 PNG 1200×1600';btn.disabled=false;}
+}
+
+window.addEventListener('resize',()=>{if(curId)renderPoster();});
+(async()=>{await wpCheckAuth();await openDB();await loadAll();renderList();})();
+</script>
+</body>
+</html>

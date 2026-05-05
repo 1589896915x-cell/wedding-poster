@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>场地推荐表格版 - 婚礼海报</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Great+Vibes&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0e0e0e;color:#fff;height:100vh;overflow:hidden;display:flex;padding-top:40px;}
+/* ── 左侧项目栏 ── */
+.psb{width:186px;flex-shrink:0;background:#161616;border-right:1px solid #222;display:flex;flex-direction:column;}
+.psb-head{padding:12px 12px 8px;border-bottom:1px solid #222;}
+.psb-head h2{font-size:12px;font-weight:500;color:#ddd;}
+.psb-head p{font-size:9px;color:#444;margin-top:2px;}
+.psb-new{margin:8px 10px;padding:6px;background:#1c1c1c;border:1px dashed #2e2e2e;border-radius:5px;color:#666;font-size:10px;cursor:pointer;text-align:center;}
+.psb-new:hover{border-color:#555;color:#bbb;}
+.proj-list{flex:1;overflow-y:auto;padding:4px 7px;}
+.pi{padding:7px 9px;border-radius:5px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;}
+.pi:hover{background:#1c1c1c;}
+.pi.on{background:#1c1c1c;border-color:#2e2e2e;}
+.pi h3{font-size:11px;font-weight:400;color:#ccc;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pi .meta{font-size:9px;color:#444;margin-top:2px;}
+.pi-act{display:flex;gap:3px;margin-top:4px;}
+.pb{padding:2px 6px;background:none;border:1px solid #222;border-radius:3px;color:#555;font-size:9px;cursor:pointer;font-family:inherit;}
+.pb:hover{border-color:#555;color:#aaa;}
+.pb.del:hover{border-color:#b00;color:#f44;}
+/* ── 编辑区 ── */
+.editor{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:44px;background:#161616;border-bottom:1px solid #222;display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;}
+.pname{background:none;border:none;outline:none;color:#fff;font-size:13px;font-weight:500;font-family:inherit;flex:1;max-width:240px;}
+.pname::placeholder{color:#333;}
+.sp{flex:1;}
+.exp-btn{padding:6px 16px;border:none;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;background:#c8392b;color:#fff;}
+.exp-btn:hover{background:#a02d22;}
+.exp-btn:disabled{background:#6a1f17;cursor:default;}
+.body-wrap{display:flex;flex:1;overflow:hidden;}
+.ca{flex:1;background:#0a0a0a;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+/* ── 右侧面板 ── */
+.rp{width:276px;flex-shrink:0;background:#161616;border-left:1px solid #222;overflow-y:auto;padding:10px 10px 32px;}
+.rp::-webkit-scrollbar{width:3px;}.rp::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:2px;}
+.sc{margin-top:16px;padding:12px;background:#141414;border-radius:8px;border:1px solid #1f1f1f;}
+.sc:first-child{margin-top:0;}
+.st{font-size:11px;color:#c8a96a;font-weight:600;letter-spacing:.5px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;gap:6px;}
+.st-icon{display:inline-block;width:6px;height:14px;background:#c8392b;border-radius:2px;flex-shrink:0;}
+.lbl{font-size:9px;color:#555;margin-bottom:2px;margin-top:6px;}
+.fi{width:100%;padding:5px 7px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;margin-bottom:3px;}
+.fi:focus{border-color:#444;}
+.fi-ta{width:100%;padding:5px 7px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;resize:vertical;min-height:48px;line-height:1.5;}
+.sel{width:100%;padding:4px 6px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;margin-bottom:3px;}
+.sel-sm{flex:1;padding:3px 4px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:10px;font-family:inherit;outline:none;}
+.num{width:52px;padding:4px 5px;background:#111;border:1px solid #222;border-radius:4px;color:#ccc;font-size:11px;font-family:inherit;outline:none;text-align:center;}
+.unit{font-size:9px;color:#444;white-space:nowrap;}
+.row{display:flex;gap:5px;align-items:center;margin-bottom:4px;}
+.row label{font-size:9px;color:#555;min-width:26px;flex-shrink:0;}
+.sld{flex:1;accent-color:#c8392b;cursor:pointer;}
+.srow{display:flex;gap:4px;align-items:center;margin-bottom:4px;}
+.poskit{background:#0a0a0a;padding:9px;border-radius:5px;border:1px solid #1f1f1f;margin-top:6px;}
+.poskit-row{display:flex;align-items:center;gap:7px;margin-bottom:5px;}
+.poskit-row:last-child{margin-bottom:0;}
+.pk-lbl{font-size:10px;color:#aaa;width:52px;flex-shrink:0;}
+.pk-sld{flex:1;accent-color:#c8392b;cursor:pointer;}
+.pk-num{width:54px;padding:4px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#ddd;font-size:11px;font-family:inherit;outline:none;text-align:center;flex-shrink:0;}
+.pk-num:focus{border-color:#c8392b;}
+.cd{width:22px;height:22px;border-radius:3px;border:1px solid #333;cursor:pointer;flex-shrink:0;}
+.cd:hover{border-color:#666;}
+.img-btn{width:100%;padding:6px;border:1px dashed #2a2a2a;border-radius:4px;background:none;color:#666;font-size:10px;cursor:pointer;font-family:inherit;text-align:center;margin-bottom:3px;}
+.img-btn:hover{border-color:#555;color:#aaa;}
+.vtabs{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:8px;}
+.vtab{padding:4px 6px;border:1px solid #222;border-radius:4px;background:none;color:#555;font-size:9px;cursor:pointer;font-family:inherit;text-align:center;}
+.vtab.on{background:#222;color:#ddd;border-color:#444;}
+.bk-row{display:flex;gap:5px;margin-top:6px;}
+.bk-btn{flex:1;padding:5px 4px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:9px;cursor:pointer;font-family:inherit;}
+.bk-btn:hover{border-color:#555;color:#aaa;}
+.no-proj{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#2a2a2a;}
+.no-proj p{font-size:12px;}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;}
+.ov.open{display:flex;}
+.modal{background:#1c1c1c;border:1px solid #2e2e2e;border-radius:10px;padding:22px;width:300px;}
+.modal h3{font-size:14px;font-weight:500;margin-bottom:16px;color:#ddd;}
+.ml{font-size:10px;color:#777;margin-bottom:4px;}
+.mi{width:100%;padding:8px 10px;background:#111;border:1px solid #2e2e2e;border-radius:5px;color:#fff;font-size:13px;font-family:inherit;outline:none;margin-bottom:16px;}
+.mi:focus{border-color:#555;}
+.ma{display:flex;gap:8px;}
+.ma button{flex:1;padding:8px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
+.hint{font-size:9px;color:#c8a96a;background:#1a150a;border:1px solid #3a2c0a;border-radius:4px;padding:4px 7px;margin-bottom:6px;}
+.cnt-row{display:flex;gap:4px;flex-wrap:wrap;}
+.cnt-btn{padding:5px 10px;border:1px solid #2a2a2a;border-radius:4px;background:none;color:#666;font-size:10px;cursor:pointer;font-family:inherit;}
+.cnt-btn.on{background:#c8392b;color:#fff;border-color:#c8392b;}
+.cnt-btn:not(.on):hover{border-color:#555;color:#aaa;}
+.tx-edit{pointer-events:none;}
+.tx-edit:hover,.tx-edit:focus{pointer-events:auto;}
+</style>
+</head>
+<body>
+
+<div style="height:40px;background:#0a0a0a;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;padding:0 14px;gap:10px;position:fixed;top:0;left:0;right:0;z-index:100;">
+  <a href="index.html" style="font-size:18px;color:#555;text-decoration:none;line-height:1;">←</a>
+  <span style="font-size:11px;color:#444;">场地推荐表格版</span>
+  <div style="flex:1;"></div>
+  <span id="wp-credits" style="background:#1a1a1a;padding:3px 10px;border-radius:4px;font-size:11px;color:#c8a96a;"></span>
+  <button onclick="wpLogout()" style="padding:4px 12px;border:1px solid #222;border-radius:4px;background:none;color:#555;font-size:11px;cursor:pointer;font-family:inherit;">退出</button>
+</div>
+
+<div class="psb">
+  <div class="psb-head"><h2>项目</h2><p>Ctrl+Z 撤销 · 自动保存</p></div>
+  <div class="psb-new" onclick="openModal()">＋ 新建项目</div>
+  <div class="proj-list" id="proj-list"><div style="font-size:10px;color:#333;padding:8px;">加载中…</div></div>
+</div>
+
+<div class="editor">
+  <div class="topbar">
+    <input class="pname" id="pname" type="text" placeholder="项目名称" oninput="onNameChange()">
+    <div class="sp"></div>
+    <button class="exp-btn" id="exp-btn" onclick="doExport()">↓ 导出 PNG 1200×1600</button>
+  </div>
+  <div class="body-wrap">
+    <div class="ca" id="ca">
+      <div id="poster" style="position:relative;overflow:hidden;"></div>
+    </div>
+    <div class="rp" id="rp"><div class="no-proj"><p>新建或选择项目</p></div></div>
+  </div>
+</div>
+
+<input type="file" id="fi" accept="image/*" style="display:none">
+<input type="file" id="json-fi" accept=".json" style="display:none">
+
+<div class="ov" id="modal">
+  <div class="modal">
+    <h3>新建项目</h3>
+    <div class="ml">项目名称</div>
+    <input class="mi" id="m-name" type="text" placeholder="未命名">
+    <div class="ma">
+      <button onclick="closeModal()" style="background:#2a2a2a;color:#aaa;border:1px solid #333;">取消</button>
+      <button onclick="createProj()" style="background:#fff;color:#000;">创建</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ AUTH ═══════════════════════════════════════════════════════
+const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+let _lic=null;
+async function wpCheckAuth(){
+  if(location.protocol==='file:'||location.hostname==='localhost'){_lic={credits:999,id:'test'};const el=document.getElementById('wp-credits');if(el)el.textContent='测试模式';return true;}
+  const code=localStorage.getItem('wp-license');if(!code){location.href='index.html';return false;}
+  try{const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});const d=await r.json();if(!d||!d[0]||!d[0].is_active){location.href='index.html';return false;}const lic=d[0];if((lic.credits||0)<=0){location.href='index.html';return false;}if(lic.expires_at&&new Date(lic.expires_at)<new Date()){location.href='index.html';return false;}_lic=lic;updCredits();return true;}catch(e){return true;}
+}
+function updCredits(){const el=document.getElementById('wp-credits');if(el&&_lic)el.textContent=`剩余 ${_lic.credits||0} 次`;}
+async function checkQuota(){
+  if(location.protocol==='file:'||location.hostname==='localhost')return true;
+  if(!_lic){alert('请先登录');return false;}if((_lic.credits||0)<=0){alert('导出次数已用完');return false;}
+  try{const newC=(_lic.credits||0)-1;const r=await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${_lic.id}`,{method:'PATCH',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({credits:newC})});const d=await r.json();if(d&&d[0])_lic=d[0];else _lic.credits=newC;updCredits();return true;}catch(e){_lic.credits=Math.max(0,(_lic.credits||0)-1);updCredits();return true;}
+}
+function wpLogout(){localStorage.removeItem('wp-license');location.href='index.html';}
+
+// ═══ drawTextLS + iLay ═══════════════════════════════════════════
+function drawTextLS(ctx,text,cx,y,lsEm,align){
+  if(!text)return 0;ctx.textBaseline='top';
+  const m=ctx.font.match(/([\d.]+)px/);const fs=m?parseFloat(m[1]):16;const ls=lsEm*fs;
+  const chars=[...text];let tw=0;
+  chars.forEach((ch,i)=>{tw+=ctx.measureText(ch).width;if(i<chars.length-1)tw+=ls;});
+  let sx=align==='center'?cx-tw/2:align==='right'?cx-tw:cx;
+  chars.forEach((ch,i)=>{ctx.fillText(ch,sx,y);sx+=ctx.measureText(ch).width+(i<chars.length-1?ls:0);});
+  return tw;
+}
+function iLay(nW,nH,cW,cH,zoom,px,py){
+  if(!nW||!nH)return{left:0,top:0,width:cW,height:cH};
+  const s=Math.max(cW/nW,cH/nH)*(zoom||1);const rW=nW*s,rH=nH*s;
+  return{left:-((px||50)/100)*Math.max(0,rW-cW),top:-((py||50)/100)*Math.max(0,rH-cH),width:rW,height:rH};
+}
+
+// ═══ IndexedDB ═══════════════════════════════════════════════════
+const DB='wedding-venuetable-v1';let db=null;
+function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB,1);req.onupgradeneeded=e=>{const d=e.target.result;['P','I'].forEach(s=>{if(!d.objectStoreNames.contains(s))d.createObjectStore(s,s==='P'?{keyPath:'id'}:undefined);});};req.onsuccess=e=>{db=e.target.result;res();};req.onerror=rej;});}
+const TX=(s,m='readonly')=>db.transaction(s,m).objectStore(s);
+const dbGet=(s,k)=>new Promise((r,j)=>{const q=TX(s).get(k);q.onsuccess=()=>r(q.result);q.onerror=j;});
+const dbPut=(s,v,k)=>new Promise((r,j)=>{const q=k!==undefined?TX(s,'readwrite').put(v,k):TX(s,'readwrite').put(v);q.onsuccess=r;q.onerror=j;});
+const dbDel=(s,k)=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=r;t.onerror=j;});
+const dbAll=(s)=>new Promise((r,j)=>{const q=TX(s).getAll();q.onsuccess=()=>r(q.result);q.onerror=j;});
+
+// ═══ 字体列表 ═══════════════════════════════════════════════════
+const FONTS_ZH=['Noto Serif SC','Noto Sans SC','STSong','STKaiti','PingFang SC','Microsoft YaHei','SimHei'];
+const FONTS_EN=['Cormorant Garamond','Playfair Display','EB Garamond','Great Vibes','Dancing Script','Times New Roman','Georgia','Arial'];
+const FONTS_ALL=[...FONTS_ZH,...FONTS_EN];
+const WTS=[['300','细 300'],['400','常规 400'],['500','中 500'],['700','粗 700'],['900','超粗 900']];
+
+// ═══ 默认厅数据 ══════════════════════════════════════════════════
+function defVenue(i){
+  const defs=[
+    {zh:'芭比之夜',en:'BARBIE NIGHT',tables:'19桌\n场地面积330m²\n厅高8m',desc:'婚礼配色：浪漫粉/时尚黑\n沉浸式婚礼，全厅无柱\n独立新娘房（不可住宿）'},
+    {zh:'星月夜',  en:'STARRY NIGHT', tables:'15桌\n场地面积290m²\n厅高8m',desc:'婚礼配色：星空蓝\n沉浸式婚礼，全厅无柱\n独立新娘房（不可住宿）'},
+    {zh:'凤舞京都',en:'FENGWU KYOTO',tables:'23桌\n场地面积400m²\n厅高8m',desc:'婚礼配色：中国红\n沉浸式婚礼，全厅无柱\n独立新娘房（不可住宿）'},
+    {zh:'亚特兰蒂斯',en:'ATLANTIS',   tables:'33桌\n场地面积520m²\n厅高8m',desc:'婚礼配色：深海蓝\n沉浸式婚礼，全厅无柱\n独立新娘房（不可住宿）'},
+    {zh:'古堡花园',en:'CASTLE GARDEN',tables:'18桌\n场地面积330m²\n厅高8m',desc:'婚礼配色：古铜金/森林绿\n沉浸式婚礼，全厅无柱\n独立新娘房（不可住宿）'},
+    {zh:'鎏金秘境',en:'GOLDEN',       tables:'18桌\n场地面积330m²\n厅高8m',desc:'婚礼配色：璀璨金\n沉浸式婚礼，全厅无柱\n独立新娘房（不可住宿）'},
+  ];
+  const d=defs[i%6];
+  return{imgKey:null,px:50,py:50,zoom:1,nW:0,nH:0,zh:d.zh,en:d.en,tables:d.tables,desc:d.desc};
+}
+
+// 各厅数默认布局参数（截图校准）
+const LAYOUT_DEFAULTS={
+  // 6厅（截图：X=-38 Y=-38 宽283 高177）
+  6:{rowPadY:57,  col1W:250, col2W:230, col3W:330, zhSize:44, enSize:22, tableSize:24, descSize:21, headerY:210, headerH2:71, imgW:283, imgH:177, imgOffsetX:-38, imgOffsetY:-38},
+  // 5厅（截图：X=-66 Y=-40 宽297 高177）
+  5:{rowPadY:71,  col1W:250, col2W:230, col3W:330, zhSize:46, enSize:23, tableSize:25, descSize:22, headerY:210, headerH2:71, imgW:297, imgH:177, imgOffsetX:-66, imgOffsetY:-40},
+  // 4厅（截图：X=-66 Y=-45 宽300 高210）
+  4:{rowPadY:100, col1W:250, col2W:230, col3W:330, zhSize:47, enSize:24, tableSize:27, descSize:24, headerY:210, headerH2:71, imgW:300, imgH:210, imgOffsetX:-66, imgOffsetY:-45},
+  // 3厅：参考4厅比例放大
+  3:{rowPadY:140, col1W:250, col2W:230, col3W:330, zhSize:56, enSize:26, tableSize:32, descSize:28, headerY:210, headerH2:71, imgW:330, imgH:260, imgOffsetX:-66, imgOffsetY:-55},
+};
+
+// ═══ 项目默认值（6厅初始参数来自截图校准） ══════════════════════
+function defProject(cnt){
+  cnt=cnt||6;
+  const LD=LAYOUT_DEFAULTS[cnt]||LAYOUT_DEFAULTS[6];
+  return{
+  venueCount:cnt,
+  // 背景
+  bgColor:'#ffffff',
+  // 大标题（左侧，截图：110px Noto Serif SC #7f642e Y=25 X=52）
+  mainTitleZH:'婚礼场地推荐',
+  mainTitleFont:'Noto Serif SC',mainTitleSize:110,mainTitleWeight:'700',mainTitleColor:'#7f642e',mainTitleLS:0.02,
+  mainTitleX:52,mainTitleY:25,
+  // 英文副标题（右上，截图：56px Cormorant Garamond #7f642e Y=32）
+  mainTitleEN:'WEDDING\nVENUE',
+  mainTitleENFont:'Cormorant Garamond',mainTitleENSize:56,mainTitleENWeight:'400',mainTitleENColor:'#7f642e',mainTitleENLS:0.08,
+  mainTitleENX:1148,mainTitleENY:32,
+  // 表头（截图：32px Noto Sans SC 粗700 #1a1a1a，表头线#000000，行分隔#817e7e，Y=210 高=71）
+  headerLineColor:'#000000',headerLineThick:2,
+  headerBg:'#ffffff',
+  headerLabelFont:'Noto Sans SC',headerLabelSize:32,headerLabelWeight:'700',headerLabelColor:'#1a1a1a',headerLabelLS:0.05,
+  headerY:LD.headerY,headerH2:LD.headerH2,
+  // 行分隔线（截图：#817e7e）
+  rowLineColor:'#817e7e',rowLineThick:1,
+  // 列宽（截图：场地250 桌数230 介绍330）
+  col1W:LD.col1W,col2W:LD.col2W,col3W:LD.col3W,colGap:16,
+  // 场地名（截图：中文44px Noto Serif SC 粗700 #83672f，英文22px Cormorant Garamond 常规400 #5c4924）
+  zhFont:'Noto Serif SC',zhSize:LD.zhSize,zhWeight:'700',zhColor:'#83672f',zhLS:0.02,
+  enFont:'Cormorant Garamond',enSize:LD.enSize,enWeight:'400',enColor:'#5c4924',enLS:0.12,
+  // 桌数面积（截图：24px Noto Sans SC 中500 #333333 行间距1.15）
+  tableFont:'Noto Sans SC',tableSize:LD.tableSize,tableWeight:'500',tableColor:'#333333',tableLS:0.02,tableLineH:1.15,
+  // 介绍文字（截图：21px Noto Sans SC 中500 #333333 行间距1.45）
+  descFont:'Noto Sans SC',descSize:LD.descSize,descWeight:'500',descColor:'#333333',descLS:0.02,descLineH:1.45,
+  // 图片（可调宽高+位置，同步所有厅）
+  imgRadius:0,
+  imgW:LD.imgW||0, imgH:LD.imgH||0,   // 0=自动
+  // 图片框位置：相对行内顶部横线的偏移（Y），以及相对默认X列的偏移（X）
+  imgOffsetX:LD.imgOffsetX||0, imgOffsetY:LD.imgOffsetY||0,
+  // 行内上下边距
+  rowPadY:LD.rowPadY,
+  // 左右边距
+  marginX:52,
+  venues:Array.from({length:6},(_,i)=>defVenue(i)),
+};}
+
+// ═══ 状态 ════════════════════════════════════════════════════════
+let projs=[],curId=null;
+const imgCache={};
+let _hist=[],_hIdx=-1;
+let selVenue=0;
+let dragging=false,dragV=0,dragSX=0,dragSY=0,dragPX=50,dragPY=50;
+
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const escH=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const cur=()=>projs.find(p=>p.id===curId)||null;
+const ik=(pid,vi)=>`vt-${pid}-${vi}`;
+
+// ═══ History ═════════════════════════════════════════════════════
+function pushH(){const p=cur();if(!p)return;_hist=_hist.slice(0,_hIdx+1);_hist.push(JSON.stringify(p));if(_hist.length>20)_hist.shift();_hIdx=_hist.length-1;}
+async function undo(){if(_hIdx<=0)return;_hIdx--;const p=JSON.parse(_hist[_hIdx]);const i=projs.findIndex(x=>x.id===p.id);if(i>=0)projs[i]=p;await dbPut('P',p);renderPoster();renderRP();}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();}});
+
+// ═══ Storage ═════════════════════════════════════════════════════
+async function loadAll(){projs=await dbAll('P');projs.sort((a,b)=>b.at-a.at);}
+async function save(p){p.at=Date.now();await dbPut('P',p);}
+async function saveImg(key,blob){await dbPut('I',blob,key);if(imgCache[key])URL.revokeObjectURL(imgCache[key]);imgCache[key]=URL.createObjectURL(blob);}
+async function delImg(key){await dbDel('I',key);if(imgCache[key]){URL.revokeObjectURL(imgCache[key]);delete imgCache[key];}}
+async function getURL(key){if(!key)return null;if(imgCache[key])return imgCache[key];const b=await dbGet('I',key);if(!b)return null;imgCache[key]=URL.createObjectURL(b);return imgCache[key];}
+function exportJSON(){const p=cur();if(!p)return;const blob=new Blob([JSON.stringify(p,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=(p.name||'project')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+function importJSON(){const fi=document.getElementById('json-fi');fi.onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const p=JSON.parse(await file.text());p.id=uid();p.name=(p.name||'导入')+' (导入)';p.ct=p.at=Date.now();await save(p);projs.unshift(p);renderList();openProj(p.id);}catch{alert('JSON格式错误');}fi.value='';};fi.click();}
+
+// ═══ Modal ═══════════════════════════════════════════════════════
+function openModal(){document.getElementById('m-name').value='';document.getElementById('modal').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),50);}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+async function createProj(){const name=document.getElementById('m-name').value.trim()||'未命名';const p={id:uid(),name,ct:Date.now(),at:Date.now(),...defProject(6)};await save(p);projs.unshift(p);closeModal();renderList();openProj(p.id);}
+document.getElementById('m-name').addEventListener('keydown',e=>{if(e.key==='Enter')createProj();});
+
+// ═══ 项目列表 ════════════════════════════════════════════════════
+function renderList(){
+  const el=document.getElementById('proj-list');
+  if(!projs.length){el.innerHTML='<div style="font-size:10px;color:#333;padding:8px;">暂无项目</div>';return;}
+  el.innerHTML=projs.map(p=>`<div class="pi${p.id===curId?' on':''}" onclick="openProj('${p.id}')">
+    <h3>${escH(p.name)}</h3><div class="meta">${new Date(p.at).toLocaleDateString('zh-CN')}</div>
+    <div class="pi-act">
+      <button class="pb" onclick="event.stopPropagation();renameProj('${p.id}')">改名</button>
+      <button class="pb" onclick="event.stopPropagation();dupProj('${p.id}')">复制</button>
+      <button class="pb del" onclick="event.stopPropagation();delProj('${p.id}')">删除</button>
+    </div></div>`).join('');
+}
+async function renameProj(id){const p=projs.find(x=>x.id===id);if(!p)return;const n=prompt('新名称：',p.name);if(!n||!n.trim())return;p.name=n.trim();await save(p);if(curId===id)document.getElementById('pname').value=p.name;renderList();}
+async function openProj(id){curId=id;selVenue=0;const p=cur();if(!p)return;document.getElementById('pname').value=p.name;_hist=[];_hIdx=-1;renderList();renderPoster();renderRP();}
+async function dupProj(id){const p=projs.find(x=>x.id===id);if(!p)return;const nid=uid();const np={...JSON.parse(JSON.stringify(p)),id:nid,name:p.name+' 副本',ct:Date.now(),at:Date.now()};for(let i=0;i<6;i++){const b=await dbGet('I',ik(id,i));if(b){const nk=ik(nid,i);await dbPut('I',b,nk);np.venues[i].imgKey=nk;}}await save(np);projs.unshift(np);renderList();}
+async function delProj(id){if(!confirm('确认删除？'))return;for(let i=0;i<6;i++)await delImg(ik(id,i));await dbDel('P',id);projs=projs.filter(x=>x.id!==id);if(curId===id){curId=null;document.getElementById('poster').style.cssText='';document.getElementById('poster').innerHTML='';renderRP();}renderList();}
+async function onNameChange(){const p=cur();if(!p)return;p.name=document.getElementById('pname').value;await save(p);renderList();}
+
+// ═══ 海报尺寸 ════════════════════════════════════════════════════
+function pSz(){const a=document.getElementById('ca');const aH=a.clientHeight-24,aW=a.clientWidth-24;let h,w;if(aH*.75<aW){h=Math.floor(aH);w=Math.floor(h*.75);}else{w=Math.floor(aW);h=Math.floor(w/.75);}return{w,h};}
+
+// ═══ 颜色工具 ════════════════════════════════════════════════════
+function toHex(c){if(!c)return'#000000';if(c.startsWith('#'))return c;const m=c.match(/[\d.]+/g);if(!m||m.length<3)return'#000000';return'#'+[m[0],m[1],m[2]].map(x=>Math.round(+x).toString(16).padStart(2,'0')).join('');}
+function hexToRgb(h){const hex=(h||'#000').replace('#','');return{r:parseInt(hex.slice(0,2),16)||0,g:parseInt(hex.slice(2,4),16)||0,b:parseInt(hex.slice(4,6),16)||0};}
+
+let _rt=null;
+function scheduleRender(){clearTimeout(_rt);_rt=setTimeout(()=>renderPoster(),100);}
+
+// ═══ 布局计算 ════════════════════════════════════════════════════
+// 根据厅数和内容动态算行高
+function calcRowH(p,sc){
+  // 行高 = 最多行数的文字高度 + 上下padding
+  const tableLines=3;  // 桌数一般3行
+  const descLines=3;   // 描述一般3行
+  const maxLines=Math.max(tableLines,descLines);
+  const descFs=Math.round(p.descSize*sc);
+  const descLH=p.descLineH||1.7;
+  return Math.round(p.rowPadY*2*sc) + Math.round(maxLines*descFs*descLH);
+}
+
+// 列X坐标（1200基准）
+function calcCols(p){
+  const mx=p.marginX||52;
+  const totalW=1200-mx*2; // 1096
+  const g=p.colGap||16;
+  const c1=p.col1W||250;
+  const c2=p.col2W||230;
+  const c3=p.col3W||330;
+  const c4=totalW-c1-c2-c3-g*3;
+  return{
+    x1:mx,                        // 场地名起点
+    x2:mx+c1+g,                   // 桌数起点
+    x3:mx+c1+g+c2+g,              // 介绍起点
+    x4:mx+c1+g+c2+g+c3+g,         // 图片起点
+    w1:c1,w2:c2,w3:c3,w4:Math.max(c4,100),
+  };
+}
+
+// ═══ DOM预览渲染 ═════════════════════════════════════════════════
+async function renderPoster(){
+  const poster=document.getElementById('poster');
+  const p=cur();if(!p){poster.style.cssText='';poster.innerHTML='';return;}
+  const{w,h}=pSz();const sc=w/1200;
+  const cnt=p.venueCount||6;
+
+  poster.style.cssText=`width:${w}px;height:${h}px;background:${p.bgColor||'#ffffff'};
+    position:relative;flex-shrink:0;box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden;`;
+
+  const cols=calcCols(p);
+  const mx=Math.round((p.marginX||52)*sc);
+  const totalW=w-mx*2;
+
+  // 缩放后列坐标
+  const x1=Math.round(cols.x1*sc),w1=Math.round(cols.w1*sc);
+  const x2=Math.round(cols.x2*sc),w2=Math.round(cols.w2*sc);
+  const x3=Math.round(cols.x3*sc),w3=Math.round(cols.w3*sc);
+  const x4=Math.round(cols.x4*sc),w4=Math.round(cols.w4*sc);
+
+  // 字号缩放
+  const mainZhFs=Math.round(p.mainTitleSize*sc);
+  const mainEnFs=Math.round(p.mainTitleENSize*sc);
+  const hLblFs=Math.round(p.headerLabelSize*sc);
+  const zhFs=Math.round(p.zhSize*sc);
+  const enFs=Math.round(p.enSize*sc);
+  const tableFs=Math.round(p.tableSize*sc);
+  const descFs=Math.round(p.descSize*sc);
+  const descLH=p.descLineH||1.7;
+  const tableLH=p.tableLineH||1.7;
+
+  const headerY=Math.round(p.headerY*sc);
+  const headerH2=Math.round(p.headerH2*sc);
+  const rowPadY=Math.round(p.rowPadY*sc);
+
+  // 计算每行高度（基于当前字号）
+  function getRowH(v){
+    const tLines=(v.tables||'').split('\n').length;
+    const dLines=(v.desc||'').split('\n').length;
+    const maxLines=Math.max(tLines,dLines);
+    // 场地名高度（中文+英文）
+    const nameH=zhFs+Math.round(6*sc)+enFs;
+    const txtH=Math.max(nameH,Math.round(maxLines*descFs*descLH));
+    return txtH+rowPadY*2;
+  }
+
+  // 顶部大标题
+  const mtY=Math.round(p.mainTitleY*sc);
+  const mtX=Math.round(p.mainTitleX*sc);
+  const mtEnX=Math.round(p.mainTitleENX*sc);
+  const mtEnY=Math.round(p.mainTitleENY*sc);
+
+  // 构建厅行HTML
+  let rowsHTML='';
+  let curY=headerY+headerH2;
+
+  for(let i=0;i<cnt;i++){
+    const v=p.venues[i];
+    const rH=getRowH(v);
+    const url=await getURL(v.imgKey);
+    // 图片尺寸：优先使用用户设定值，0=自动
+    const imgH=p.imgH&&p.imgH>0?Math.round(p.imgH*sc):(rH-rowPadY*2);
+    const imgW=p.imgW&&p.imgW>0?Math.round(p.imgW*sc):w4;
+    const lout=v.imgKey?iLay(v.nW,v.nH,imgW,imgH,v.zoom,v.px,v.py):{left:0,top:0,width:imgW,height:imgH};
+    const isLast=i===cnt-1;
+    const tableLines=(v.tables||'').split('\n');
+    const descLines=(v.desc||'').split('\n');
+    const nameH=zhFs+Math.round(6*sc)+enFs;
+    const textAreaH=rH-rowPadY*2;
+    const nameOffsetY=Math.round((textAreaH-nameH)/2);
+
+    rowsHTML+=`
+    <!-- 厅行 ${i} -->
+    <div style="position:absolute;left:0;top:${curY}px;width:${w}px;height:${rH}px;">
+      <!-- 行间线（顶部） -->
+      <div style="position:absolute;left:${mx}px;top:0;width:${totalW}px;height:${Math.round(p.rowLineThick*sc)}px;background:${p.rowLineColor};"></div>
+
+      <!-- 场地名（z-index:3） -->
+      <div style="position:absolute;left:${x1}px;top:${rowPadY+nameOffsetY}px;width:${w1}px;z-index:3;">
+        <div class="tx-edit" contenteditable="true" spellcheck="false"
+          style="font-family:'${p.zhFont}',serif;font-size:${zhFs}px;font-weight:${p.zhWeight};
+            color:${p.zhColor};letter-spacing:${p.zhLS}em;line-height:1.1;
+            outline:none;cursor:text;"
+          oninput="setVP(${i},'zh',this.textContent)"
+          onblur="setVP(${i},'zh',this.textContent)">${escH(v.zh)}</div>
+        <div class="tx-edit" contenteditable="true" spellcheck="false"
+          style="font-family:'${p.enFont}',serif;font-size:${enFs}px;font-weight:${p.enWeight};
+            color:${p.enColor};letter-spacing:${p.enLS}em;
+            margin-top:${Math.round(6*sc)}px;line-height:1.1;
+            outline:none;cursor:text;"
+          oninput="setVP(${i},'en',this.textContent)"
+          onblur="setVP(${i},'en',this.textContent)">${escH(v.en)}</div>
+      </div>
+
+      <!-- 桌数面积（z-index:3） -->
+      <div style="position:absolute;left:${x2}px;top:${rowPadY}px;width:${w2}px;z-index:3;
+          display:flex;align-items:center;height:${rH-rowPadY*2}px;">
+        <div class="tx-edit" contenteditable="true" spellcheck="false"
+          style="font-family:'${p.tableFont}',sans-serif;font-size:${tableFs}px;font-weight:${p.tableWeight};
+            color:${p.tableColor};letter-spacing:${p.tableLS}em;line-height:${tableLH};
+            outline:none;cursor:text;"
+          oninput="setVPDesc(${i},'tables',this)"
+          onblur="setVPDesc(${i},'tables',this)">${tableLines.map(l=>escH(l)).join('<br>')}</div>
+      </div>
+
+      <!-- 宴会厅介绍（z-index:3） -->
+      <div style="position:absolute;left:${x3}px;top:${rowPadY}px;width:${w3}px;z-index:3;
+          display:flex;align-items:center;height:${rH-rowPadY*2}px;">
+        <div class="tx-edit" contenteditable="true" spellcheck="false"
+          style="font-family:'${p.descFont}',sans-serif;font-size:${descFs}px;font-weight:${p.descWeight};
+            color:${p.descColor};letter-spacing:${p.descLS}em;line-height:${descLH};
+            outline:none;cursor:text;"
+          oninput="setVPDesc(${i},'desc',this)"
+          onblur="setVPDesc(${i},'desc',this)">${descLines.map(l=>escH(l)).join('<br>')}</div>
+      </div>
+
+      <!-- 图片（z-index:1，Y相对本行顶横线） -->
+      <div data-vi="${i}" style="position:absolute;
+          left:${x4+Math.round((p.imgOffsetX||0)*sc)}px;
+          top:${Math.round((p.imgOffsetY||0)*sc)+rowPadY}px;
+          width:${imgW}px;height:${imgH}px;overflow:hidden;
+          border-radius:${Math.round(p.imgRadius*sc)}px;z-index:1;
+          cursor:${url?'grab':'pointer'};"
+        ${url?`onmousedown="onMD(event,${i})" ontouchstart="onTS(event,${i})"`:
+               `onclick="uploadImg(${i})"`}>
+        ${url
+          ?`<img draggable="false" src="${url}" style="position:absolute;left:${lout.left}px;top:${lout.top}px;width:${lout.width}px;height:${lout.height}px;pointer-events:none;">`
+          :`<div style="width:100%;height:100%;background:#f0ece6;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#b8a080;gap:4px;cursor:pointer;">
+              <span style="font-size:${Math.round(18*sc)}px;">＋</span>
+              <span style="font-size:${Math.round(9*sc)}px;font-family:'Noto Sans SC',sans-serif;">上传图片</span>
+            </div>`}
+      </div>
+    </div>
+    ${isLast?`<div style="position:absolute;left:${mx}px;top:${curY+rH}px;width:${totalW}px;height:${Math.round(p.rowLineThick*sc)}px;background:${p.rowLineColor};"></div>`:''}`;
+
+    curY+=rH;
+  }
+
+  // 表头行
+  const hLineThick=Math.round(p.headerLineThick*sc);
+  const headerHTML=`
+    <!-- 表头顶线 -->
+    <div style="position:absolute;left:${mx}px;top:${headerY}px;width:${totalW}px;height:${hLineThick}px;background:${p.headerLineColor};"></div>
+    <!-- 表头内容 -->
+    <div style="position:absolute;left:${mx}px;top:${headerY+hLineThick}px;width:${totalW}px;height:${headerH2-hLineThick}px;
+        display:flex;align-items:center;background:${p.headerBg};">
+      <div style="position:absolute;left:${x1-mx}px;font-family:'${p.headerLabelFont}',sans-serif;font-size:${hLblFs}px;font-weight:${p.headerLabelWeight};color:${p.headerLabelColor};letter-spacing:${p.headerLabelLS}em;">场地</div>
+      <div style="position:absolute;left:${x2-mx}px;font-family:'${p.headerLabelFont}',sans-serif;font-size:${hLblFs}px;font-weight:${p.headerLabelWeight};color:${p.headerLabelColor};letter-spacing:${p.headerLabelLS}em;">桌数｜面积</div>
+      <div style="position:absolute;left:${x3-mx}px;font-family:'${p.headerLabelFont}',sans-serif;font-size:${hLblFs}px;font-weight:${p.headerLabelWeight};color:${p.headerLabelColor};letter-spacing:${p.headerLabelLS}em;">宴会厅介绍</div>
+      <div style="position:absolute;left:${x4-mx}px;font-family:'${p.headerLabelFont}',sans-serif;font-size:${hLblFs}px;font-weight:${p.headerLabelWeight};color:${p.headerLabelColor};letter-spacing:${p.headerLabelLS}em;">现场图片</div>
+    </div>
+    <!-- 表头底线 -->
+    <div style="position:absolute;left:${mx}px;top:${headerY+headerH2}px;width:${totalW}px;height:${hLineThick}px;background:${p.headerLineColor};"></div>`;
+
+  // 英文副标题（右上角，多行）
+  const enLines=(p.mainTitleEN||'WEDDING\nVENUE').split('\n');
+  const enLineH=Math.round(mainEnFs*1.15);
+  const enTotalH=enLines.length*enLineH;
+  const enHTML=enLines.map((line,i)=>
+    `<div style="text-align:right;line-height:1.15;">${escH(line)}</div>`
+  ).join('');
+
+  poster.innerHTML=`
+    <!-- 主标题中文 -->
+    <div class="tx-edit" contenteditable="true" spellcheck="false"
+      style="position:absolute;left:${Math.round(p.mainTitleX*sc)}px;top:${Math.round(p.mainTitleY*sc)}px;
+        font-family:'${p.mainTitleFont}',serif;font-size:${mainZhFs}px;font-weight:${p.mainTitleWeight};
+        color:${p.mainTitleColor};letter-spacing:${p.mainTitleLS}em;line-height:1.1;
+        outline:none;cursor:text;z-index:3;white-space:nowrap;"
+      oninput="setP('mainTitleZH',this.textContent)"
+      onblur="setP('mainTitleZH',this.textContent)">${escH(p.mainTitleZH)}</div>
+
+    <!-- 主标题英文（右上） -->
+    <div class="tx-edit" contenteditable="true" spellcheck="false"
+      style="position:absolute;right:${mx}px;top:${Math.round(p.mainTitleENY*sc)}px;
+        font-family:'${p.mainTitleENFont}',serif;font-size:${mainEnFs}px;font-weight:${p.mainTitleENWeight};
+        color:${p.mainTitleENColor};letter-spacing:${p.mainTitleENLS}em;
+        line-height:1.15;text-align:right;outline:none;cursor:text;z-index:3;white-space:pre;"
+      oninput="setP('mainTitleEN',this.textContent)"
+      onblur="setP('mainTitleEN',this.textContent)">${escH(p.mainTitleEN)}</div>
+
+    <!-- 表头 -->
+    ${headerHTML}
+
+    <!-- 厅行 -->
+    ${rowsHTML}
+  `;
+}
+
+// ═══ 拖拽（图片内部裁切） ════════════════════════════════════════
+function onMD(e,vi){const p=cur();const v=p?.venues[vi];if(!v||!v.imgKey||e.button!==0)return;dragging=true;dragV=vi;dragSX=e.clientX;dragSY=e.clientY;dragPX=v.px;dragPY=v.py;e.currentTarget.style.cursor='grabbing';if(selVenue!==vi){selVenue=vi;renderRP();}e.preventDefault();}
+function onTS(e,vi){const p=cur();const v=p?.venues[vi];if(!v||!v.imgKey)return;dragging=true;dragV=vi;dragSX=e.touches[0].clientX;dragSY=e.touches[0].clientY;dragPX=v.px;dragPY=v.py;if(selVenue!==vi){selVenue=vi;renderRP();}e.preventDefault();}
+document.addEventListener('mousemove',async e=>{
+  if(!dragging)return;const p=cur();if(!p)return;
+  const v=p.venues[dragV];
+  const{w}=pSz();const sc=w/1200;
+  const cols=calcCols(p);
+  const _autoImgW=Math.round(cols.w4*sc);
+  const imgW=p.imgW&&p.imgW>0?Math.round(p.imgW*sc):_autoImgW;
+  const imgH=p.imgH&&p.imgH>0?Math.round(p.imgH*sc):_autoImgW*0.65;
+  v.px=Math.max(0,Math.min(100,dragPX-(e.clientX-dragSX)/imgW*100));
+  v.py=Math.max(0,Math.min(100,dragPY-(e.clientY-dragSY)/imgH*100));
+  const sx=document.getElementById('sl-vpx'),sy=document.getElementById('sl-vpy');
+  const nx=document.getElementById('ni-vpx'),ny=document.getElementById('ni-vpy');
+  if(sx)sx.value=v.px;if(sy)sy.value=v.py;if(nx)nx.value=Math.round(v.px);if(ny)ny.value=Math.round(v.py);
+  renderPoster();
+});
+document.addEventListener('touchmove',async e=>{if(!dragging)return;const p=cur();if(!p)return;const{w}=pSz();const sc=w/1200;const cols=calcCols(p);const imgW=Math.round(cols.w4*sc);const v=p.venues[dragV];v.px=Math.max(0,Math.min(100,dragPX-(e.touches[0].clientX-dragSX)/imgW*100));v.py=Math.max(0,Math.min(100,dragPY-(e.touches[0].clientY-dragSX)/imgW*100));renderPoster();},{passive:false});
+document.addEventListener('mouseup',async()=>{if(!dragging)return;dragging=false;const p=cur();if(p){pushH();await save(p);}});
+document.addEventListener('touchend',async()=>{if(!dragging)return;dragging=false;const p=cur();if(p){pushH();await save(p);}});
+
+// ═══ 上传图片 ════════════════════════════════════════════════════
+function uploadImg(vi){const fi=document.getElementById('fi');fi.onchange=async e=>{const file=e.target.files[0];if(!file)return;const p=cur();if(!p)return;const img=new Image();const url=URL.createObjectURL(file);img.onload=async()=>{const key=ik(curId,vi);await saveImg(key,file);const v=p.venues[vi];v.imgKey=key;v.nW=img.naturalWidth;v.nH=img.naturalHeight;v.px=50;v.py=50;v.zoom=1;URL.revokeObjectURL(url);pushH();await save(p);renderPoster();renderRP();};img.src=url;fi.value='';};fi.click();}
+
+// ═══ Setters ════════════════════════════════════════════════════
+async function setP(k,v){const p=cur();if(!p)return;pushH();p[k]=v;await save(p);scheduleRender();}
+async function setPN(k,v){const p=cur();if(!p)return;pushH();p[k]=+v;await save(p);renderPoster();}
+async function setVP(vi,k,v){const p=cur();if(!p)return;pushH();p.venues[vi][k]=v;await save(p);}
+async function setVPDesc(vi,field,el){const p=cur();if(!p)return;pushH();const raw=el.innerHTML.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'');p.venues[vi][field]=raw;await save(p);}
+async function setVPTA(vi,field,val){const p=cur();if(!p)return;pushH();p.venues[vi][field]=val;await save(p);scheduleRender();}
+async function setImgP(k,v){const p=cur();if(!p)return;p.venues[selVenue][k]=+v;renderPoster();await save(p);}
+async function setVenueCount(n){
+  const p=cur();if(!p)return;pushH();p.venueCount=n;
+  // 切换厅数时同步布局默认值
+  const LD=LAYOUT_DEFAULTS[n]||LAYOUT_DEFAULTS[6];
+  p.rowPadY=LD.rowPadY;p.col1W=LD.col1W;p.col2W=LD.col2W;p.col3W=LD.col3W;
+  p.zhSize=LD.zhSize;p.enSize=LD.enSize;p.tableSize=LD.tableSize;p.descSize=LD.descSize;
+  p.headerY=LD.headerY;p.headerH2=LD.headerH2;
+  p.imgW=LD.imgW||0;p.imgH=LD.imgH||0;p.imgOffsetX=LD.imgOffsetX||0;p.imgOffsetY=LD.imgOffsetY||0;
+  await save(p);renderPoster();renderRP();
+}
+function selV(i){selVenue=i;renderRP();}
+
+// ═══ 右侧面板 ════════════════════════════════════════════════════
+function renderRP(){
+  const rp=document.getElementById('rp');const p=cur();
+  if(!p){rp.innerHTML='<div class="no-proj"><p>新建或选择项目</p></div>';return;}
+  const cnt=p.venueCount||6;const v=p.venues[selVenue];
+  const fZh=sel=>FONTS_ZH.map(f=>`<option value="${f}"${sel===f?' selected':''}>${f}</option>`).join('');
+  const fEn=sel=>FONTS_EN.map(f=>`<option value="${f}"${sel===f?' selected':''}>${f}</option>`).join('');
+  const fAll=sel=>FONTS_ALL.map(f=>`<option value="${f}"${sel===f?' selected':''}>${f}</option>`).join('');
+  const wO=sel=>WTS.map(([va,l])=>`<option value="${va}"${sel===va?' selected':''}>${l}</option>`).join('');
+  const cRow=(key,val,lbl)=>`
+    <div class="row"><label>${lbl||'色'}</label>
+      <div class="cd" id="cd-${key}" style="background:${toHex(val)};" onclick="document.getElementById('ci-${key}').click()"></div>
+      <input id="ci-${key}" type="color" value="${toHex(val)}" style="display:none"
+        onchange="setP('${key}',this.value);document.getElementById('cd-${key}').style.background=this.value;document.getElementById('ct-${key}').value=this.value">
+      <input id="ct-${key}" class="fi" style="flex:1;margin:0;" type="text" value="${val}"
+        oninput="setP('${key}',this.value);document.getElementById('cd-${key}').style.background=this.value">
+    </div>`;
+  const pkRow=(key,val,lbl,mn,mx)=>`
+    <div class="poskit-row"><span class="pk-lbl">${lbl}</span>
+      <input id="pks-${key}" class="pk-sld" type="range" min="${mn||0}" max="${mx||1600}" value="${val}"
+        oninput="setPN('${key}',+this.value);document.getElementById('pkn-${key}').value=this.value">
+      <input id="pkn-${key}" class="pk-num" type="number" value="${val}"
+        oninput="setPN('${key}',+this.value);document.getElementById('pks-${key}').value=this.value">
+    </div>`;
+
+  rp.innerHTML=`
+  <!-- ① 厅数量 -->
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>厅数量（3-6个）</div>
+    <div class="cnt-row">
+      ${[3,4,5,6].map(n=>`<div class="cnt-btn${cnt===n?' on':''}" onclick="setVenueCount(${n})">${n}个</div>`).join('')}
+    </div>
+  </div>
+
+  <!-- ② 选择厅 -->
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>当前编辑厅</div>
+    <div class="hint">⚡ 场地名/桌数面积/介绍/图片 各厅独立</div>
+    <div class="vtabs">
+      ${Array.from({length:cnt},(_,i)=>`<button class="vtab${selVenue===i?' on':''}" onclick="selV(${i})">厅${i+1}${p.venues[i].imgKey?'✓':''}</button>`).join('')}
+    </div>
+    <!-- 图片 -->
+    <div class="img-btn" onclick="uploadImg(${selVenue})">${v.imgKey?'🔄 更换图片':'＋ 上传图片（建议横图）'}</div>
+    ${v.imgKey?`
+    <div class="row"><label>缩放</label>
+      <input id="sl-vzoom" class="sld" type="range" min="0.1" max="8" step="0.05" value="${v.zoom||1}"
+        oninput="setImgP('zoom',+this.value);document.getElementById('ni-vzoom').value=Math.round(this.value*100)">
+      <input id="ni-vzoom" type="number" value="${Math.round((v.zoom||1)*100)}" class="num"
+        oninput="setImgP('zoom',this.value/100);this.previousElementSibling.value=this.value/100">
+      <span class="unit">%</span></div>
+    <div class="row"><label>横移</label>
+      <input id="sl-vpx" class="sld" type="range" min="0" max="100" value="${v.px}"
+        oninput="setImgP('px',+this.value);document.getElementById('ni-vpx').value=this.value">
+      <input id="ni-vpx" type="number" min="0" max="100" value="${Math.round(v.px)}" class="num"
+        oninput="setImgP('px',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">%</span></div>
+    <div class="row"><label>纵移</label>
+      <input id="sl-vpy" class="sld" type="range" min="0" max="100" value="${v.py}"
+        oninput="setImgP('py',+this.value);document.getElementById('ni-vpy').value=this.value">
+      <input id="ni-vpy" type="number" min="0" max="100" value="${Math.round(v.py)}" class="num"
+        oninput="setImgP('py',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">%</span></div>`:''}
+    <div style="height:1px;background:#1e1e1e;margin:8px 0;"></div>
+    <div class="lbl">中文场地名（独立）</div>
+    <input class="fi" type="text" value="${escH(v.zh)}"
+      oninput="setVP(${selVenue},'zh',this.value);scheduleRender()">
+    <div class="lbl">英文场地名（独立）</div>
+    <input class="fi" type="text" value="${escH(v.en)}"
+      oninput="setVP(${selVenue},'en',this.value);scheduleRender()">
+    <div class="lbl">桌数面积（独立，回车换行）</div>
+    <textarea class="fi-ta" oninput="setVPTA(${selVenue},'tables',this.value)">${escH(v.tables)}</textarea>
+    <div class="lbl">宴会厅介绍（独立，回车换行）</div>
+    <textarea class="fi-ta" oninput="setVPTA(${selVenue},'desc',this.value)">${escH(v.desc)}</textarea>
+  </div>
+
+  <!-- ③ 场地名样式（全局） -->
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>场地名样式（全局同步）</div>
+    <div class="hint">⚡ 改字体/大小/颜色 → 所有厅场地名同步</div>
+    <div class="lbl">中文字体</div>
+    <select class="sel" onchange="setP('zhFont',this.value)">${fZh(p.zhFont)}</select>
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.zhSize}" oninput="setPN('zhSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('zhWeight',this.value)">${wO(p.zhWeight)}</select>
+    </div>
+    ${cRow('zhColor',p.zhColor,'中文色')}
+    <div class="row"><label>字间距</label>
+      <input class="sld" type="range" min="-0.1" max="1" step="0.01" value="${p.zhLS||0}"
+        oninput="setPN('zhLS',+this.value);document.getElementById('v-zhls').textContent=this.value">
+      <span style="font-size:9px;color:#555;min-width:30px;" id="v-zhls">${p.zhLS||0}</span>
+    </div>
+    <div style="height:1px;background:#1e1e1e;margin:6px 0;"></div>
+    <div class="lbl">英文字体</div>
+    <select class="sel" onchange="setP('enFont',this.value)">${fEn(p.enFont)}</select>
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.enSize}" oninput="setPN('enSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('enWeight',this.value)">${wO(p.enWeight)}</select>
+    </div>
+    ${cRow('enColor',p.enColor,'英文色')}
+    <div class="row"><label>字间距</label>
+      <input class="sld" type="range" min="-0.1" max="1" step="0.01" value="${p.enLS||0}"
+        oninput="setPN('enLS',+this.value);document.getElementById('v-enls').textContent=this.value">
+      <span style="font-size:9px;color:#555;min-width:30px;" id="v-enls">${p.enLS||0}</span>
+    </div>
+  </div>
+
+  <!-- ④ 桌数面积样式（全局） -->
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>桌数面积样式（全局同步）</div>
+    <div class="hint">⚡ 改这里 → 所有厅桌数样式同步</div>
+    <div class="lbl">字体</div>
+    <select class="sel" onchange="setP('tableFont',this.value)">${fZh(p.tableFont)}</select>
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.tableSize}" oninput="setPN('tableSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('tableWeight',this.value)">${wO(p.tableWeight)}</select>
+    </div>
+    ${cRow('tableColor',p.tableColor,'颜色')}
+    <div class="row"><label>字间距</label>
+      <input class="sld" type="range" min="-0.1" max="1" step="0.01" value="${p.tableLS||0}"
+        oninput="setPN('tableLS',+this.value);document.getElementById('v-tbls').textContent=this.value">
+      <span style="font-size:9px;color:#555;min-width:30px;" id="v-tbls">${p.tableLS||0}</span>
+    </div>
+    <div class="row"><label>行间距</label>
+      <input class="sld" type="range" min="0.8" max="4" step="0.05" value="${p.tableLineH||1.15}"
+        oninput="setPN('tableLineH',+this.value);document.getElementById('v-tlh').textContent=this.value">
+      <span style="font-size:9px;color:#555;min-width:28px;" id="v-tlh">${p.tableLineH||1.15}</span>
+    </div>
+  </div>
+
+  <!-- ⑤ 介绍文字样式（全局） -->
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>宴会厅介绍样式（全局同步）</div>
+    <div class="hint">⚡ 改这里 → 所有厅介绍文字同步</div>
+    <div class="lbl">字体</div>
+    <select class="sel" onchange="setP('descFont',this.value)">${fZh(p.descFont)}</select>
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.descSize}" oninput="setPN('descSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('descWeight',this.value)">${wO(p.descWeight)}</select>
+    </div>
+    ${cRow('descColor',p.descColor,'颜色')}
+    <div class="row"><label>字间距</label>
+      <input class="sld" type="range" min="-0.1" max="1" step="0.01" value="${p.descLS||0}"
+        oninput="setPN('descLS',+this.value);document.getElementById('v-dcls').textContent=this.value">
+      <span style="font-size:9px;color:#555;min-width:30px;" id="v-dcls">${p.descLS||0}</span>
+    </div>
+    <div class="row"><label>行间距</label>
+      <input class="sld" type="range" min="0.8" max="4" step="0.05" value="${p.descLineH||1.45}"
+        oninput="setPN('descLineH',+this.value);document.getElementById('v-dlh').textContent=this.value">
+      <span style="font-size:9px;color:#555;min-width:28px;" id="v-dlh">${p.descLineH||1.45}</span>
+    </div>
+  </div>
+
+  <!-- ⑥ 顶部大标题 -->
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>顶部大标题</div>
+    <div class="lbl">中文主标题</div>
+    <input class="fi" type="text" value="${escH(p.mainTitleZH)}" oninput="setP('mainTitleZH',this.value)">
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.mainTitleSize}" oninput="setPN('mainTitleSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('mainTitleFont',this.value)">${fAll(p.mainTitleFont)}</select>
+    </div>
+    ${cRow('mainTitleColor',p.mainTitleColor,'颜色')}
+    <div class="poskit">
+      ${pkRow('mainTitleY',p.mainTitleY,'↕ Y',0,400)}
+      ${pkRow('mainTitleX',p.mainTitleX,'↔ X',-200,800)}
+    </div>
+    <div style="height:1px;background:#1e1e1e;margin:8px 0;"></div>
+    <div class="lbl">英文副标题（右上，回车换行）</div>
+    <textarea class="fi-ta" style="min-height:40px;" oninput="setP('mainTitleEN',this.value)">${escH(p.mainTitleEN)}</textarea>
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.mainTitleENSize}" oninput="setPN('mainTitleENSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('mainTitleENFont',this.value)">${fEn(p.mainTitleENFont)}</select>
+    </div>
+    ${cRow('mainTitleENColor',p.mainTitleENColor,'颜色')}
+    <div class="poskit">${pkRow('mainTitleENY',p.mainTitleENY,'↕ Y',0,400)}</div>
+  </div>
+
+  <!-- ⑦ 表头 & 线条 -->
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>表头 & 线条</div>
+    <div class="lbl">表头标签字体</div>
+    <select class="sel" onchange="setP('headerLabelFont',this.value)">${fAll(p.headerLabelFont)}</select>
+    <div class="srow">
+      <input class="num" type="number" min="8" max="400" value="${p.headerLabelSize}" oninput="setPN('headerLabelSize',+this.value)">
+      <span class="unit">px</span>
+      <select class="sel-sm" onchange="setP('headerLabelWeight',this.value)">${wO(p.headerLabelWeight)}</select>
+    </div>
+    ${cRow('headerLabelColor',p.headerLabelColor,'标签色')}
+    ${cRow('headerLineColor',p.headerLineColor,'表头线')}
+    <div class="row"><label>表头线粗</label>
+      <input class="sld" type="range" min="0.5" max="20" step="0.5" value="${p.headerLineThick||2}"
+        oninput="setPN('headerLineThick',+this.value);document.getElementById('ni-hlt').value=this.value">
+      <input id="ni-hlt" class="num" type="number" min="0.5" max="20" step="0.5" value="${p.headerLineThick||2}"
+        oninput="setPN('headerLineThick',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span>
+    </div>
+    ${cRow('rowLineColor',p.rowLineColor,'行分隔线')}
+    <div class="row"><label>行线粗细</label>
+      <input class="sld" type="range" min="0.5" max="20" step="0.5" value="${p.rowLineThick||1}"
+        oninput="setPN('rowLineThick',+this.value);document.getElementById('ni-rlt').value=this.value">
+      <input id="ni-rlt" class="num" type="number" min="0.5" max="20" step="0.5" value="${p.rowLineThick||1}"
+        oninput="setPN('rowLineThick',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span>
+    </div>
+    ${cRow('bgColor',p.bgColor,'背景色')}
+    <div style="height:1px;background:#1e1e1e;margin:6px 0;"></div>
+    <div class="poskit">
+      ${pkRow('headerY',p.headerY,'表头Y',0,800)}
+      ${pkRow('headerH2',p.headerH2,'表头高',20,200)}
+    </div>
+    <div class="row" style="margin-top:6px;"><label>行内边距</label>
+      <input class="sld" type="range" min="0" max="200" value="${p.rowPadY}"
+        oninput="setPN('rowPadY',+this.value);document.getElementById('ni-rpy').value=this.value">
+      <input id="ni-rpy" class="num" type="number" value="${p.rowPadY}"
+        oninput="setPN('rowPadY',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span>
+    </div>
+  </div>
+
+  <!-- ⑧ 列宽 -->
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>列宽调整（1200基准）</div>
+    <div class="hint">四列总宽固定=1096，图片列自动补齐</div>
+    <div class="row"><label>场地名</label>
+      <input class="sld" type="range" min="100" max="600" value="${p.col1W}"
+        oninput="setPN('col1W',+this.value);document.getElementById('ni-c1').value=this.value">
+      <input id="ni-c1" class="num" type="number" value="${p.col1W}"
+        oninput="setPN('col1W',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span>
+    </div>
+    <div class="row"><label>桌数面积</label>
+      <input class="sld" type="range" min="100" max="600" value="${p.col2W}"
+        oninput="setPN('col2W',+this.value);document.getElementById('ni-c2').value=this.value">
+      <input id="ni-c2" class="num" type="number" value="${p.col2W}"
+        oninput="setPN('col2W',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span>
+    </div>
+    <div class="row"><label>宴会介绍</label>
+      <input class="sld" type="range" min="100" max="600" value="${p.col3W}"
+        oninput="setPN('col3W',+this.value);document.getElementById('ni-c3').value=this.value">
+      <input id="ni-c3" class="num" type="number" value="${p.col3W}"
+        oninput="setPN('col3W',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span>
+    </div>
+    <div class="lbl">图片框位置（相对每行顶横线，所有厅同步）</div>
+    <div style="font-size:9px;color:#555;margin-bottom:4px;">Y=0 时图片顶边紧贴行顶横线；正值向下移，负值向上</div>
+    <div class="row"><label>↔ X偏移</label>
+      <input class="sld" type="range" min="-800" max="800" value="${p.imgOffsetX||0}"
+        oninput="setPN('imgOffsetX',+this.value);document.getElementById('ni-iox').value=this.value">
+      <input id="ni-iox" class="num" type="number" min="-800" max="800" value="${p.imgOffsetX||0}"
+        oninput="setPN('imgOffsetX',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span>
+    </div>
+    <div class="row"><label>↕ Y偏移</label>
+      <input class="sld" type="range" min="-1600" max="1600" value="${p.imgOffsetY||0}"
+        oninput="setPN('imgOffsetY',+this.value);document.getElementById('ni-ioy').value=this.value">
+      <input id="ni-ioy" class="num" type="number" min="-1600" max="1600" value="${p.imgOffsetY||0}"
+        oninput="setPN('imgOffsetY',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span>
+    </div>
+    <div class="lbl">图片宽度（0=自动填满图片列）</div>
+    <div class="row"><label>图片宽</label>
+      <input class="sld" type="range" min="0" max="1600" value="${p.imgW||0}"
+        oninput="setPN('imgW',+this.value);document.getElementById('ni-iw').value=this.value">
+      <input id="ni-iw" class="num" type="number" min="0" max="1600" value="${p.imgW||0}"
+        oninput="setPN('imgW',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span>
+    </div>
+    <div class="lbl">图片高度（0=自动等于行内高度）</div>
+    <div class="row"><label>图片高</label>
+      <input class="sld" type="range" min="0" max="2000" value="${p.imgH||0}"
+        oninput="setPN('imgH',+this.value);document.getElementById('ni-ih').value=this.value">
+      <input id="ni-ih" class="num" type="number" min="0" max="2000" value="${p.imgH||0}"
+        oninput="setPN('imgH',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span>
+    </div>
+    <div class="row"><label>图片圆角</label>
+      <input class="sld" type="range" min="0" max="200" value="${p.imgRadius||0}"
+        oninput="setPN('imgRadius',+this.value);document.getElementById('ni-irad').value=this.value">
+      <input id="ni-irad" class="num" type="number" value="${p.imgRadius||0}"
+        oninput="setPN('imgRadius',+this.value);this.previousElementSibling.value=this.value">
+      <span class="unit">px</span>
+    </div>
+  </div>
+
+  <!-- ⑨ 备份 -->
+  <div class="sc">
+    <div class="st"><span class="st-icon"></span>项目备份</div>
+    <div class="bk-row">
+      <button class="bk-btn" onclick="exportJSON()">⬇ 导出备份</button>
+      <button class="bk-btn" onclick="importJSON()">⬆ 导入备份</button>
+    </div>
+  </div>`;
+}
+
+// ═══ 导出 PNG 1200×1600 ══════════════════════════════════════════
+async function doExport(){
+  const p=cur();if(!p)return;
+  if(!await checkQuota())return;
+  const btn=document.getElementById('exp-btn');btn.textContent='生成中…';btn.disabled=true;
+  try{
+    await document.fonts.ready;
+    const W=1200,H=1600;
+    const cnt=p.venueCount||6;
+    const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+    const ctx=canvas.getContext('2d');
+
+    // 背景
+    ctx.fillStyle=p.bgColor||'#ffffff';ctx.fillRect(0,0,W,H);
+
+    async function loadImgEl(key){const url=await getURL(key);if(!url)return null;return new Promise(res=>{const img=new Image();img.onload=()=>res(img);img.onerror=()=>res(null);img.src=url;});}
+
+    const mx=p.marginX||52;
+    const totalW=W-mx*2;
+    const cols=calcCols(p);
+
+    // ── 中文主标题 ──
+    ctx.save();
+    ctx.font=`${p.mainTitleWeight} ${p.mainTitleSize}px '${p.mainTitleFont}',serif`;
+    ctx.fillStyle=p.mainTitleColor;
+    ctx.shadowColor='rgba(0,0,0,0.06)';ctx.shadowBlur=4;
+    drawTextLS(ctx,p.mainTitleZH||'',p.mainTitleX,p.mainTitleY,p.mainTitleLS||0.02,'left');
+    ctx.shadowBlur=0;ctx.restore();
+
+    // ── 英文副标题（右上角，多行） ──
+    {
+      const lines=(p.mainTitleEN||'').split('\n');
+      const fs=p.mainTitleENSize;const lh=fs*1.2;
+      ctx.save();
+      ctx.font=`${p.mainTitleENWeight} ${fs}px '${p.mainTitleENFont}',serif`;
+      ctx.fillStyle=p.mainTitleENColor;
+      ctx.textBaseline='top';
+      lines.forEach((line,li)=>{
+        const lw=drawTextLS(ctx,'',W-mx,p.mainTitleENY+li*lh,p.mainTitleENLS||0.08,'right');
+        // 右对齐
+        const m=ctx.font.match(/([\d.]+)px/);const fss=m?parseFloat(m[1]):fs;const ls=(p.mainTitleENLS||0.08)*fss;
+        const chars=[...line];let tw=0;
+        chars.forEach((ch,i)=>{tw+=ctx.measureText(ch).width;if(i<chars.length-1)tw+=ls;});
+        let sx=W-mx-tw;
+        chars.forEach((ch,i)=>{ctx.fillText(ch,sx,p.mainTitleENY+li*lh);sx+=ctx.measureText(ch).width+(i<chars.length-1?ls:0);});
+      });
+      ctx.restore();
+    }
+
+    // ── 表头 ──
+    const hY=p.headerY,hH=p.headerH2;
+    const hlt=p.headerLineThick||2;
+    ctx.fillStyle=p.headerLineColor||'#1a1a1a';
+    ctx.fillRect(mx,hY,totalW,hlt);
+    // 表头标签
+    const hlfs=p.headerLabelSize;
+    ctx.save();
+    ctx.font=`${p.headerLabelWeight} ${hlfs}px '${p.headerLabelFont}',sans-serif`;
+    ctx.fillStyle=p.headerLabelColor;
+    const labelY=hY+hlt+(hH-hlt-hlfs)/2;
+    drawTextLS(ctx,'场地',cols.x1,labelY,p.headerLabelLS||0.05,'left');
+    drawTextLS(ctx,'桌数｜面积',cols.x2,labelY,p.headerLabelLS||0.05,'left');
+    drawTextLS(ctx,'宴会厅介绍',cols.x3,labelY,p.headerLabelLS||0.05,'left');
+    drawTextLS(ctx,'现场图片',cols.x4,labelY,p.headerLabelLS||0.05,'left');
+    ctx.restore();
+    ctx.fillStyle=p.headerLineColor||'#1a1a1a';
+    ctx.fillRect(mx,hY+hH,totalW,hlt);
+
+    // ── 各厅行 ──
+    let vY=hY+hH+hlt;
+    const rowPadY=p.rowPadY||28;
+    const zhFs=p.zhSize,enFs=p.enSize,tableFs=p.tableSize,descFs=p.descSize;
+    const tableLH=p.tableLineH||1.7;
+    const descLH=p.descLineH||1.7;
+    const lineRlt=p.rowLineThick||1;
+
+    for(let i=0;i<cnt;i++){
+      const v=p.venues[i];
+      const tableLines=(v.tables||'').split('\n');
+      const descLines=(v.desc||'').split('\n');
+      const maxLines=Math.max(tableLines.length,descLines.length);
+      const nameH=zhFs+6+enFs;
+      const txtH=Math.max(nameH,Math.round(maxLines*descFs*descLH));
+      const rH=txtH+rowPadY*2;
+      // 图片尺寸：优先使用用户设定值，0=自动
+      const imgH=p.imgH&&p.imgH>0?p.imgH:(rH-rowPadY*2);
+      const imgW=p.imgW&&p.imgW>0?p.imgW:cols.w4;
+
+      // 行分隔线
+      ctx.fillStyle=p.rowLineColor||'#cccccc';
+      ctx.fillRect(mx,vY,totalW,lineRlt);
+
+      const textY=vY+rowPadY;
+      const nameOffY=Math.round((txtH-nameH)/2);
+
+      // 中文场地名
+      ctx.save();
+      ctx.font=`${p.zhWeight} ${zhFs}px '${p.zhFont}',serif`;
+      ctx.fillStyle=p.zhColor;
+      drawTextLS(ctx,v.zh||'',cols.x1,textY+nameOffY,p.zhLS||0.02,'left');
+      ctx.restore();
+      // 英文场地名
+      ctx.save();
+      ctx.font=`${p.enWeight} ${enFs}px '${p.enFont}',serif`;
+      ctx.fillStyle=p.enColor;
+      drawTextLS(ctx,v.en||'',cols.x1,textY+nameOffY+zhFs+6,p.enLS||0.12,'left');
+      ctx.restore();
+
+      // 桌数面积（多行，垂直居中）
+      const tableBlockH=tableLines.length*tableFs*tableLH;
+      const tableStartY=textY+(txtH-tableBlockH)/2;
+      ctx.save();
+      ctx.font=`${p.tableWeight} ${tableFs}px '${p.tableFont}',sans-serif`;
+      ctx.fillStyle=p.tableColor;
+      tableLines.forEach((line,li)=>{
+        drawTextLS(ctx,line,cols.x2,tableStartY+li*tableFs*tableLH,p.tableLS||0.02,'left');
+      });
+      ctx.restore();
+
+      // 介绍文字（多行，垂直居中）
+      const descBlockH=descLines.length*descFs*descLH;
+      const descStartY=textY+(txtH-descBlockH)/2;
+      ctx.save();
+      ctx.font=`${p.descWeight} ${descFs}px '${p.descFont}',sans-serif`;
+      ctx.fillStyle=p.descColor;
+      descLines.forEach((line,li)=>{
+        drawTextLS(ctx,line,cols.x3,descStartY+li*descFs*descLH,p.descLS||0.02,'left');
+      });
+      ctx.restore();
+
+      // 图片
+      const imgEl=await loadImgEl(v.imgKey);
+      ctx.save();
+      ctx.beginPath();
+      const imgDrawX=cols.x4+(p.imgOffsetX||0);
+      const imgDrawY=textY+(p.imgOffsetY||0);
+      ctx.roundRect(imgDrawX,imgDrawY,imgW,imgH,p.imgRadius||8);
+      ctx.clip();
+      if(imgEl){
+        const l=iLay(v.nW||imgEl.naturalWidth,v.nH||imgEl.naturalHeight,imgW,imgH,v.zoom,v.px,v.py);
+        ctx.drawImage(imgEl,imgDrawX+l.left,imgDrawY+l.top,l.width,l.height);
+      } else {
+        ctx.fillStyle='#f0ece6';ctx.fillRect(imgDrawX,imgDrawY,imgW,imgH);
+        ctx.fillStyle='#b8a080';ctx.font=`400 20px 'Noto Sans SC',sans-serif`;
+        ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText('图片',imgDrawX+imgW/2,imgDrawY+imgH/2);ctx.textAlign='left';
+      }
+      ctx.restore();
+
+      // 最后一行底线
+      if(i===cnt-1){
+        ctx.fillStyle=p.rowLineColor||'#cccccc';
+        ctx.fillRect(mx,vY+rH,totalW,lineRlt);
+      }
+
+      vY+=rH;
+    }
+
+    canvas.toBlob(blob=>{
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.download=`${p.name||'poster'}_1200x1600.png`;a.href=url;a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+    },'image/png');
+
+  }catch(err){console.error(err);alert('导出失败：'+err.message);}
+  finally{btn.textContent='↓ 导出 PNG 1200×1600';btn.disabled=false;}
+}
+
+window.addEventListener('resize',()=>{if(curId)renderPoster();});
+(async()=>{await wpCheckAuth();await openDB();await loadAll();renderList();})();
+</script>
+</body>
+</html>
