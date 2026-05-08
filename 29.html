@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>婚礼堂大图版 - 婚礼海报</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700;900&family=Noto+Sans+SC:wght@200;300;400;500;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Italianno&family=Great+Vibes&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -332,7 +333,7 @@ async function renderPoster(){
     <!-- 顶部文字组（z-index:3） -->
     <div style="position:absolute;${topAlignCSS};top:${en1Y}px;
         font-family:'${p.topEN1Font}',serif;font-size:${en1Fs}px;font-weight:${p.topEN1Weight};
-        color:${p.textColor};letter-spacing:${p.topEN1LS}em;line-height:1;
+        color:${p.textColor};letter-spacing:${p.topEN1LS}em;margin-right:-${p.topEN1LS}em;line-height:1;
         ${p.topEN1Italic?'font-style:italic;':''}text-align:${topTextAlign};z-index:3;white-space:nowrap;">
       <span class="tx-edit" contenteditable="true" spellcheck="false"
         style="outline:none;cursor:text;"
@@ -340,7 +341,7 @@ async function renderPoster(){
     </div>
     <div style="position:absolute;${topAlignCSS};top:${en2Y}px;
         font-family:'${p.topEN2Font}',serif;font-size:${en2Fs}px;font-weight:${p.topEN2Weight};
-        color:${p.textColor};letter-spacing:${p.topEN2LS}em;line-height:1;
+        color:${p.textColor};letter-spacing:${p.topEN2LS}em;margin-right:-${p.topEN2LS}em;line-height:1;
         ${p.topEN2Italic?'font-style:italic;':''}text-align:${topTextAlign};z-index:3;white-space:nowrap;">
       <span class="tx-edit" contenteditable="true" spellcheck="false"
         style="outline:none;cursor:text;"
@@ -375,7 +376,7 @@ async function renderPoster(){
     <!-- 底部英文（z-index:3） -->
     <div style="position:absolute;${beAlignCSS};top:${beY}px;
         font-family:'${p.botENFont}',serif;font-size:${botEnFs}px;font-weight:${p.botENWeight};
-        color:${p.textColor};letter-spacing:${p.botENLS}em;
+        color:${p.textColor};letter-spacing:${p.botENLS}em;margin-right:-${p.botENLS}em;
         line-height:1;text-align:${beTextAlign};z-index:3;white-space:pre;">
       <span class="tx-edit" contenteditable="true" spellcheck="false"
         style="outline:none;cursor:text;"
@@ -484,9 +485,6 @@ function renderRP(){
     <div class="lbl">对齐方式</div>
     <div class="row" style="gap:4px;">
       ${['left','center','right'].map(a=>`<button onclick="setPB('topAlign','${a}')" style="flex:1;padding:5px;background:${p.topAlign===a?'#c8392b':'#1a1a1a'};color:${p.topAlign===a?'#fff':'#888'};border:1px solid #333;border-radius:4px;cursor:pointer;font-family:inherit;font-size:10px;">${a==='left'?'左':a==='center'?'中':'右'}</button>`).join('')}
-    </div>
-    <div class="poskit">
-      ${pkRow('topGroupY','Y',p.topGroupY,'↕ 整组Y',0,1600).replace(/Y','/,"','").replace("Y',p.topGroupY,'↕ 整组Y',0,1600","'topGroupY',p.topGroupY,'↕ 整组Y',0,1600")}
     </div>
     <div class="poskit">
       <div class="poskit-row"><span class="pk-lbl">↕ 整组Y</span>
@@ -653,78 +651,81 @@ function renderRP(){
   </div>`;
 }
 
-// ═══ 导出 PNG 1200×1600 ═════════════════════════════════════════
+// ═══ 导出 PNG 1200×1600（直接抓取当前预览，确保所见即所得） ═════
 async function doExport(){
   const p=cur();if(!p)return;
   if(!await checkQuota())return;
-  const btn=document.getElementById('exp-btn');btn.textContent='生成中…';btn.disabled=true;
+  const btn=document.getElementById('exp-btn');
+  btn.textContent='生成中…';btn.disabled=true;
   try{
-    await document.fonts.ready;
     const W=1200,H=1600;
-    const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
-    const ctx=canvas.getContext('2d');
+    const poster=document.getElementById('poster');
+    if(!poster||!poster.offsetWidth||!poster.offsetHeight){throw new Error('预览画布未准备好');}
 
-    // 背景图
-    if(p.imgKey){
-      const url=await getURL(p.imgKey);
-      const img=await new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src=url;});
-      if(img){
-        const l=iLay(p.nW||img.naturalWidth,p.nH||img.naturalHeight,W,H,p.zoom,p.px,p.py);
-        ctx.drawImage(img,l.left,l.top,l.width,l.height);
-      } else {
-        ctx.fillStyle='#f0ece6';ctx.fillRect(0,0,W,H);
+    // 关键修复：不再重建另一套 1200×1600 DOM，也不再用 Canvas 重新排文字。
+    // 直接截取当前屏幕中正在看的 #poster，导出才会和设计/预览完全一致。
+    await document.fonts.ready;
+    const usedFonts=[
+      [p.topEN1Font,p.topEN1Size,p.topEN1Weight,p.topEN1Italic],
+      [p.topEN2Font,p.topEN2Size,p.topEN2Weight,p.topEN2Italic],
+      [p.topZH1Font,p.topZH1Size,p.topZH1Weight,false],
+      [p.topZH2Font,p.topZH2Size,p.topZH2Weight,false],
+      [p.botZHFont,p.botZHSize,p.botZHWeight,false],
+      [p.botENFont,p.botENSize,p.botENWeight,false],
+    ];
+    for(const [f,s,w,it] of usedFonts){
+      try{await document.fonts.load(`${it?'italic ':''}${w} ${s}px '${f}'`);}catch{}
+    }
+    await document.fonts.ready;
+
+    // 等图片加载、布局稳定。
+    const imgs=[...poster.querySelectorAll('img')];
+    await Promise.all(imgs.map(img=>img.complete?Promise.resolve():new Promise(res=>{img.onload=res;img.onerror=res;})));
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+
+    const pw=poster.offsetWidth;
+    const ph=poster.offsetHeight;
+    const scale=Math.max(W/pw,H/ph);
+
+    const snap=await html2canvas(poster,{
+      width:pw,height:ph,scale:scale,
+      backgroundColor:null,
+      useCORS:true,
+      allowTaint:true,
+      logging:false,
+      scrollX:0,scrollY:0,
+      windowWidth:document.documentElement.clientWidth,
+      windowHeight:document.documentElement.clientHeight,
+      onclone:(doc)=>{
+        const clonedPoster=doc.getElementById('poster');
+        if(clonedPoster){
+          clonedPoster.style.boxShadow='none';
+          clonedPoster.querySelectorAll('[contenteditable]').forEach(el=>el.removeAttribute('contenteditable'));
+        }
       }
-    } else {
-      ctx.fillStyle='#f0ece6';ctx.fillRect(0,0,W,H);
-    }
+    });
 
-    // 通用：右/左/中对齐绘制
-    function drawLine(text,font,size,weight,ls,italic,refX,y,align,color){
-      if(!text)return;
-      ctx.save();
-      ctx.font=`${italic?'italic ':''}${weight} ${size}px '${font}',serif`;
-      ctx.fillStyle=color;
-      ctx.textBaseline='top';
-      const m=ctx.font.match(/([\d.]+)px/);const fs=m?parseFloat(m[1]):size;const lsP=(ls||0)*fs;
-      const chars=[...text];let tw=0;
-      chars.forEach((ch,i)=>{tw+=ctx.measureText(ch).width;if(i<chars.length-1)tw+=lsP;});
-      let sx;
-      if(align==='right') sx=refX-tw;
-      else if(align==='center') sx=W/2-tw/2;
-      else sx=refX;
-      chars.forEach((ch,i)=>{ctx.fillText(ch,sx,y);sx+=ctx.measureText(ch).width+(i<chars.length-1?lsP:0);});
-      ctx.restore();
-    }
-
-    // 顶部组
-    {
-      const y0=p.topGroupY;
-      const en1Y=y0;
-      const en2Y=en1Y+p.topEN1Size+p.topGap1;
-      const zh1Y=en2Y+p.topEN2Size+p.topGap2;
-      const zh2Y=zh1Y+p.topZH1Size+p.topGap3;
-      const refX=p.topGroupX;
-      const al=p.topAlign||'right';
-      drawLine(p.topEN1,p.topEN1Font,p.topEN1Size,p.topEN1Weight,p.topEN1LS,p.topEN1Italic,refX,en1Y,al,p.textColor);
-      drawLine(p.topEN2,p.topEN2Font,p.topEN2Size,p.topEN2Weight,p.topEN2LS,p.topEN2Italic,refX,en2Y,al,p.textColor);
-      drawLine(p.topZH1,p.topZH1Font,p.topZH1Size,p.topZH1Weight,p.topZH1LS,false,refX,zh1Y,al,p.textColor);
-      drawLine(p.topZH2,p.topZH2Font,p.topZH2Size,p.topZH2Weight,p.topZH2LS,false,refX,zh2Y,al,p.textColor);
-    }
-
-    // 底部组（中英文独立位置）
-    {
-      drawLine(p.botZH,p.botZHFont,p.botZHSize,p.botZHWeight,p.botZHLS,false,p.botZHX,p.botZHY,p.botZHAlign||'left',p.textColor);
-      drawLine(p.botEN,p.botENFont,p.botENSize,p.botENWeight,p.botENLS,false,p.botENX,p.botENY,p.botENAlign||'left',p.textColor);
-    }
+    // 输出固定 1200×1600；整张预览等比例/补满绘制，避免因为预览区取整导致导出尺寸不是精确 3:4。
+    const canvas=document.createElement('canvas');
+    canvas.width=W;canvas.height=H;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(snap,0,0,snap.width,snap.height,0,0,W,H);
 
     canvas.toBlob(blob=>{
       const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');a.download=`${p.name||'poster'}_1200x1600.png`;a.href=url;a.click();
+      const a=document.createElement('a');
+      a.download=`${p.name||'poster'}_1200x1600.png`;
+      a.href=url;
+      a.click();
       setTimeout(()=>URL.revokeObjectURL(url),5000);
     },'image/png');
 
-  }catch(err){console.error(err);alert('导出失败：'+err.message);}
-  finally{btn.textContent='↓ 导出 PNG 1200×1600';btn.disabled=false;}
+  }catch(err){
+    console.error(err);
+    alert('导出失败：'+err.message);
+  }finally{
+    btn.textContent='↓ 导出 PNG 1200×1600';btn.disabled=false;
+  }
 }
 
 window.addEventListener('resize',()=>{if(curId)renderPoster();});
