@@ -475,11 +475,12 @@ async function deleteLic(id){
 // ── Template Management ───────────────────────────────────────────
 async function loadTemplates(){
   try{
-    const data=await sbFetch('/rest/v1/templates?order=sort_order.asc&select=*');
+    // 列表只查必要字段，不查img(base64大图)，加载快10倍以上
+    const data=await sbFetch('/rest/v1/templates?order=sort_order.asc&select=id,name,url,tag,sort_order,is_active,description');
     const tb=document.getElementById('tpl-table');
     if(!data.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:#444;padding:20px;">暂无模板</td></tr>';return;}
     tb.innerHTML=data.map(t=>`<tr>
-      <td>${t.img&&t.img.length>10?`<img src="${t.img}" style="width:40px;height:53px;object-fit:cover;border-radius:3px;">`:'<div style="width:40px;height:53px;background:#1a1a1a;border-radius:3px;"></div>'}</td>
+      <td><div style="width:40px;height:53px;background:#1a1a1a;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#444;font-size:18px;">▢</div></td>
       <td style="font-weight:500;color:#ddd;">${t.name}</td>
       <td style="font-family:monospace;font-size:11px;color:#888;">${t.url}</td>
       <td style="color:#666;">${t.tag||'-'}</td>
@@ -492,7 +493,7 @@ async function loadTemplates(){
       </div></td>
     </tr>`).join('');
     window._tplData=data;
-  }catch(e){alert('加载模板失败：'+e.message);}
+  }catch(e){alert('加载模板失败');}
 }
 
 function openAddTpl(){
@@ -509,7 +510,7 @@ function openAddTpl(){
   setTimeout(()=>document.getElementById('tpl-name').focus(),50);
 }
 
-function editTpl(id){
+async function editTpl(id){
   const t=(window._tplData||[]).find(x=>x.id===id);if(!t)return;
   document.getElementById('tpl-modal-title').textContent='编辑模板';
   document.getElementById('tpl-edit-id').value=id;
@@ -518,11 +519,18 @@ function editTpl(id){
   document.getElementById('tpl-desc').value=t.description||'';
   document.getElementById('tpl-tag').value=t.tag||'';
   document.getElementById('tpl-sort').value=t.sort_order||99;
-  document.getElementById('tpl-img-data').value=t.img||'';
+  document.getElementById('tpl-img-data').value='';
   const prev=document.getElementById('tpl-img-preview');
-  if(t.img&&t.img.length>10){prev.src=t.img;prev.style.display='block';}
-  else{prev.style.display='none';}
+  prev.style.display='none';
   document.getElementById('tpl-modal').classList.add('open');
+  // 单独加载预览图（避免列表里加载所有大图）
+  try{
+    const full=await sbFetch(`/rest/v1/templates?id=eq.${id}&select=img`);
+    if(full[0]&&full[0].img&&full[0].img.length>10){
+      document.getElementById('tpl-img-data').value=full[0].img;
+      prev.src=full[0].img;prev.style.display='block';
+    }
+  }catch(e){}
 }
 
 function closeTplModal(){document.getElementById('tpl-modal').classList.remove('open');}
