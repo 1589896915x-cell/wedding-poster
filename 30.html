@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>全图叠字版·宁波 - 婚礼海报</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:wght@400;500;600;700;800;900&family=Great+Vibes&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0e0e0e;color:#ddd;height:100vh;overflow:hidden;}
+button{font-family:inherit;}
+/* ===== 布局 ===== */
+#app{display:flex;height:100vh;}
+#stage{flex:1;display:flex;align-items:center;justify-content:center;background:#161616;position:relative;overflow:hidden;}
+#panel{width:340px;flex-shrink:0;background:#121212;border-left:1px solid #242424;display:flex;flex-direction:column;height:100vh;}
+/* ===== 顶栏 ===== */
+.topbar{height:50px;flex-shrink:0;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid #242424;background:#121212;}
+.topbar input.pn{flex:1;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;color:#eee;font-size:13px;padding:7px 10px;outline:none;}
+.topbar input.pn:focus{border-color:#c8a96a;}
+.tb-btn{background:#1c1c1c;border:1px solid #2a2a2a;border-radius:6px;color:#aaa;font-size:12px;padding:7px 11px;cursor:pointer;white-space:nowrap;}
+.tb-btn:hover{border-color:#c8a96a;color:#e7c98a;}
+.tb-btn.gold{background:#c8a96a;color:#0a0a0a;border-color:#c8a96a;font-weight:700;}
+.tb-btn.gold:hover{background:#d6b878;}
+.credits{font-size:11px;color:#c8a96a;background:#1a1408;border:1px solid #2a2210;padding:5px 10px;border-radius:5px;white-space:nowrap;}
+/* ===== 画布 ===== */
+#wrap{position:relative;}
+#poster{position:relative;overflow:hidden;background:#bcae96;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+#bgImg{position:absolute;user-select:none;-webkit-user-drag:none;pointer-events:none;}
+.ov-top,.ov-bot{position:absolute;left:0;right:0;pointer-events:none;}
+.txt{position:absolute;white-space:pre;line-height:1;will-change:transform;}
+/* ===== 面板 ===== */
+.pbody{flex:1;overflow-y:auto;padding:12px 14px 60px;}
+.pbody::-webkit-scrollbar{width:8px;}.pbody::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:4px;}
+.sec{border:1px solid #232323;border-radius:9px;margin-bottom:10px;overflow:hidden;background:#161616;}
+.sec-h{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;font-size:12.5px;color:#cfcfcf;user-select:none;}
+.sec-h:hover{background:#1c1c1c;}
+.sec-h .ar{color:#666;font-size:10px;transition:transform .15s;}
+.sec.open .sec-h .ar{transform:rotate(90deg);}
+.sec-b{display:none;padding:4px 12px 12px;}
+.sec.open .sec-b{display:block;}
+.fld{margin-bottom:9px;}
+.fld:last-child{margin-bottom:2px;}
+.lbl{font-size:10.5px;color:#7a7a7a;margin-bottom:4px;display:block;}
+.ti{width:100%;background:#0c0c0c;border:1px solid #292929;border-radius:6px;color:#eee;font-size:12px;padding:7px 9px;outline:none;resize:vertical;font-family:inherit;}
+.ti:focus{border-color:#c8a96a;}
+textarea.ti{min-height:34px;line-height:1.4;}
+.row{display:flex;gap:7px;align-items:center;}
+.row>*{min-width:0;}
+select.ti{cursor:pointer;}
+/* 滑块+数值（id 联动，不用 nextElementSibling） */
+.sn{display:flex;align-items:center;gap:8px;}
+.sn input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:#333;border-radius:3px;outline:none;}
+.sn input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#c8a96a;cursor:pointer;}
+.sn input[type=range]::-moz-range-thumb{width:14px;height:14px;border:none;border-radius:50%;background:#c8a96a;cursor:pointer;}
+.sn input.num{width:58px;background:#0c0c0c;border:1px solid #292929;border-radius:5px;color:#ddd;font-size:11px;padding:5px 6px;text-align:center;outline:none;}
+.sn input.num:focus{border-color:#c8a96a;}
+.alnbtns{display:flex;gap:4px;}
+.alnbtns button{flex:1;background:#0c0c0c;border:1px solid #292929;border-radius:5px;color:#888;font-size:11px;padding:5px 0;cursor:pointer;}
+.alnbtns button.on{border-color:#c8a96a;color:#e7c98a;background:#1a1408;}
+/* 色块 */
+.cd{width:26px;height:26px;border-radius:5px;border:1px solid #3a3a3a;cursor:pointer;flex-shrink:0;background-image:linear-gradient(45deg,#777 25%,transparent 25%),linear-gradient(-45deg,#777 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#777 75%),linear-gradient(-45deg,transparent 75%,#777 75%);background-size:8px 8px;background-position:0 0,0 4px,4px -4px,-4px 0;}
+/* 上传区 */
+.up{border:1.5px dashed #333;border-radius:8px;padding:16px;text-align:center;color:#777;font-size:12px;cursor:pointer;}
+.up:hover{border-color:#c8a96a;color:#c8a96a;}
+/* 项目列表弹窗 */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;align-items:center;justify-content:center;}
+.ov.open{display:flex;}
+.md{background:#161616;border:1px solid #2a2a2a;border-radius:12px;padding:18px;width:380px;max-height:78vh;overflow-y:auto;}
+.md h3{font-size:14px;margin-bottom:14px;color:#eee;}
+.pi{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;border:1px solid #242424;border-radius:7px;margin-bottom:7px;background:#101010;}
+.pi-n{font-size:13px;color:#ddd;cursor:pointer;flex:1;}
+.pi-a{display:flex;gap:5px;}
+.pi-a button{background:#1c1c1c;border:1px solid #2a2a2a;border-radius:5px;color:#999;font-size:11px;padding:4px 8px;cursor:pointer;}
+.pi-a button:hover{color:#e7c98a;border-color:#c8a96a;}
+.pi-a button.del:hover{color:#e05a5a;border-color:#e05a5a;}
+/* cp 拾色器面板 */
+#cp-pop{display:none;position:fixed;z-index:9999;width:214px;background:#1b1b1b;border:1px solid #333;border-radius:10px;padding:10px;box-shadow:0 14px 44px rgba(0,0,0,.6);}
+#cp-sv{position:relative;width:100%;height:120px;border-radius:6px;cursor:crosshair;}
+#cp-sv-cur{position:absolute;width:12px;height:12px;border:2px solid #fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 2px #000;pointer-events:none;}
+.cp-bar{position:relative;height:12px;margin-top:9px;border-radius:6px;cursor:pointer;}
+.cp-bar .cur{position:absolute;top:-2px;width:4px;height:16px;background:#fff;border:1px solid #000;border-radius:2px;transform:translateX(-50%);pointer-events:none;}
+#cp-num{display:flex;gap:4px;margin-top:9px;}
+#cp-num>div{flex:1;}
+#cp-num .t{font-size:8px;color:#666;text-align:center;}
+#cp-num input{width:100%;padding:3px;background:#111;border:1px solid #2a2a2a;border-radius:4px;color:#ccc;font-size:10px;text-align:center;outline:none;font-family:inherit;}
+#cp-presets{display:flex;flex-wrap:wrap;gap:4px;margin-top:9px;}
+#cp-presets div{width:20px;height:20px;border-radius:4px;border:1px solid #333;cursor:pointer;}
+.cp-done{text-align:right;margin-top:8px;}
+.cp-done button{padding:4px 12px;background:#c8a96a;color:#0a0a0a;border:none;border-radius:4px;font-size:10px;cursor:pointer;font-family:inherit;font-weight:700;}
+.hint{font-size:10px;color:#555;margin-top:4px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <div id="wrap">
+      <div id="poster">
+        <img id="bgImg" alt="">
+        <div class="ov-top" id="ovTop"></div>
+        <div class="ov-bot" id="ovBot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel">
+    <div class="topbar">
+      <input class="pn" id="projName" placeholder="项目名称" oninput="renameProject(this.value)">
+      <button class="tb-btn" onclick="openProjects()">项目</button>
+      <button class="tb-btn gold" id="exportBtn" onclick="doExport()">导出</button>
+    </div>
+    <div class="topbar" style="border-top:none;">
+      <button class="tb-btn" onclick="newProject()">＋新建</button>
+      <button class="tb-btn" onclick="dupProject()">复制</button>
+      <button class="tb-btn" onclick="exportJSON()">备份</button>
+      <button class="tb-btn" onclick="document.getElementById('jsonFile').click()">导入</button>
+      <button class="tb-btn" onclick="applyDefaults()">套用默认</button>
+      <span class="credits" id="wp-credits">…</span>
+    </div>
+    <div class="pbody" id="pbody"></div>
+  </div>
+</div>
+
+<!-- 项目弹窗 -->
+<div class="ov" id="projOv">
+  <div class="md">
+    <h3>我的项目</h3>
+    <div id="projList"></div>
+  </div>
+</div>
+
+<!-- cp 拾色器 -->
+<div id="cp-pop">
+  <div id="cp-sv" onmousedown="_cpDrag='sv';_cpSV(event)" ontouchstart="_cpSV(event)" ontouchmove="_cpSV(event);event.preventDefault()"><div id="cp-sv-cur"></div></div>
+  <div class="cp-bar" id="cp-hue" style="background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);" onmousedown="_cpDrag='hue';_cpHue(event)" ontouchstart="_cpHue(event)" ontouchmove="_cpHue(event);event.preventDefault()"><div class="cur" id="cp-hue-cur"></div></div>
+  <div class="cp-bar" id="cp-alpha" onmousedown="_cpDrag='alpha';_cpAlpha(event)" ontouchstart="_cpAlpha(event)" ontouchmove="_cpAlpha(event);event.preventDefault()"><div class="cur" id="cp-alpha-cur"></div></div>
+  <div id="cp-num">
+    <div><div class="t">R</div><input id="cp-r" type="number" min="0" max="255" oninput="_cpNum()"></div>
+    <div><div class="t">G</div><input id="cp-g" type="number" min="0" max="255" oninput="_cpNum()"></div>
+    <div><div class="t">B</div><input id="cp-b" type="number" min="0" max="255" oninput="_cpNum()"></div>
+    <div><div class="t">A</div><input id="cp-a" type="number" min="0" max="1" step="0.05" oninput="_cpNum()"></div>
+  </div>
+  <div id="cp-presets"></div>
+  <div class="cp-done"><button onclick="cpClose()">完成</button></div>
+</div>
+
+<input type="file" id="bgFile" accept="image/*" style="display:none" onchange="onBgFile(this)">
+<input type="file" id="jsonFile" accept="application/json,.json" style="display:none" onchange="importJSON(this)">
+
+<script>
+/* ============================================================
+   全图叠字版·宁波 · 婚礼海报模板（规范 v1.6）
+   IndexedDB: wedding-ningbo-v1   导出: 1200×1600 PNG
+   默认版式对应「宁波大酒店」参考图
+============================================================ */
+const EXPORT_W=1200, EXPORT_H=1600;
+const $=id=>document.getElementById(id);
+
+/* ---------- Supabase 鉴权（规范 §12） ---------- */
+const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
+const SB_HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+let _lic=null;
+function isTest(){return location.protocol==='file:'||location.hostname==='localhost';}
+async function wpCheckAuth(){
+  if(isTest()){_lic={credits:999,id:'test'};$('wp-credits').textContent='测试模式';return true;}
+  const code=localStorage.getItem('wp-license');
+  if(!code){location.href='index.html';return false;}
+  try{
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&select=*`,{headers:SB_HDR});
+    const d=await r.json();
+    if(!d||!d[0]||!d[0].is_active){location.href='index.html';return false;}
+    const lic=d[0];
+    if((lic.credits||0)<=0){location.href='index.html';return false;}
+    if(lic.expires_at&&new Date(lic.expires_at)<new Date()){location.href='index.html';return false;}
+    if(lic.duration_days&&lic.first_used_at){const e=new Date(lic.first_used_at);e.setDate(e.getDate()+lic.duration_days);if(e<new Date()){location.href='index.html';return false;}}
+    _lic=lic;updCredits();return true;
+  }catch(e){return true;}
+}
+function updCredits(){if(_lic)$('wp-credits').textContent=isTest()?'测试模式':`剩余 ${_lic.credits||0} 次`;}
+async function wpCheckExportQuota(){
+  if(isTest())return true;
+  if(!_lic){alert('请先登录');return false;}
+  if((_lic.credits||0)<=0){alert('导出次数已用完，请充值');return false;}
+  try{
+    const nc=(_lic.credits||0)-1;
+    const r=await fetch(`${SB_URL}/rest/v1/licenses?id=eq.${_lic.id}`,{method:'PATCH',headers:{...SB_HDR,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({credits:nc})});
+    const d=await r.json(); if(d&&d[0])_lic=d[0]; else _lic.credits=nc;
+    updCredits();return true;
+  }catch(e){_lic.credits=Math.max(0,(_lic.credits||0)-1);updCredits();return true;}
+}
+
+/* ---------- 字段配置（默认对应北京花园参考图，单位=1200基准） ---------- */
+const FONTS=[
+  ["思源宋体","'Noto Serif SC'"],["思源黑体","'Noto Sans SC'"],
+  ["Cormorant","'Cormorant Garamond'"],["Playfair","'Playfair Display'"],
+  ["Great Vibes","'Great Vibes'"],["Dancing Script","'Dancing Script'"]
+];
+const SINGLE_WEIGHT=["'Great Vibes'"]; // 仅 400，字重不可调
+function defFields(){return [
+ {key:'t1',label:'城市（宁波）',text:'宁波办婚礼',font:"'Noto Serif SC'",size:132,weight:700,color:'#ffffff',x:55,y:168,ls:0.02,align:'left',lh:1.05,shadow:1},
+ {key:'t1b',label:'城市后缀（办婚礼）',text:'',font:"'Noto Serif SC'",size:148,weight:500,color:'#ffffff',x:292,y:246,ls:0.02,align:'left',lh:1.05,shadow:1},
+ {key:'t2',label:'设问（怎么选/答案在）',text:'怎么选？\n答案在',font:"'Noto Serif SC'",size:72,weight:600,color:'#ffffff',x:55,y:330,ls:0.02,align:'left',lh:1.2,shadow:1},
+ {key:'t3',label:'主标题（宁波大酒店）',text:'宁波大酒店',font:"'Noto Serif SC'",size:108,weight:700,color:'#ffffff',x:55,y:560,ls:0.02,align:'left',lh:1.05,shadow:1},
+ {key:'tEN',label:'英文副标（WEDDING HOTEL）',text:'WEDDING  HOTEL',font:"'Cormorant Garamond'",size:36,weight:400,color:'#f7f7f7',x:55,y:690,ls:0.08,align:'left',lh:1.2,shadow:1},
+ {key:'script',label:'手写体（The Way of Love）',text:'The Way of Love',font:"'Dancing Script'",size:90,weight:400,color:'#ffffff',x:600,y:1150,ls:0.02,align:'center',lh:1,shadow:1},
+ {key:'center',label:'中部标题（宴会中心）',text:'星级一站式宴会中心',font:"'Noto Serif SC'",size:84,weight:700,color:'#ffffff',x:600,y:1295,ls:0.04,align:'center',lh:1.1,shadow:1},
+ {key:'bottom',label:'底部三项',text:'无柱宴会厅   |   专车好停车   |   地道婚宴菜系',font:"'Noto Serif SC'",size:35,weight:400,color:'#ffffff',x:600,y:1450,ls:0.04,align:'center',lh:1.1,shadow:1},
+];}
+
+/* ---------- 项目状态 ---------- */
+let DB=null, proj=null, projId=null;
+let undoStack=[], redoLock=false;
+let bgBlob=null, bgURL=null, bgNW=0, bgNH=0;
+let _imeOn=false; // 中文输入法合成中：跳过 render 以免打断拼音输入
+
+function defProject(name){return {name:name||'未命名项目',fields:defFields(),
+  imgZoom:1,imgPX:0,imgPY:28,bgColor:'#baa9a9',ovTop:0,ovBot:0};}
+
+/* ---------- IndexedDB ---------- */
+function openDB(){return new Promise((res,rej)=>{
+  const r=indexedDB.open('wedding-ningbo-v1',1);
+  r.onupgradeneeded=e=>{const db=e.target.result; if(!db.objectStoreNames.contains('projects'))db.createObjectStore('projects',{keyPath:'id',autoIncrement:true});};
+  r.onsuccess=e=>{DB=e.target.result;res();}; r.onerror=()=>rej(r.error);
+});}
+function tx(mode){return DB.transaction('projects',mode).objectStore('projects');}
+function dbAll(){return new Promise(r=>{const q=tx('readonly').getAll();q.onsuccess=()=>r(q.result||[]);q.onerror=()=>r([]);});}
+function dbGet(id){return new Promise(r=>{const q=tx('readonly').get(id);q.onsuccess=()=>r(q.result);q.onerror=()=>r(null);});}
+function dbPut(rec){return new Promise(r=>{const q=tx('readwrite').put(rec);q.onsuccess=()=>r(q.result);q.onerror=()=>r(null);});}
+function dbDel(id){return new Promise(r=>{const q=tx('readwrite').delete(id);q.onsuccess=()=>r();q.onerror=()=>r();});}
+
+let saveT=null;
+function save(){clearTimeout(saveT);saveT=setTimeout(async()=>{
+  const rec={id:projId,name:proj.name,data:JSON.parse(JSON.stringify(proj)),img:bgBlob,updated:Date.now()};
+  if(projId==null){const id=await dbPut({name:proj.name,data:rec.data,img:bgBlob,updated:Date.now()});projId=id;}
+  else await dbPut(rec);
+},350);}
+
+/* ---------- 撤销栈（文字/样式/位置/图片位置，最多20） ---------- */
+let _lastSnap=0;
+function snapshot(){if(redoLock)return;const now=Date.now();if(undoStack.length&&now-_lastSnap<600){_lastSnap=now;return;}undoStack.push(JSON.stringify(proj));if(undoStack.length>20)undoStack.shift();_lastSnap=now;}
+function undo(){if(!undoStack.length)return;const s=undoStack.pop();proj=JSON.parse(s);redoLock=true;buildPanel();render();$('projName').value=proj.name;save();redoLock=false;}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo();}});
+
+/* ============================================================
+   渲染（预览）—— 与导出共用同一套定位/换算逻辑
+============================================================ */
+function fitStage(){
+  const stage=$('stage'), pad=28;
+  const aw=stage.clientWidth-pad*2, ah=stage.clientHeight-pad*2;
+  let w=aw, h=w*EXPORT_H/EXPORT_W; if(h>ah){h=ah;w=h*EXPORT_W/EXPORT_H;}
+  const wrap=$('wrap'),poster=$('poster');
+  wrap.style.width=w+'px';wrap.style.height=h+'px';
+  poster.style.width=w+'px';poster.style.height=h+'px';
+  return w/EXPORT_W; // sc
+}
+let SC=0.5;
+function render(){
+  SC=fitStage();
+  const poster=$('poster');
+  poster.style.background=proj.bgColor;
+  // 背景图（cover + 拖动 + 缩放，用 iLay）
+  const bg=$('bgImg');
+  if(bgURL){
+    bg.style.display='block'; bg.src=bgURL;
+    const L=iLay(bgNW,bgNH,poster.clientWidth,poster.clientHeight,proj.imgZoom,proj.imgPX,proj.imgPY);
+    bg.style.left=L.left+'px';bg.style.top=L.top+'px';bg.style.width=L.width+'px';bg.style.height=L.height+'px';
+  }else{bg.style.display='none';}
+  // 压暗渐变
+  const ot=$('ovTop'),ob=$('ovBot');
+  ot.style.height=Math.round(EXPORT_H*0.34*SC)+'px';ot.style.top='0';
+  ot.style.background=`linear-gradient(to bottom,rgba(0,0,0,${(proj.ovTop||0)/100}),transparent)`;
+  ob.style.height=Math.round(EXPORT_H*0.34*SC)+'px';ob.style.bottom='0';
+  ob.style.background=`linear-gradient(to top,rgba(0,0,0,${(proj.ovBot||0)/100}),transparent)`;
+  // 文字
+  poster.querySelectorAll('.txt').forEach(n=>n.remove());
+  proj.fields.forEach(f=>{
+    const d=document.createElement('div');d.className='txt';
+    const fs=f.size*SC;
+    d.style.left=(f.x*SC)+'px';d.style.top=(f.y*SC)+'px';
+    d.style.fontFamily=f.font;d.style.fontSize=fs+'px';d.style.fontWeight=f.weight;
+    d.style.color=f.color;d.style.lineHeight=f.lh;
+    d.style.letterSpacing=(f.ls*fs)+'px';
+    d.style.textAlign=f.align;
+    let tf='';
+    if(f.align==='center')tf+='translateX(-50%) ';
+    else if(f.align==='right')tf+='translateX(-100%) ';
+    if(f.rotate){tf+=`rotate(${f.rotate}deg)`;d.style.transformOrigin='top left';}
+    d.style.transform=tf.trim();
+    if(f.shadow)d.style.textShadow=`0 ${4*SC}px ${16*SC}px rgba(0,0,0,0.4)`;
+    d.textContent=f.text;
+    poster.appendChild(d);
+  });
+}
+
+/* 图片裁切（规范 §10，预览/导出共用） */
+function iLay(nW,nH,cW,cH,zoom,px,py){
+  if(!nW||!nH)return{left:0,top:0,width:cW,height:cH};
+  const s=Math.max(cW/nW,cH/nH)*(zoom||1);
+  const rW=nW*s,rH=nH*s;
+  return{left:-((px==null?50:px)/100)*Math.max(0,rW-cW),top:-((py==null?50:py)/100)*Math.max(0,rH-cH),width:rW,height:rH};
+}
+
+/* ============================================================
+   控制面板
+============================================================ */
+function sn(id,min,max,step,val,setter,pre){
+  pre=pre||'';
+  const call=`${setter}(${pre}+this.value)`;
+  return `<div class="sn"><input type="range" id="${id}_s" min="${min}" max="${max}" step="${step}" value="${val}" oninput="${call};document.getElementById('${id}_n').value=(+this.value)"><input class="num" id="${id}_n" type="number" value="${val}" oninput="${call};document.getElementById('${id}_s').value=(+this.value)"></div>`;
+}
+function fontOpts(v){return FONTS.map(([n,fam])=>`<option value="${fam}" ${fam===v?'selected':''}>${n}</option>`).join('');}
+function weightOpts(v){return [300,400,500,700,900].map(w=>`<option value="${w}" ${+v===w?'selected':''}>${w}</option>`).join('');}
+
+function buildPanel(){
+  const pb=$('pbody');
+  const prevOpen=pb.querySelector('.sec')?new Set([...pb.querySelectorAll('.sec.open')].map(s=>s.dataset.k)):null;
+  let html='';
+  // 背景图区
+  html+=`<div class="sec" data-k="bg"><div class="sec-h" onclick="this.parentNode.classList.toggle('open')"><span>背景图片</span><span class="ar">▶</span></div><div class="sec-b">
+    <div class="up" onclick="document.getElementById('bgFile').click()">${bgURL?'点击替换背景图':'点击上传背景图（建议 3:4）'}</div>
+    <div class="hint">上传后可在画面上直接拖动；缩放用下方滑块</div>
+    <div class="fld" style="margin-top:9px;"><span class="lbl">缩放</span>${sn('imgZoom',0.5,3,0.01,proj.imgZoom,'setZoom')}</div>
+    <div class="fld"><span class="lbl">水平位置</span>${sn('imgPX',0,100,1,proj.imgPX,'setPX')}</div>
+    <div class="fld"><span class="lbl">垂直位置</span>${sn('imgPY',0,100,1,proj.imgPY,'setPY')}</div>
+    <div class="fld"><span class="lbl">底色（无图时显示）</span><div class="row"><div class="cd" id="cd-bgColor" style="box-shadow:inset 0 0 0 26px ${proj.bgColor};" onclick="cpOpen('@bgColor',this)"></div><input class="ti" id="ct-bgColor" value="${proj.bgColor}" oninput="setBgColor(this.value)"></div></div>
+    <div class="fld"><span class="lbl">顶部压暗</span>${sn('ovTop',0,90,1,proj.ovTop||0,'setOvTop')}</div>
+    <div class="fld"><span class="lbl">底部压暗</span>${sn('ovBot',0,90,1,proj.ovBot||0,'setOvBot')}</div>
+  </div></div>`;
+  // 各文字字段
+  proj.fields.forEach((f,i)=>{
+    const noW=SINGLE_WEIGHT.includes(f.font);
+    html+=`<div class="sec" data-k="${i}"><div class="sec-h" onclick="this.parentNode.classList.toggle('open')"><span>${f.label}</span><span class="ar">▶</span></div><div class="sec-b">
+      <div class="fld"><span class="lbl">文字内容</span><textarea class="ti" oncompositionstart="_imeOn=true" oncompositionend="_imeOn=false;setF(${i},'text',this.value)" oninput="if(!_imeOn)setF(${i},'text',this.value)">${f.text.replace(/</g,'&lt;')}</textarea></div>
+      <div class="fld"><div class="row"><div style="flex:1.4"><span class="lbl">字体</span><select class="ti" onchange="setF(${i},'font',this.value);buildPanel()">${fontOpts(f.font)}</select></div><div style="flex:1"><span class="lbl">字重${noW?'（此字体仅1档）':''}</span><select class="ti" ${noW?'disabled':''} onchange="setF(${i},'weight',+this.value)">${weightOpts(f.weight)}</select></div></div></div>
+      <div class="fld"><span class="lbl">字号</span>${sn('f'+i+'size',10,300,1,f.size,'setF',i+",'size',")}</div>
+      <div class="fld"><span class="lbl">颜色</span><div class="row"><div class="cd" id="cd-f${i}" style="box-shadow:inset 0 0 0 26px ${f.color};" onclick="cpOpen('${i}',this)"></div><input class="ti" id="ct-f${i}" value="${f.color}" oninput="setFColor(${i},this.value)"></div></div>
+      <div class="fld"><div class="row"><div style="flex:1"><span class="lbl">对齐</span><div class="alnbtns">
+        <button class="${f.align==='left'?'on':''}" onclick="setAlign(${i},'left')">左</button>
+        <button class="${f.align==='center'?'on':''}" onclick="setAlign(${i},'center')">中</button>
+        <button class="${f.align==='right'?'on':''}" onclick="setAlign(${i},'right')">右</button></div></div>
+        ${f.rotate!==undefined?`<div style="flex:1"><span class="lbl">旋转°</span><input class="num" style="width:100%" type="number" value="${f.rotate}" oninput="setF(${i},'rotate',+this.value)"></div>`:''}</div></div>
+      <div class="fld"><span class="lbl">水平 X</span>${sn('f'+i+'x',-200,1200,1,f.x,'setF',i+",'x',")}</div>
+      <div class="fld"><span class="lbl">垂直 Y</span>${sn('f'+i+'y',-100,1600,1,f.y,'setF',i+",'y',")}</div>
+      <div class="fld"><span class="lbl">字间距</span>${sn('f'+i+'ls',0,1,0.01,f.ls,'setF',i+",'ls',")}</div>
+      <div class="fld"><span class="lbl">行高</span>${sn('f'+i+'lh',0.8,2.2,0.01,f.lh,'setF',i+",'lh',")}</div>
+      <div class="fld"><label class="lbl" style="cursor:pointer"><input type="checkbox" ${f.shadow?'checked':''} onchange="setF(${i},'shadow',this.checked?1:0)"> 文字阴影（提升亮底可读性）</label></div>
+    </div></div>`;
+  });
+  pb.innerHTML=html;
+  const secs=pb.querySelectorAll('.sec');
+  if(prevOpen===null){if(secs[0])secs[0].classList.add('open');}
+  else secs.forEach(s=>{if(prevOpen.has(s.dataset.k))s.classList.add('open');});
+}
+
+/* setters */
+function setF(i,k,v){snapshot();proj.fields[i][k]=v;render();save();}
+function setFColor(i,v){snapshot();proj.fields[i].color=v;$('cd-f'+i).style.boxShadow='inset 0 0 0 26px '+v;render();save();}
+function setAlign(i,a){snapshot();proj.fields[i].align=a;buildPanel();render();save();}
+function setZoom(v){snapshot();proj.imgZoom=v;render();save();}
+function setPX(v){snapshot();proj.imgPX=v;render();save();}
+function setPY(v){snapshot();proj.imgPY=v;render();save();}
+function setBgColor(v){snapshot();proj.bgColor=v;$('cd-bgColor').style.boxShadow='inset 0 0 0 26px '+v;render();save();}
+function setOvTop(v){snapshot();proj.ovTop=v;render();save();}
+function setOvBot(v){snapshot();proj.ovBot=v;render();save();}
+
+/* ---------- 背景图上传 + 拖动 ---------- */
+function onBgFile(inp){const file=inp.files[0];if(!file)return;snapshot();bgBlob=file;loadBg();inp.value='';save();}
+function loadBg(){if(bgURL)URL.revokeObjectURL(bgURL);if(!bgBlob){bgURL=null;render();return;}bgURL=URL.createObjectURL(bgBlob);const im=new Image();im.onload=()=>{bgNW=im.naturalWidth;bgNH=im.naturalHeight;render();buildPanel();};im.src=bgURL;}
+
+let dragging=false,dSX=0,dSY=0,dPX=0,dPY=0;
+$('poster').addEventListener('mousedown',e=>{if(!bgURL)return;dragging=true;dSX=e.clientX;dSY=e.clientY;dPX=proj.imgPX;dPY=proj.imgPY;snapshot();e.preventDefault();});
+$('poster').addEventListener('touchstart',e=>{if(!bgURL)return;dragging=true;dSX=e.touches[0].clientX;dSY=e.touches[0].clientY;dPX=proj.imgPX;dPY=proj.imgPY;snapshot();},{passive:true});
+function doDrag(cx,cy){
+  const poster=$('poster');
+  const L=iLay(bgNW,bgNH,poster.clientWidth,poster.clientHeight,proj.imgZoom,50,50);
+  const exW=Math.max(1,L.width-poster.clientWidth), exH=Math.max(1,L.height-poster.clientHeight);
+  proj.imgPX=Math.max(0,Math.min(100,dPX-(cx-dSX)/exW*100));
+  proj.imgPY=Math.max(0,Math.min(100,dPY-(cy-dSY)/exH*100));
+  $('imgPX_s').value=proj.imgPX;$('imgPX_n').value=Math.round(proj.imgPX);
+  $('imgPY_s').value=proj.imgPY;$('imgPY_n').value=Math.round(proj.imgPY);
+  render();
+}
+document.addEventListener('mousemove',e=>{if(dragging)doDrag(e.clientX,e.clientY);});
+document.addEventListener('touchmove',e=>{if(dragging){doDrag(e.touches[0].clientX,e.touches[0].clientY);}},{passive:true});
+document.addEventListener('mouseup',()=>{if(dragging){dragging=false;save();}});
+document.addEventListener('touchend',()=>{if(dragging){dragging=false;save();}});
+
+/* ============================================================
+   cp() 自定义拾色器（规范 §11）
+============================================================ */
+const CP_PRESETS=['#ffffff','#000000','#1a1410','#c8a06a','rgba(212,180,120,0.9)','rgba(255,255,255,0.9)','rgba(255,255,255,0.5)','rgba(0,0,0,0.5)','#f5e6c8','#d4af7a','#8b6914','#c8392b','#2c4a8c','#2a6e3f'];
+let _cpKey=null,_cpH=0,_cpS=0,_cpV=1,_cpA=1,_cpDrag=null;
+function parseColor(h){h=(h||'').trim();if(h[0]==='#'){let x=h.slice(1);if(x.length===3)x=x[0]+x[0]+x[1]+x[1]+x[2]+x[2];return{r:parseInt(x.slice(0,2),16)||0,g:parseInt(x.slice(2,4),16)||0,b:parseInt(x.slice(4,6),16)||0,a:1};}const m=h.match(/[\d.]+/g);if(m&&m.length>=3)return{r:Math.round(+m[0]),g:Math.round(+m[1]),b:Math.round(+m[2]),a:m[3]!==undefined?+m[3]:1};return{r:255,g:255,b:255,a:1};}
+function rgb2hsv(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;if(d){if(mx===r)h=((g-b)/d)%6;else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;if(h<0)h+=360;}return{h,s:mx?d/mx:0,v:mx};}
+function hsv2rgb(h,s,v){const c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;let r=0,g=0,b=0;if(h<60){r=c;g=x;}else if(h<120){r=x;g=c;}else if(h<180){g=c;b=x;}else if(h<240){g=x;b=c;}else if(h<300){r=x;b=c;}else{r=c;b=x;}return{r:Math.round((r+m)*255),g:Math.round((g+m)*255),b:Math.round((b+m)*255)};}
+function cpStr(){const{r,g,b}=hsv2rgb(_cpH,_cpS,_cpV);return _cpA>=1?'#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join(''):`rgba(${r},${g},${b},${Math.round(_cpA*100)/100})`;}
+function cpFromVal(v){const c=parseColor(v);const k=rgb2hsv(c.r,c.g,c.b);_cpH=k.h;_cpS=k.s;_cpV=k.v;_cpA=c.a;}
+function curColor(){ if(_cpKey==='@bgColor')return proj.bgColor; return proj.fields[+_cpKey].color; }
+function cpOpen(key,anchor){
+  _cpKey=key;cpFromVal(curColor());cpRender();
+  if(!$('cp-presets').childNodes.length){$('cp-presets').innerHTML=CP_PRESETS.map(c=>`<div style="background:${c}" onclick="cpPreset('${c}')"></div>`).join('');}
+  const pop=$('cp-pop');pop.style.display='block';
+  const r=anchor.getBoundingClientRect();let left=r.left-pop.offsetWidth-8;if(left<8)left=r.right+8;
+  let top=Math.max(8,Math.min(r.top,window.innerHeight-pop.offsetHeight-8));
+  pop.style.left=left+'px';pop.style.top=top+'px';
+}
+function cpClose(){$('cp-pop').style.display='none';_cpKey=null;}
+function cpApply(){
+  const s=cpStr();
+  if(_cpKey==='@bgColor'){setBgColor(s);$('ct-bgColor').value=s;}
+  else{const i=+_cpKey;setFColor(i,s);$('ct-f'+i).value=s;}
+}
+function cpRender(){
+  const{r,g,b}=hsv2rgb(_cpH,_cpS,_cpV), hr=hsv2rgb(_cpH,1,1);
+  $('cp-sv').style.background=`linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,transparent),rgb(${hr.r},${hr.g},${hr.b})`;
+  $('cp-sv-cur').style.left=(_cpS*100)+'%';$('cp-sv-cur').style.top=((1-_cpV)*100)+'%';
+  $('cp-hue-cur').style.left=(_cpH/360*100)+'%';
+  $('cp-alpha').style.background=`linear-gradient(to right,transparent,rgb(${r},${g},${b})),repeating-conic-gradient(#888 0 25%,#fff 0 50%) 0 0/8px 8px`;
+  $('cp-alpha-cur').style.left=(_cpA*100)+'%';
+  $('cp-r').value=r;$('cp-g').value=g;$('cp-b').value=b;$('cp-a').value=Math.round(_cpA*100)/100;
+}
+function cpAt(el,e){const r=el.getBoundingClientRect();return Math.max(0,Math.min(1,((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width));}
+function _cpSV(e){const sv=$('cp-sv'),r=sv.getBoundingClientRect();_cpS=Math.max(0,Math.min(1,((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width));_cpV=1-Math.max(0,Math.min(1,((e.touches?e.touches[0].clientY:e.clientY)-r.top)/r.height));cpRender();cpApply();}
+function _cpHue(e){_cpH=cpAt($('cp-hue'),e)*360;cpRender();cpApply();}
+function _cpAlpha(e){_cpA=cpAt($('cp-alpha'),e);cpRender();cpApply();}
+function _cpNum(){const r=+$('cp-r').value||0,g=+$('cp-g').value||0,b=+$('cp-b').value||0;let a=parseFloat($('cp-a').value);if(isNaN(a))a=1;a=Math.max(0,Math.min(1,a));const k=rgb2hsv(r,g,b);_cpH=k.h;_cpS=k.s;_cpV=k.v;_cpA=a;cpRender();cpApply();}
+function cpPreset(c){cpFromVal(c);cpRender();cpApply();}
+document.addEventListener('mousedown',e=>{const pop=$('cp-pop');if(_cpKey&&pop.style.display==='block'&&!pop.contains(e.target)&&!(e.target.classList&&e.target.classList.contains('cd')))cpClose();});
+document.addEventListener('mousemove',e=>{if(_cpDrag==='sv')_cpSV(e);else if(_cpDrag==='hue')_cpHue(e);else if(_cpDrag==='alpha')_cpAlpha(e);});
+document.addEventListener('mouseup',()=>{_cpDrag=null;});
+
+/* ============================================================
+   导出（规范 §6/§10）
+============================================================ */
+function drawTextLS(ctx,text,cx,y,lsEm,align){
+  const fs=parseFloat(ctx.font.match(/([\d.]+)px/)?.[1]||16);
+  const ls=lsEm*fs, chars=[...text];
+  let total=0;chars.forEach((ch,i)=>{total+=ctx.measureText(ch).width;if(i<chars.length-1)total+=ls;});
+  let sx=align==='center'?cx-total/2:align==='right'?cx-total:cx;
+  chars.forEach((ch,i)=>{ctx.fillText(ch,sx,y);sx+=ctx.measureText(ch).width+(i<chars.length-1?ls:0);});
+}
+async function doExport(){
+  if(!await wpCheckExportQuota())return;
+  const btn=$('exportBtn');btn.textContent='导出中…';btn.disabled=true;
+  try{
+    await document.fonts.ready;
+    const cv=document.createElement('canvas');cv.width=EXPORT_W;cv.height=EXPORT_H;
+    const ctx=cv.getContext('2d');
+    // 底色
+    ctx.fillStyle=proj.bgColor;ctx.fillRect(0,0,EXPORT_W,EXPORT_H);
+    // 背景图（与预览同一 iLay）
+    if(bgURL&&bgNW){
+      const L=iLay(bgNW,bgNH,EXPORT_W,EXPORT_H,proj.imgZoom,proj.imgPX,proj.imgPY);
+      const im=await loadImg(bgURL);
+      ctx.drawImage(im,L.left,L.top,L.width,L.height);
+    }
+    // 压暗
+    const bandH=EXPORT_H*0.34;
+    if(proj.ovTop){const g=ctx.createLinearGradient(0,0,0,bandH);g.addColorStop(0,`rgba(0,0,0,${proj.ovTop/100})`);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,EXPORT_W,bandH);}
+    if(proj.ovBot){const g=ctx.createLinearGradient(0,EXPORT_H-bandH,0,EXPORT_H);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,`rgba(0,0,0,${proj.ovBot/100})`);ctx.fillStyle=g;ctx.fillRect(0,EXPORT_H-bandH,EXPORT_W,bandH);}
+    // 文字
+    ctx.textBaseline='top';
+    proj.fields.forEach(f=>{
+      ctx.save();
+      ctx.font=`${f.weight} ${f.size}px ${f.font}`;
+      ctx.fillStyle=f.color;
+      if(f.rotate){ctx.translate(f.x,f.y);ctx.rotate(f.rotate*Math.PI/180);}
+      const ox=f.rotate?0:f.x, oy=f.rotate?0:f.y;
+      if(f.shadow){ctx.shadowColor='rgba(0,0,0,0.4)';ctx.shadowBlur=16;ctx.shadowOffsetY=4;}
+      const lines=String(f.text).split('\n');
+      lines.forEach((ln,li)=>{
+        drawTextLS(ctx,ln,ox,oy+li*f.size*f.lh,f.ls,f.align);
+      });
+      ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+      ctx.restore();
+    });
+    cv.toBlob(b=>{
+      const url=URL.createObjectURL(b);const a=document.createElement('a');
+      a.download=(proj.name||'poster')+'.png';a.href=url;a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),5000);
+    },'image/png');
+  }catch(e){alert('导出失败：'+e.message);}
+  finally{btn.textContent='导出';btn.disabled=false;}
+}
+function loadImg(src){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=src;});}
+
+/* ============================================================
+   项目管理
+============================================================ */
+function renameProject(v){proj.name=v;save();renderProjList();}
+async function newProject(){proj=defProject();projId=null;bgBlob=null;if(bgURL)URL.revokeObjectURL(bgURL);bgURL=null;bgNW=bgNH=0;undoStack=[];$('projName').value=proj.name;buildPanel();render();save();}
+function applyDefaults(){if(!confirm('把当前项目的文字内容/字体/颜色/位置重置为模板最新默认？\n（背景图和图片位置会保留）'))return;snapshot();proj.fields=defFields();buildPanel();render();save();}
+async function dupProject(){const copy=JSON.parse(JSON.stringify(proj));copy.name=(proj.name||'项目')+' 副本';const id=await dbPut({name:copy.name,data:copy,img:bgBlob,updated:Date.now()});await loadProject(id);}
+async function loadProject(id){const rec=await dbGet(id);if(!rec)return;proj=rec.data;projId=rec.id;bgBlob=rec.img||null;if(bgURL)URL.revokeObjectURL(bgURL);bgURL=null;bgNW=bgNH=0;undoStack=[];$('projName').value=proj.name;loadBg();buildPanel();render();closeProjects();}
+function openProjects(){renderProjList();$('projOv').classList.add('open');}
+function closeProjects(){$('projOv').classList.remove('open');}
+$('projOv').addEventListener('click',e=>{if(e.target.id==='projOv')closeProjects();});
+async function renderProjList(){
+  const all=(await dbAll()).sort((a,b)=>b.updated-a.updated);
+  $('projList').innerHTML=all.length?all.map(r=>`<div class="pi">
+    <span class="pi-n" onclick="loadProject(${r.id})">${(r.name||'未命名').replace(/</g,'&lt;')}${r.id===projId?' ·当前':''}</span>
+    <div class="pi-a"><button onclick="loadProject(${r.id})">打开</button><button class="del" onclick="delProject(${r.id})">删除</button></div></div>`).join('')
+    :'<div style="color:#555;font-size:12px;text-align:center;padding:14px;">暂无项目</div>';
+}
+async function delProject(id){if(!confirm('确认删除此项目？'))return;await dbDel(id);if(id===projId){const all=await dbAll();if(all.length)await loadProject(all[0].id);else await newProject();}renderProjList();}
+
+/* ---------- JSON 备份/导入（不含图片，规范 §5） ---------- */
+function exportJSON(){const data={name:proj.name,data:proj};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.download=(proj.name||'project')+'.json';a.href=url;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+function importJSON(inp){const file=inp.files[0];if(!file)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(d.data&&d.data.fields){proj=d.data;projId=null;undoStack=[];$('projName').value=proj.name;buildPanel();render();save();alert('导入成功（图片需重新上传）');}else alert('文件格式不对');}catch(e){alert('导入失败：'+e.message);}};rd.readAsText(file);inp.value='';}
+
+/* ---------- 启动 ---------- */
+window.addEventListener('resize',()=>render());
+(async()=>{
+  await wpCheckAuth();           // 必须最先，初始化 _lic（file:// 测试模式）
+  await openDB();
+  const all=(await dbAll()).sort((a,b)=>b.updated-a.updated);
+  if(all.length){await loadProjectSilent(all[0]);}
+  else{proj=defProject();projId=null;$('projName').value=proj.name;buildPanel();render();save();}
+})();
+async function loadProjectSilent(rec){proj=rec.data;projId=rec.id;bgBlob=rec.img||null;$('projName').value=proj.name;loadBg();buildPanel();render();}
+</script>
+</body>
+</html>
