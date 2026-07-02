@@ -1,0 +1,6 @@
+{
+  "xxx": ...,
+  "crons": [
+    { "path": "/api/keepalive", "schedule": "0 3 * * *" }
+  ]
+}
