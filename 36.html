@@ -184,9 +184,9 @@ function defFields(){return [
 ];}
 function defProject(name){return {name:name||'未命名项目',fields:defFields(),
   bgColor:'#ffffff',
-  band:{on:1,y:760,h:118,color:'#ffffff'},
-  deco:{type:'slash',x:520,y:790,size:56,c1:'#c9b39a',c2:'#8db15e',c3:'#3f6e46'},
-  ribbon:{on:0,text:'潘多拉森林',bg:'#2f8f5b',tc:'#ffffff',size:44,y:36,padX:34,skew:34,h:78},
+  band:{on:1,y:760,h:100,color:'#ffffff'},
+  deco:{type:'slash',x:520,y:790,size:56,c1:'#1e3d28',c2:'#a4bd3a',c3:'#3f6e2e'},
+  ribbon:{on:0,text:'潘多拉森林',bg:'#2f8f2f',tc:'#ffffff',size:45,y:36,padX:34,skew:34,h:78},
   arch:{slots:[{zoom:1,px:50,py:50},{zoom:1,px:50,py:50}]}
 };}
 
@@ -486,7 +486,7 @@ function applyPreset(n){
   const F=proj.fields;
   const setF3=(i,o)=>Object.assign(F[i],o);
   if(n===1){ // 图1：白条+斜线，左题右信息
-    proj.band={on:1,y:760,h:118,color:'#ffffff'};
+    proj.band={on:1,y:760,h:100,color:'#ffffff'};
     proj.deco={...proj.deco,type:'slash',x:520,y:790,size:56};
     proj.ribbon.on=0;
     setF3(0,{text:'莫 奈 花 园',color:'#a5794a',align:'left',x:150,y:788,size:52});
@@ -498,12 +498,12 @@ function applyPreset(n){
     setF3(2,{text:'星耀盛典',color:'#ffffff',align:'center',x:600,y:700,size:125});
   }else if(n===5){ // 图5：白条+竖杠+居中标题
     proj.band={on:1,y:760,h:118,color:'#ffffff'};
-    proj.deco={...proj.deco,type:'bars',x:60,y:782,size:66,c1:'#1e4d33',c2:'#8db15e',c3:'#3f6e46'};
+    proj.deco={...proj.deco,type:'bars',x:60,y:782,size:66,c1:'#1e3d28',c2:'#a4bd3a',c3:'#3f6e2e'};
     proj.ribbon.on=0;
-    setF3(0,{text:'潘多拉森林',color:'#2f8f5b',align:'center',x:600,y:790,size:52});
+    setF3(0,{text:'潘多拉森林',color:'#2f8f2f',align:'center',x:600,y:790,size:52});
     setF3(1,{text:''});setF3(2,{text:''});
   }else if(n===6){ // 图6：白条+圆点+右标题+左信息
-    proj.band={on:1,y:730,h:170,color:'#ffffff'};
+    proj.band={on:1,y:737,h:140,color:'#ffffff'};
     proj.deco={...proj.deco,type:'dots',x:85,y:736,size:95,c1:'#1e3d28',c2:'#a4bd3a',c3:'#3f6e2e'};
     proj.ribbon.on=0;
     setF3(0,{text:"Pandora's Forest\n\n潘多拉森林",font:"'Noto Serif SC'",color:'#1a1a1a',align:'right',x:1140,y:752,size:36,ls:0.18,lh:1.06});
@@ -511,7 +511,7 @@ function applyPreset(n){
     setF3(2,{text:''});
   }else if(n===7){ // 图7：无缝+右上角标
     proj.band.on=0;proj.deco.type='none';
-    proj.ribbon={...proj.ribbon,on:1,text:'潘多拉森林',bg:'#2f8f5b',tc:'#ffffff',size:44,y:36};
+    proj.ribbon={...proj.ribbon,on:1,text:'潘多拉森林',bg:'#2f8f2f',tc:'#ffffff',size:45,y:36};
     setF3(0,{text:''});setF3(1,{text:''});setF3(2,{text:''});
   }
   buildPanel();render();save();
