@@ -102,17 +102,18 @@ function showSkeletons(n=6){
     <div class="skeleton" style="aspect-ratio:3/4;border-radius:14px;"></div>`).join('');
 }
 
-// ── 模板列表（带本地缓存，5分钟有效）────────────────────
+// ── 模板列表（先渲染缓存秒开，同时后台拉最新覆盖 → 新模板无需退出重登）──
 async function loadTemplates(){
-  const CACHE_KEY='wp_tpl_cache', CACHE_TTL=5*60*1000;
+  const CACHE_KEY='wp_tpl_cache';
+  let hadCache=false;
   const cached=localStorage.getItem(CACHE_KEY);
   if(cached){
     try{
-      const {ts,data}=JSON.parse(cached);
-      if(Date.now()-ts<CACHE_TTL){renderTemplates(data);return;}
+      const {data}=JSON.parse(cached);
+      if(data&&data.length){renderTemplates(data);hadCache=true;}
     }catch(e){}
   }
-  showSkeletons();
+  if(!hadCache)showSkeletons();
   try{
     const r=await fetch(`${SB_URL}/rest/v1/templates?is_active=eq.true&order=sort_order.asc&select=*`,SB_HDR);
     if(!r.ok)throw new Error('HTTP '+r.status);
@@ -121,7 +122,7 @@ async function loadTemplates(){
     localStorage.setItem(CACHE_KEY,JSON.stringify({ts:Date.now(),data}));
     renderTemplates(data);
   }catch(e){
-    document.getElementById('tpl-grid').innerHTML='<div style="color:#e05a5a;font-size:12px;">模板加载失败，请刷新重试</div>';
+    if(!hadCache)document.getElementById('tpl-grid').innerHTML='<div style="color:#e05a5a;font-size:12px;">模板加载失败，请刷新重试</div>';
   }
 }
 
