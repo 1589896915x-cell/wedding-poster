@@ -450,17 +450,18 @@ async function wpCheckAuth(){
     updateLic();
     return _lic;
   }
-  const code=localStorage.getItem('wp_lic_code');
-  if(!code){location.href='login.html';return null}
+  const code=localStorage.getItem('wp-license');
+  if(!code){location.href='index.html';return null}
   try{
     const r=await fetch(`${SB_URL}/rest/v1/licenses?code=eq.${encodeURIComponent(code)}&is_active=eq.true&select=*`,{
       headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
     });
     const arr=await r.json();
-    if(!arr||!arr.length){localStorage.removeItem('wp_lic_code');location.href='login.html';return null}
+    if(!arr||!arr.length){localStorage.removeItem('wp-license');location.href='index.html';return null}
     const lic=arr[0];
-    if((lic.credits||0)<=0){alert('卡密次数已用完');localStorage.removeItem('wp_lic_code');location.href='login.html';return null}
-    if(lic.expires_at && new Date(lic.expires_at)<new Date()){alert('卡密已过期');localStorage.removeItem('wp_lic_code');location.href='login.html';return null}
+    if((lic.credits||0)<=0){alert('卡密次数已用完');localStorage.removeItem('wp-license');location.href='index.html';return null}
+    if(lic.expires_at && new Date(lic.expires_at)<new Date()){alert('卡密已过期');localStorage.removeItem('wp-license');location.href='index.html';return null}
+    if(lic.duration_days && lic.first_used_at){const _e=new Date(lic.first_used_at);_e.setDate(_e.getDate()+lic.duration_days);if(_e<new Date()){alert('卡密已过期');localStorage.removeItem('wp-license');location.href='index.html';return null}}
     _lic=lic;updateLic();return lic;
   }catch(e){
     console.warn('auth fail',e);
