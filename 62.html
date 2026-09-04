@@ -1342,25 +1342,80 @@ async function useExampleImage(){
  await idbPut('img',{id,blob});await loadImg('A',id);projName='酒店外景信息表';$('projname').value=projName;
  render();saveProject();
 }
-/* RPC-only online path. The local file preview never calls the server. */
+/* 2026-09-04 r2: prefer RPC; compatibility is allowed ONLY for an explicit
+   missing-function response. Network/auth/permission failures never bypass checks.
+   Legacy mode follows the current site's API; server-side RPC/RLS migration is separate. */
+const TEMPLATE_BUILD='62-20260904-auth-r2';
 async function wpRpc(fn,code){
  try{const r=await fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:{...SB_HDR.headers,'Content-Type':'application/json'},body:JSON.stringify({p_code:code}),signal:AbortSignal.timeout(15000)});
-  if(!r.ok)return null;const d=await r.json(),o=Array.isArray(d)?d[0]:d;return o&&typeof o.ok==='boolean'?o:null;
+  const d=await r.json();
+  if(!r.ok){
+   if(r.status===404&&d.code==='PGRST202')return{missing:true};
+   return null;
+  }
+  const o=Array.isArray(d)?d[0]:d;
+  if(!o||typeof o.ok!=='boolean')return null;
+  if(o.ok&&(!Number.isInteger(o.credits)||o.credits<0))return null;
+  return o;
  }catch{return null;}
+}
+function legacyLicenseError(lic){
+ if(!lic||!lic.id||lic.is_active!==true)return '卡密无效或已停用';
+ if(!Number.isInteger(lic.credits)||lic.credits<=0)return '导出次数已用完';
+ if(lic.expires_at&&(!Number.isFinite(Date.parse(lic.expires_at))||Date.parse(lic.expires_at)<=Date.now()))return '卡密已过期';
+ if(lic.duration_days&&lic.first_used_at){
+  const exp=new Date(lic.first_used_at);exp.setDate(exp.getDate()+Number(lic.duration_days));
+  if(!Number.isFinite(exp.getTime())||exp.getTime()<=Date.now())return '卡密已过期';
+ }
+ return '';
+}
+async function readLegacyLicense(code){
+ const fields='id,code,is_active,credits,expires_at,duration_days,first_used_at';
+ const r=await fetch(SB_URL+'/rest/v1/licenses?code=eq.'+encodeURIComponent(code)+'&select='+fields+'&limit=1',
+  {headers:SB_HDR.headers,cache:'no-store',signal:AbortSignal.timeout(15000)});
+ if(!r.ok)throw new Error('暂时无法验证卡密（HTTP '+r.status+'）');
+ const rows=await r.json();if(!Array.isArray(rows))throw new Error('卡密服务返回格式异常');
+ const lic=rows[0],reason=legacyLicenseError(lic);if(reason)throw new Error(reason);
+ return lic;
+}
+function authError(message){
+ $('maskT').textContent=message;$('maskP').textContent='请检查登录账号、网络或卡密服务后刷新重试';$('mask').classList.add('open');
 }
 async function wpCheckAuth(){
  if(IS_FILE){_lic={test:true,credits:999};$('credits').textContent='本地测试 · 不扣次';return true;}
  const code=localStorage.getItem('wp-license');if(!code){gotoLogin('请先登录');return false;}
  const r=await wpRpc('check_license',code);
- if(!r){$('maskT').textContent='暂时无法验证卡密';$('maskP').textContent='请检查网络或卡密服务后刷新重试';$('mask').classList.add('open');return false;}
- if(!r.ok){gotoLogin(RPC_REASON[r.reason]||'卡密无效');return false;}
+ if(!r){authError('暂时无法验证卡密');return false;}
+ if(r.missing){
+  try{_lic=await readLegacyLicense(code);showCredits();return true;}
+  catch(e){authError(e.message);return false;}
+ }
+ if(!r.ok||r.credits<=0){gotoLogin(RPC_REASON[r.reason]||(r.credits===0?'导出次数已用完':'卡密无效'));return false;}
  _lic={code,credits:r.credits,is_active:true};showCredits();return true;
+}
+async function consumeLegacyCredit(code){
+ // Recheck immediately before export; compare-and-set prevents stale balance writes
+ // by cooperating clients. This does not replace server-side authorization policies.
+ const lic=await readLegacyLicense(code),left=lic.credits-1;
+ const query='id=eq.'+encodeURIComponent(lic.id)+'&code=eq.'+encodeURIComponent(code)+
+  '&is_active=eq.true&credits=eq.'+lic.credits+'&select=id,credits';
+ const r=await fetch(SB_URL+'/rest/v1/licenses?'+query,{method:'PATCH',
+  headers:{...SB_HDR.headers,'Content-Type':'application/json','Prefer':'return=representation'},
+  body:JSON.stringify({credits:left}),signal:AbortSignal.timeout(15000)});
+ if(!r.ok)throw new Error('扣次未成功（HTTP '+r.status+'），请稍后重试');
+ const rows=await r.json();
+ if(!Array.isArray(rows)||rows.length!==1||rows[0].id!==lic.id||rows[0].credits!==left)
+  throw new Error('未确认扣次成功，请刷新余额后重试');
+ _lic={...lic,credits:left};showCredits();return true;
 }
 async function wpCheckExportQuota(){
  if(IS_FILE)return true;const code=localStorage.getItem('wp-license');
  if(!code||!_lic){gotoLogin('请先登录');return false;}
  const r=await wpRpc('consume_credit',code);
  if(!r){toast('扣次服务不可用，请稍后重试');return false;}
+ if(r.missing){
+  try{return await consumeLegacyCredit(code);}catch(e){toast(e.message);return false;}
+ }
  if(!r.ok){toast(RPC_REASON[r.reason]||'卡密无效');return false;}
  _lic.credits=r.credits;showCredits();return true;
 }
