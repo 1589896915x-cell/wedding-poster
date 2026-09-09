@@ -65,6 +65,45 @@ def embedded_metadata(file):
     return {"name": name.strip(), "role": role, "refIndex": definition["refIndex"], "referenceDataUrl": cover}
 
 
+def rendered_preview(file):
+    """Require the actual exported JPEG in the same repository before syncing it."""
+    relative = f"previews/{file.stem}.jpg"
+    preview = Path(__file__).resolve().parents[2] / relative
+    if not preview.is_file():
+        raise SyncError(f"{file.name}: missing rendered preview {relative}")
+    data = preview.read_bytes()
+    if not data.startswith(b"\xff\xd8\xff") or not data.endswith(b"\xff\xd9"):
+        raise SyncError(f"{file.name}: rendered preview must be a complete JPEG")
+    # Check JPEG segment boundaries and the start-of-frame dimensions, without
+    # adding image-library dependencies to the existing workflow.
+    offset = 2
+    frame_markers = {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}
+    while offset < len(data):
+        if data[offset] != 0xFF:
+            break
+        while offset < len(data) and data[offset] == 0xFF:
+            offset += 1
+        if offset >= len(data):
+            break
+        marker = data[offset]
+        offset += 1
+        if marker in {0xDA, 0xD9}:
+            break
+        if marker in {0x01, *range(0xD0, 0xD8)}:
+            continue
+        length = int.from_bytes(data[offset:offset + 2], "big")
+        if length < 2 or offset + length > len(data):
+            break
+        if marker in frame_markers and length >= 8:
+            height = int.from_bytes(data[offset + 3:offset + 5], "big")
+            width = int.from_bytes(data[offset + 5:offset + 7], "big")
+            if width > 0 and height > 0:
+                return relative
+            break
+        offset += length
+    raise SyncError(f"{file.name}: rendered preview has no valid JPEG frame")
+
+
 def selected_templates(repo, changed):
     selected = {p for p in changed if TEMPLATE_FILE.fullmatch(p)}
     return sorted((repo / name for name in selected if (repo / name).is_file()), key=lambda p: p.name)
@@ -134,8 +173,10 @@ class SupabaseClient:
 def sync_file(file, owner, repository, client):
     if not TEMPLATE_FILE.fullmatch(file.name):
         raise SyncError("Unsupported template filename")
-    pages_url = f"https://{owner}.github.io/{quote(repository, safe='')}/{quote(file.name, safe='')}"
+    pages_base = f"https://{owner}.github.io/{quote(repository, safe='')}/"
+    pages_url = pages_base + quote(file.name, safe='')
     metadata = embedded_metadata(file)
+    image_url = pages_base + rendered_preview(file) if metadata else None
     rows = client.request("GET", {"url": "eq." + pages_url, "select": "id", "limit": "2"})
     if len(rows) > 1:
         raise SyncError(f"{file.name}: duplicate URL records require review")
@@ -145,7 +186,7 @@ def sync_file(file, owner, repository, client):
             name=f"模板{file.stem}｜{metadata['name']}",
             tag=metadata["role"],
             description=f"{metadata['role']} · 参考{metadata['refIndex']}。照片、文字、字号和色彩可编辑。参考信息仅作排版示例，发布时替换本店已确认素材与文案。",
-            img=metadata["referenceDataUrl"],
+            img=image_url,
         )
     if rows:
         db_id = rows[0].get("id") if isinstance(rows[0], dict) else None
@@ -167,7 +208,9 @@ def main():
     repo = Path(__file__).resolve().parents[2]
     if args.check_metadata:
         metadata = [embedded_metadata(repo / f"{ident}.html") for ident in NEW_IDS]
-        print(f"Validated {len(metadata)} embedded template definitions and reference covers.")
+        for ident in NEW_IDS:
+            rendered_preview(repo / f"{ident}.html")
+        print(f"Validated {len(metadata)} embedded template definitions and rendered JPEG previews.")
         return
     if os.environ.get("SYNC_EVENT_NAME") == "workflow_dispatch":
         files = requested_templates(repo, os.environ.get("SYNC_REQUESTED_FILES", ""))
@@ -178,7 +221,8 @@ def main():
         return
     # Validate the entire requested batch before the first HTTP mutation.
     for file in files:
-        embedded_metadata(file)
+        if embedded_metadata(file):
+            rendered_preview(file)
     required = ["SB_URL", "SB_KEY", "GITHUB_USER", "GITHUB_REPO_NAME"]
     if any(not os.environ.get(key) for key in required):
         raise SyncError("Missing required workflow environment variable")
