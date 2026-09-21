@@ -177,17 +177,8 @@ const FONTS=[
   ["Great Vibes","'Great Vibes'"],["Dancing Script","'Dancing Script'"]
 ];
 const SINGLE_WEIGHT=["'Great Vibes'"];
-function defFields(){return [
- {key:'t1',label:'品牌行（瑞禧花园）',text:'瑞禧花园 · 宴会中心',font:"'Noto Serif SC'",size:54,weight:500,color:'#efe3c8',x:600,y:772,ls:0.12,align:'center',lh:1.2,shadow:0},
- {key:'t2',label:'主标题（2026慈溪）',text:'2026慈溪全新婚礼场地',font:"'Noto Serif SC'",size:96,weight:700,color:'#f2dfae',x:600,y:856,ls:0.03,align:'center',lh:1.1,shadow:0},
- {key:'t3',label:'卖点行（鎏金穹顶）',text:'· 鎏金穹顶　　华丽绮梦 ·',font:"'Noto Serif SC'",size:44,weight:400,color:'#e8d8b8',x:600,y:988,ls:0.1,align:'center',lh:1.2,shadow:0},
-];}
-function defProject(name){return {name:name||'未命名项目',fields:defFields(),
-  bgColor:'#3a0305',
-  arch:{topH:700,archY:1052,gap:26,margin:42,slots:[
-    {zoom:1,px:50,py:50},{zoom:1,px:50,py:50},{zoom:1,px:50,py:50},{zoom:1,px:50,py:50}
-  ]}
-};}
+function defFields(){return [{"key":"t1","label":"品牌行（瑞禧花园）","text":"滕头中东欧宴会酒店","font":"'Noto Serif SC'","size":54,"weight":700,"color":"#f2dfae","x":600,"y":737,"ls":0.12,"align":"center","lh":1.2,"shadow":0},{"key":"t2","label":"主标题（2026慈溪）","text":"东部新城婚宴酒店","font":"'Noto Serif SC'","size":117,"weight":700,"color":"#f2dfae","x":600,"y":806,"ls":0.03,"align":"center","lh":1.01,"shadow":0},{"key":"t3","label":"卖点行（鎏金穹顶）","text":"免费使用主题场地丨4K+帝王蟹套餐丨无预制菜","font":"'Noto Serif SC'","size":42,"weight":400,"color":"#e8d8b8","x":600,"y":953,"ls":0.1,"align":"center","lh":1.2,"shadow":0}];}
+function defProject(name){const p={"name":"未命名项目","fields":[{"key":"t1","label":"品牌行（瑞禧花园）","text":"滕头中东欧宴会酒店","font":"'Noto Serif SC'","size":54,"weight":700,"color":"#f2dfae","x":600,"y":737,"ls":0.12,"align":"center","lh":1.2,"shadow":0},{"key":"t2","label":"主标题（2026慈溪）","text":"东部新城婚宴酒店","font":"'Noto Serif SC'","size":117,"weight":700,"color":"#f2dfae","x":600,"y":806,"ls":0.03,"align":"center","lh":1.01,"shadow":0},{"key":"t3","label":"卖点行（鎏金穹顶）","text":"免费使用主题场地丨4K+帝王蟹套餐丨无预制菜","font":"'Noto Serif SC'","size":42,"weight":400,"color":"#e8d8b8","x":600,"y":953,"ls":0.1,"align":"center","lh":1.2,"shadow":0}],"bgColor":"#815b3a","arch":{"topH":700,"archY":1052,"gap":26,"margin":42,"slots":[{"zoom":1.17,"px":40,"py":60},{"zoom":1.07,"px":50,"py":50},{"zoom":1,"px":50,"py":50},{"zoom":1,"px":50,"py":50}]}};p.name=name||'未命名项目';return p;}
 
 /* ---------- 项目状态 ---------- */
 let DB=null, proj=null, projId=null;

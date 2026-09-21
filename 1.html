@@ -137,7 +137,7 @@ body{background:#1a1a1a;font-family:system-ui,sans-serif;display:flex;height:100
     <input class="m-in" id="m-name" type="text" placeholder="未命名">
     <div class="m-lbl" style="margin-bottom:8px;">列数</div>
     <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <div id="mc-3" onclick="mCol=3;updMC()" style="flex:1;border:1.5px solid #c8392b;background:#1a0808;border-radius:7px;padding:10px;text-align:center;cursor:pointer;font-size:13px;color:#fff;">3 列</div>
+      <div id="mc-3" onclick="mCol=4;updMC()" style="flex:1;border:1.5px solid #c8392b;background:#1a0808;border-radius:7px;padding:10px;text-align:center;cursor:pointer;font-size:13px;color:#fff;">3 列</div>
       <div id="mc-4" onclick="mCol=4;updMC()" style="flex:1;border:1.5px solid #2a2a2a;background:#111;border-radius:7px;padding:10px;text-align:center;cursor:pointer;font-size:13px;color:#888;">4 列</div>
     </div>
     <div class="m-actions">
@@ -236,7 +236,7 @@ const dbD=(s,k)=>new Promise((r,j)=>{const t=db.transaction(s,'readwrite');t.obj
 const dbA=(s)=>new Promise((r,j)=>{const q=txs(s).getAll();q.onsuccess=()=>r(q.result);q.onerror=j;});
 
 // ── State ─────────────────────────────────────────────────────────
-let projects=[],curId=null,selCol=0,mCol=3;
+let projects=[],curId=null,selCol=0,mCol=4;
 const cache={};
 let drag={on:false,col:-1,sx:0,sy:0,px0:50,py0:50};
 
@@ -257,22 +257,10 @@ const COL_NAMES=[
   {zh:'婚纱礼服',en:'WEDDING DRESS'},
   {zh:'四大金刚',en:'THE FOUR GREAT VAJRAS'},
 ];
-function defCol(i){return{zh:COL_NAMES[i]?.zh||'标题'+(i+1),en:COL_NAMES[i]?.en||'TITLE '+(i+1),imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1,zhFont:'Noto Serif SC',enFont:'Cormorant Garamond',zhSize:22,enSize:18,zhColor:'#ffffff',enColor:'rgba(255,255,255,0.75)',gradH:55,gradColor:'rgba(0,0,0,0.85)'};}
+function defCol(i){const cols=[{"zh":"爱之凡尔赛","en":"","imgKey":null,"nW":0,"nH":0,"px":50,"py":50,"zoom":1,"zhFont":"Noto Serif SC","enFont":"Cormorant Garamond","zhSize":40,"enSize":18,"zhColor":"#ffffff","enColor":"rgba(255,255,255,0.75)","gradH":55,"gradColor":"rgba(0,0,0,0.85)","zhWeight":"700"},{"zh":"蔷薇华庭","en":" ","imgKey":null,"nW":0,"nH":0,"px":50,"py":50,"zoom":1,"zhFont":"Noto Serif SC","enFont":"Cormorant Garamond","zhSize":40,"enSize":18,"zhColor":"#ffffff","enColor":"rgba(255,255,255,0.75)","gradH":55,"gradColor":"rgba(0,0,0,0.85)","zhWeight":"700"},{"zh":"绿野仙踪","en":" ","imgKey":null,"nW":0,"nH":0,"px":50,"py":50,"zoom":1,"zhFont":"Noto Serif SC","enFont":"Cormorant Garamond","zhSize":40,"enSize":18,"zhColor":"#ffffff","enColor":"rgba(255,255,255,0.75)","gradH":55,"gradColor":"rgba(0,0,0,0.85)","zhWeight":"700"},{"zh":"蓝月","en":" ","imgKey":null,"nW":0,"nH":0,"px":62,"py":46,"zoom":1,"zhFont":"Noto Serif SC","enFont":"Cormorant Garamond","zhSize":40,"enSize":18,"zhColor":"#ffffff","enColor":"rgba(255,255,255,0.75)","gradH":55,"gradColor":"rgba(0,0,0,0.85)","zhWeight":"700"}];return JSON.parse(JSON.stringify(cols[i]||cols[0]));}
 // zhSize: 22px（图1） enSize: 18px（图1）
-function defHdr(){return{
-  watermark:'wedding',wmFont:'Cormorant Garamond',wmSize:38,wmItalic:true,bgColor:'#eeece6',
-  mainZh:  {text:'北仑一站式婚礼场地',
-             font:'Noto Serif SC',     size:90, weight:'700', color:'#1a1a1a', x:600, y:114, align:'center', ls:0.03},
-  subEn:   {text:'I LOVE THERE THINGS  THE SUN THE MOON AND YOU\nTHE MOON IS FOR THE NIGHT AND YOU FOREVER',
-             font:'Cormorant Garamond',size:18, weight:'300', color:'#888888', x:600, y:282, align:'center', ls:0.13},
-  brandEn: {text:'TENGTOU HOTEL',
-             font:'Cormorant Garamond',size:25, weight:'700', color:'#1a1a1a', x:600, y:342, align:'center', ls:0.28},
-  brandZh: {text:'滕头东方宴会酒店',
-             font:'Noto Sans SC',      size:40, weight:'900', color:'#1a1a1a', x:600, y:387, align:'center', ls:0.18},
-  brandSub:{text:'免场布费｜4K+帝王蟹套餐｜无预制菜｜赠送甜品台、酒水畅饮',
-             font:'Noto Serif SC',     size:28, weight:'700', color:'#555555', x:600, y:456, align:'center', ls:0.12},
-};}
-function defProj(name,n){return{id:uid(),name,ct:Date.now(),at:Date.now(),cols:n,header:defHdr(),strips:Array.from({length:n},(_,i)=>defCol(i))};}
+function defHdr(){return {"watermark":"wedding","wmFont":"Cormorant Garamond","wmSize":38,"wmItalic":true,"bgColor":"#eeece6","mainZh":{"text":"宁波四个主题厅免费用","font":"Noto Serif SC","size":90,"weight":"700","color":"#1a1a1a","x":600,"y":99,"align":"center","ls":0.03},"subEn":{"text":"I LOVE THERE THINGS  THE SUN THE MOON AND YOU\nTHE MOON IS FOR THE NIGHT AND YOU FOREVER","font":"Noto Serif SC","size":25,"weight":"700","color":"#888888","x":600,"y":258,"align":"center","ls":0.08},"brandEn":{"text":"","font":"Cormorant Garamond","size":25,"weight":"700","color":"#1a1a1a","x":600,"y":342,"align":"center","ls":0.28},"brandZh":{"text":"滕头中东欧宴会酒店","font":"Noto Serif SC","size":60,"weight":"900","color":"#1a1a1a","x":605,"y":347,"align":"center","ls":0.18},"brandSub":{"text":"4K+元/桌帝王蟹大龙虾刺身｜赠送酒水畅饮、甜品台","font":"Noto Serif SC","size":42,"weight":"900","color":"#555555","x":600,"y":446,"align":"center","ls":0.04}};}
+function defProj(name,n=4){return{id:uid(),name:name||'未命名项目',ct:Date.now(),at:Date.now(),cols:n,header:defHdr(),strips:Array.from({length:n},(_,i)=>defCol(i))};}
 
 // ── Save / Load ───────────────────────────────────────────────────
 async function loadAll(){projects=await dbA('P');projects.sort((a,b)=>b.at-a.at);}
@@ -282,7 +270,7 @@ async function delImg(key){await dbD('I',key);if(cache[key]){URL.revokeObjectURL
 async function getURL(key){if(!key)return null;if(cache[key])return cache[key];const b=await dbG('I',key);if(!b)return null;cache[key]=URL.createObjectURL(b);return cache[key];}
 
 // ── Modal ─────────────────────────────────────────────────────────
-function openModal(){mCol=3;updMC();document.getElementById('m-name').value='';document.getElementById('modal').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),50);}
+function openModal(){mCol=4;updMC();document.getElementById('m-name').value='';document.getElementById('modal').classList.add('open');setTimeout(()=>document.getElementById('m-name').focus(),50);}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 function updMC(){[3,4].forEach(n=>{const el=document.getElementById(`mc-${n}`);el.style.borderColor=n===mCol?'#c8392b':'#2a2a2a';el.style.background=n===mCol?'#1a0808':'#111';el.style.color=n===mCol?'#fff':'#888';});}
 async function createProj(){const name=(document.getElementById('m-name').value.trim()||'未命名');const p=defProj(name,mCol);await save(p);projects.unshift(p);closeModal();renderList();openProj(p.id);}

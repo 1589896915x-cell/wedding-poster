@@ -143,44 +143,7 @@ const ik=(pid,i)=>`cap-img-${pid}-${i}`;
 // 中间胶囊图片区：N列竖向图片，奇偶列上下交错，底部白色渐变
 // 艺术字区：斜体大字
 // 下方文字区：主标题+副标题+标签行+英文段落
-function defP(name,cols=6){
-  const imgs=Array.from({length:cols},()=>({imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1}));
-  return{
-    id:uid(),name,ct:Date.now(),at:Date.now(),
-    cols,
-    bgColor:'#ffffff',
-    // 顶部标题
-    topTitle:'百万婚礼主题宴会厅',
-    topTitleFont:'Noto Serif SC',topTitleSize:34,topTitleWeight:'300',topTitleColor:'#1a1a1a',
-    topTitleY:49,topTitleLS:2.2,
-    // 胶囊图片区
-    colAreaY:150,
-    colAreaH:876,
-    colPad:26,
-    colGap:14,
-    colRadius:999,
-    staggerPx:75,
-    gradH:170,
-    imgs,
-    // 艺术字
-    artText:'Art Venue',
-    artFont:'Dancing Script',artSize:137,artWeight:'400',artColor:'#c8a06a',
-    artY:921,artX:600,artLS:0.09,
-    // 主标题
-    mainTitle:'北京一站式婚礼场地',
-    mainTitleFont:'Noto Serif SC',mainTitleSize:107,mainTitleWeight:'700',mainTitleColor:'#111111',
-    mainTitleY:1070,mainTitleLS:0.04,
-    subTitle:'「繁景艺术中心」',
-    subTitleFont:'Noto Serif SC',subTitleSize:90,subTitleWeight:'700',subTitleColor:'#111111',
-    subTitleY:1205,subTitleLS:0.1,
-    tagLine:'策划  ｜  场地  ｜  酒席  ｜  四大  ｜  婚纱',
-    tagFont:'Noto Serif SC',tagSize:43,tagWeight:'500',tagColor:'#444444',
-    tagY:1360,tagLS:0.05,
-    enPara:'Among the countless lights, one remains on just for you.  Not in chaos, but with you alone\nA partner is truly important, but it\'s not too late\nBut it has to be the right person, because you are the light of my later years',
-    enParaFont:'Cormorant Garamond',enParaSize:18,enParaWeight:'300',enParaColor:'#999999',
-    enParaY:1477,enParaLS:0.03,enParaLH:1.4,
-  };
-}
+function defP(name,cols=4){const p={"name":"未命名项目","cols":4,"bgColor":"#ffffff","topTitle":"百万婚礼主题宴会厅","topTitleFont":"Noto Serif SC","topTitleSize":40,"topTitleWeight":"300","topTitleColor":"#1a1a1a","topTitleY":49,"topTitleLS":2,"colAreaY":150,"colAreaH":876,"colPad":26,"colGap":14,"colRadius":999,"staggerPx":75,"gradH":106,"imgs":[{"imgKey":null,"nW":0,"nH":0,"px":50,"py":50,"zoom":1},{"imgKey":null,"nW":0,"nH":0,"px":50,"py":50,"zoom":1},{"imgKey":null,"nW":0,"nH":0,"px":50,"py":50,"zoom":1},{"imgKey":null,"nW":0,"nH":0,"px":50,"py":50,"zoom":1},{"imgKey":null,"nW":0,"nH":0,"px":50,"py":50,"zoom":1},{"imgKey":null,"nW":0,"nH":0,"px":50,"py":50,"zoom":1}],"artText":"Art Venue","artFont":"Dancing Script","artSize":137,"artWeight":"400","artColor":"#c8a06a","artY":921,"artX":600,"artLS":0.09,"mainTitle":"鄞州一站式婚礼场地","mainTitleFont":"Noto Serif SC","mainTitleSize":107,"mainTitleWeight":"700","mainTitleColor":"#111111","mainTitleY":1070,"mainTitleLS":0.04,"subTitle":"「滕头中东欧宴会酒店」","subTitleFont":"Noto Serif SC","subTitleSize":80,"subTitleWeight":"700","subTitleColor":"#111111","subTitleY":1200,"subTitleLS":0.1,"tagLine":"场地免费使用丨4K+帝王蟹套餐丨酒水畅饮、无预制菜","tagFont":"Noto Serif SC","tagSize":43,"tagWeight":"700","tagColor":"#444444","tagY":1306,"tagLS":0.05,"enPara":" Among the countless lights, one remains on just for you.  Not in chaos, but with you alone\nA partner is truly important, but it's not too late\nBut it has to be the right person, because you are the light of my later years","enParaFont":"Cormorant Garamond","enParaSize":29,"enParaWeight":"500","enParaColor":"#999999","enParaY":1413,"enParaLS":0.04,"enParaLH":1.2};p.id=uid();p.name=name||'未命名项目';p.ct=Date.now();p.at=Date.now();p.cols=cols;while(p.imgs.length<cols)p.imgs.push({imgKey:null,nW:0,nH:0,px:50,py:50,zoom:1});return p;}
 
 // ══ Storage ═══════════════════════════════════════════════════════
 const imgCache={};
@@ -193,7 +156,7 @@ async function save(p){p.at=Date.now();await dbP('P',p);}
 let projs=[],curId=null,selImg=0;
 async function newProj(){
   const n=prompt('项目名称：','未命名');if(!n)return;
-  const p=defP(n.trim()||'未命名',6);
+  const p=defP(n.trim()||'未命名',4);
   await save(p);projs.unshift(p);renderList();openProj(p.id);
 }
 function renderList(){

@@ -177,17 +177,8 @@ const FONTS=[
   ["Great Vibes","'Great Vibes'"],["Dancing Script","'Dancing Script'"]
 ];
 const SINGLE_WEIGHT=["'Great Vibes'"];
-function defFields(){return [
- {key:'title',label:'主标题',text:'宁波小预算婚礼必看',font:"'Noto Serif SC'",size:108,weight:700,color:'#6d4c15',x:600,y:820,ls:0.04,align:'center',lh:1.15,shadow:0},
- {key:'sub',label:'副标题',text:'免费试用场地｜5K帝王蟹套餐｜赠送酒水畅饮',font:"'Noto Sans SC'",size:34,weight:400,color:'#8a6a2a',x:600,y:952,ls:0.06,align:'center',lh:1.3,shadow:0},
-];}
-function defProject(name){return {name:name||'未命名项目',fields:defFields(),
-  bgTop:'#fbf4e7', bgBot:'#f2b36b',
-  btn:{tL:'点击获取最新报价',tR:'没有预制菜',size:30,y:1016,padX:28,padY:15,cL:'#7a1c1c',cR:'#f2b23c',tcL:'#ffffff',tcR:'#5a3a00'},
-  arch:{heroH:912,gradStart:55,gridY:1120,gridH:400,gap:24,margin:60,radius:14,cols:3,slots:[
-    {zoom:1,px:50,py:50},{zoom:1,px:50,py:50},{zoom:1,px:50,py:50},{zoom:1,px:50,py:50},{zoom:1,px:50,py:50}
-  ]}
-};}
+function defFields(){return [{"key":"title","label":"主标题","text":"鄞州5—40桌婚宴","font":"'Noto Serif SC'","size":108,"weight":700,"color":"#6d4c15","x":600,"y":832,"ls":0.04,"align":"center","lh":1.15,"shadow":0},{"key":"sub","label":"副标题","text":"免费使用主题场地｜4K+元/桌帝王蟹大龙虾刺身","font":"'Noto Sans SC'","size":48,"weight":700,"color":"#8a6a2a","x":600,"y":970,"ls":0.06,"align":"center","lh":1.3,"shadow":0}];}
+function defProject(name){const p={"name":"未命名项目","fields":[{"key":"title","label":"主标题","text":"鄞州5—40桌婚宴","font":"'Noto Serif SC'","size":108,"weight":700,"color":"#6d4c15","x":600,"y":832,"ls":0.04,"align":"center","lh":1.15,"shadow":0},{"key":"sub","label":"副标题","text":"免费使用主题场地｜4K+元/桌帝王蟹大龙虾刺身","font":"'Noto Sans SC'","size":48,"weight":700,"color":"#8a6a2a","x":600,"y":970,"ls":0.06,"align":"center","lh":1.3,"shadow":0}],"bgTop":"#ffffff","bgBot":"#dcc6a8","btn":{"tL":"赠送酒水畅饮","tR":"赠送甜品台","size":38,"y":1058,"padX":28,"padY":15,"cL":"#8b6914","cR":"#ffb74d","tcL":"#ffffff","tcR":"#5e3d02"},"arch":{"heroH":850,"gradStart":85,"gridY":1175,"gridH":401,"gap":24,"margin":60,"radius":14,"cols":4,"slots":[{"zoom":1,"px":47,"py":50},{"zoom":1.31,"px":47,"py":76},{"zoom":1,"px":50,"py":50},{"zoom":1,"px":50,"py":50},{"zoom":1,"px":50,"py":50}]}};p.name=name||'未命名项目';return p;}
 
 /* ---------- 项目状态 ---------- */
 let DB=null, proj=null, projId=null;
