@@ -1,7 +1,8 @@
 """Sync changed template URLs using the workflow's existing Supabase secrets.
 
 Only templates 63–76 receive embedded metadata updates. Older templates retain
-their existing update payload, including any manually maintained cover image.
+their manually maintained metadata and cover image. Equivalent URLs identify
+one template, so updating a file does not create another catalog card.
 """
 
 import argparse
@@ -14,7 +15,7 @@ import re
 import subprocess
 import sys
 from urllib.error import HTTPError, URLError
-from urllib.parse import quote, urlencode, urlsplit
+from urllib.parse import quote, unquote, urlencode, urlsplit
 from urllib.request import Request, urlopen
 
 
@@ -22,6 +23,7 @@ NEW_IDS = range(63, 77)
 TEMPLATE_FILE = re.compile(r"(?:[0-9]+|template-[^/\\]+)\.html\Z")
 DEFINITION = re.compile(r"<script\b[^>]*>\s*window\.TEMPLATE\s*=\s*", re.I)
 COVER = re.compile(r"data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)\Z")
+CATALOG_HOSTS = {"xieyu-poster.top", "www.xieyu-poster.top", "wedding-poster-eight.vercel.app"}
 
 
 class SyncError(RuntimeError):
@@ -110,12 +112,12 @@ def selected_templates(repo, changed):
 
 
 def requested_templates(repo, value):
-    """Manual inputs are data, and may name only the explicitly authorized batch."""
+    """Manual inputs may name only existing root-level template files."""
     names = value.split()
-    if not names or len(names) > 14 or len(names) != len(set(names)):
-        raise SyncError("Manual files must contain 1–14 unique template filenames")
-    if any(not re.fullmatch(r"(?:6[3-9]|7[0-6])\.html", name) for name in names):
-        raise SyncError("Manual files may only contain 63.html through 76.html")
+    if not names or len(names) > 100 or len(names) != len(set(names)):
+        raise SyncError("Manual files must contain 1–100 unique template filenames")
+    if any(not TEMPLATE_FILE.fullmatch(name) for name in names):
+        raise SyncError("Manual files must be root-level template HTML filenames")
     files = [repo / name for name in names]
     if any(not file.is_file() for file in files):
         raise SyncError("A requested template file is missing from the checked-out commit")
@@ -123,6 +125,16 @@ def requested_templates(repo, value):
 
 
 def git_changed(repo):
+    before, head = os.environ.get("SYNC_BEFORE_SHA"), os.environ.get("SYNC_HEAD_SHA")
+    if before is not None or head is not None:
+        if not all(isinstance(sha, str) and re.fullmatch(r"[0-9a-fA-F]{40}", sha) for sha in (before, head)):
+            raise SyncError("Push commit range must contain two valid Git SHAs")
+        command = (["git", "ls-tree", "-r", "--name-only", head] if before == "0" * 40
+                   else ["git", "diff", "--name-only", before, head, "--"])
+        result = subprocess.run(command, cwd=repo, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise SyncError("Cannot determine all changed files in the pushed commit range")
+        return result.stdout.splitlines()
     commands = [
         ["git", "diff", "--name-only", "HEAD~1", "HEAD"],
         ["git", "show", "--name-only", "--format=", "HEAD"],
@@ -170,6 +182,69 @@ class SupabaseClient:
         return rows
 
 
+def template_identity(value, owner, repository):
+    """Accept only this catalog's root templates and this repository's Pages URL."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = urlsplit(value.strip())
+        path = unquote(parsed.path, errors="strict")
+        if parsed.netloc:
+            if parsed.scheme not in {"", "http", "https"} or parsed.username or parsed.password:
+                return None
+            if parsed.port is not None and parsed.port != (80 if parsed.scheme == "http" else 443):
+                return None
+            if parsed.hostname == f"{owner.lower()}.github.io":
+                prefix = f"/{repository}/"
+                if not path.startswith(prefix):
+                    return None
+                name = path[len(prefix):]
+            elif parsed.hostname in CATALOG_HOSTS:
+                name = path.removeprefix("/")
+            else:
+                return None
+        else:
+            if parsed.scheme:
+                return None
+            name = path.removeprefix("./").removeprefix("/")
+    except (ValueError, UnicodeError):
+        return None
+    return name if TEMPLATE_FILE.fullmatch(name) else None
+
+
+def catalog_rows(client):
+    """Read every page before deciding a template is absent or writing anything."""
+    rows, seen = [], set()
+    while True:
+        page = client.request("GET", {
+            "select": "id,url,img,is_active", "order": "id.asc", "limit": "500", "offset": str(len(rows)),
+        })
+        if not isinstance(page, list):
+            raise SyncError("Template catalog did not return a row list")
+        if not page:
+            return rows
+        for row in page:
+            if not isinstance(row, dict):
+                raise SyncError("Template catalog contains an invalid row")
+            ident = row.get("id")
+            if (not isinstance(ident, (str, int)) or isinstance(ident, bool) or not str(ident).strip()
+                    or not isinstance(row.get("url"), str) or not row["url"].strip()
+                    or not isinstance(row.get("is_active"), bool)
+                    or "img" not in row or row["img"] is not None and not isinstance(row["img"], str)):
+                raise SyncError("Template catalog contains invalid id, URL, image or active state")
+            if str(ident) in seen:
+                raise SyncError("Template catalog pagination returned a repeated id")
+            seen.add(str(ident))
+            rows.append(row)
+        # Continue even after a short page: the server may cap the requested limit.
+
+
+def preferred_record(row):
+    ident = str(row["id"])
+    stable_id = (0, int(ident)) if ident.isdecimal() else (1, ident)
+    return (not row["is_active"], not bool((row["img"] or "").strip()), stable_id)
+
+
 def sync_file(file, owner, repository, client):
     if not TEMPLATE_FILE.fullmatch(file.name):
         raise SyncError("Unsupported template filename")
@@ -177,10 +252,10 @@ def sync_file(file, owner, repository, client):
     pages_url = pages_base + quote(file.name, safe='')
     metadata = embedded_metadata(file)
     image_url = pages_base + rendered_preview(file) if metadata else None
-    rows = client.request("GET", {"url": "eq." + pages_url, "select": "id", "limit": "2"})
-    if len(rows) > 1:
-        raise SyncError(f"{file.name}: duplicate URL records require review")
-    payload = {"url": pages_url}
+    rows = [row for row in catalog_rows(client)
+            if template_identity(row["url"], owner, repository) == file.name]
+    existing = min(rows, key=preferred_record) if rows else None
+    payload = {"url": existing["url"] if existing else pages_url}
     if metadata:
         payload.update(
             name=f"模板{file.stem}｜{metadata['name']}",
@@ -188,11 +263,11 @@ def sync_file(file, owner, repository, client):
             description=f"{metadata['role']} · 参考{metadata['refIndex']}。照片、文字、字号和色彩可编辑。参考信息仅作排版示例，发布时替换本店已确认素材与文案。",
             img=image_url,
         )
-    if rows:
-        db_id = rows[0].get("id") if isinstance(rows[0], dict) else None
-        if not isinstance(db_id, (str, int)) or isinstance(db_id, bool) or str(db_id) == "":
-            raise SyncError(f"{file.name}: existing URL record has no database id")
-        client.request("PATCH", {"id": "eq." + str(db_id), "url": "eq." + pages_url}, payload)
+    if existing:
+        client.request("PATCH", {"id": "eq." + str(existing["id"])}, payload)
+        for row in rows:
+            if row["id"] != existing["id"] and row["is_active"]:
+                client.request("PATCH", {"id": "eq." + str(row["id"])}, {"is_active": False})
         return "updated"
     slug = file.stem.removeprefix("template-")
     payload.setdefault("name", "模板" + slug)
