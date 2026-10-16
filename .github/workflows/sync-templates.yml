@@ -6,22 +6,75 @@ on:
     paths:
       - '[0-9]*.html'
       - 'template-*.html'
+      - '.github/scripts/sync_templates.py'
+      - '.github/scripts/test_sync_templates.py'
+      - '.github/workflows/sync-templates.yml'
   workflow_dispatch:
     inputs:
       files:
-        description: '仅允许63.html至76.html，以空格分隔；重复或范围外文件将失败'
+        description: '要同步的根目录模板文件，以空格分隔，例如 1.html 43.html；支持重复执行'
         required: true
         type: string
-        default: '63.html 64.html 65.html 66.html 67.html 68.html 69.html 70.html 71.html 72.html 73.html 74.html 75.html 76.html'
+        default: '1.html 4.html 10.html 34.html 43.html'
+
+permissions:
+  contents: read
 
 jobs:
-  sync:
+  select:
     runs-on: ubuntu-latest
+    outputs:
+      files: ${{ steps.files.outputs.files }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
+
+      - name: Test template identity and repeated synchronization
+        run: python3 -m unittest discover -s .github/scripts -p 'test_sync_templates.py' -v
+
+      - name: Select requested or changed template files
+        id: files
+        env:
+          SYNC_EVENT_NAME: ${{ github.event_name }}
+          SYNC_REQUESTED_FILES: ${{ inputs.files }}
+          SYNC_BEFORE_SHA: ${{ github.event.before }}
+          SYNC_HEAD_SHA: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, '.github/scripts')
+          from sync_templates import git_changed, requested_templates, selected_templates
+          repo = Path.cwd()
+          files = (requested_templates(repo, os.environ['SYNC_REQUESTED_FILES'])
+                   if os.environ['SYNC_EVENT_NAME'] == 'workflow_dispatch'
+                   else selected_templates(repo, git_changed(repo)))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('files=' + json.dumps([file.name for file in files]) + '\n')
+          PY
+
+  sync:
+    needs: select
+    if: needs.select.outputs.files != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        file: ${{ fromJSON(needs.select.outputs.files) }}
+    # A newer pending job can replace only the same template, never another file.
+    concurrency:
+      group: template-catalog-${{ matrix.file }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout latest template version
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Test synchronization before catalog writes
+        run: python3 -m unittest discover -s .github/scripts -p 'test_sync_templates.py' -v
 
       - name: Sync changed templates to Supabase
         env:
@@ -29,6 +82,6 @@ jobs:
           SB_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           GITHUB_USER: ${{ github.repository_owner }}
           GITHUB_REPO_NAME: ${{ github.event.repository.name }}
-          SYNC_EVENT_NAME: ${{ github.event_name }}
-          SYNC_REQUESTED_FILES: ${{ inputs.files }}
+          SYNC_EVENT_NAME: workflow_dispatch
+          SYNC_REQUESTED_FILES: ${{ matrix.file }}
         run: python3 .github/scripts/sync_templates.py
