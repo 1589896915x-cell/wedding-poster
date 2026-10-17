@@ -1,0 +1,53 @@
+SourceHanSerifCN-Regular.otf
+
+Copyright © 2017 Adobe Systems Incorporated (http://www.adobe.com/), with Reserved Font Name 'Source'.
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software.
+
+http://scripts.sil.org/OFL
+
+SourceHanSerifCN-Bold.otf
+
+Copyright © 2017 Adobe Systems Incorporated (http://www.adobe.com/), with Reserved Font Name 'Source'.
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software.
+
+http://scripts.sil.org/OFL
+
+NotoSansCJK-Regular-1.otf
+
+Copyright © 2014 Adobe Systems Incorporated. All Rights Reserved.
+
+Copyright © 2014 Adobe Systems Incorporated
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.html
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+
+http://www.apache.org/licenses/LICENSE-2.0.html
+
+SourceHanSansCN-Bold.otf
+
+© 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software.
+
+http://scripts.sil.org/OFL
+
+NotoSansCJK-Black-7.otf
+
+Copyright © 2014 Adobe Systems Incorporated. All Rights Reserved.
+
+Copyright © 2014 Adobe Systems Incorporated
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.html
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+
+http://www.apache.org/licenses/LICENSE-2.0.html
+
+MaShanZheng-Regular.ttf
+
+Copyright 2018 The MaShanZheng Project Authors (https://github.com/googlefonts/mashanzheng)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL
+
+http://scripts.sil.org/OFL
