@@ -1,0 +1,1 @@
+Derived from Cormorant Garamond (OFL). Static weight 300 instance, with decimal characters mapped to lining figures; renamed Reference Light Serif. Original license: cormorantgaramond-OFL.txt.
