@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 import os
+import json
 from pathlib import Path
 import subprocess
 import tempfile
@@ -263,6 +264,21 @@ class SelectionTests(unittest.TestCase):
                 sync.git_changed(Path("."))
         run.assert_not_called()
 
+
+
+class NewReferenceMetadataTests(unittest.TestCase):
+    def write_definition(self, root, ref=4, role="封面"):
+        path=Path(root)/"80.html"
+        path.write_text("<script>window.TEMPLATE="+json.dumps({"id":80,"refIndex":ref,"name":"模板80 · 错位标题","role":role,"referenceDataUrl":"data:image/jpeg;base64,/9j/"})+";</script>")
+        return path
+    def test_accept_selected_reference_mapping(self):
+        with tempfile.TemporaryDirectory() as root:
+            self.assertEqual(sync.embedded_metadata(self.write_definition(root))["refIndex"],4)
+    def test_reject_wrong_reference_for_new_id(self):
+        with tempfile.TemporaryDirectory() as root:
+            with self.assertRaises(sync.SyncError): sync.embedded_metadata(self.write_definition(root,18))
+    def test_examples_77_79_remain_manual(self):
+        for i in (77,78,79): self.assertIsNone(sync.embedded_metadata(Path(str(i)+".html")))
 
 if __name__ == "__main__":
     unittest.main()

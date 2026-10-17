@@ -1,6 +1,6 @@
 """Sync changed template URLs using the workflow's existing Supabase secrets.
 
-Only templates 63–76 receive embedded metadata updates. Older templates retain
+Reference templates 63–76 and 80–108 receive embedded metadata updates. Older templates retain
 their manually maintained metadata and cover image. Equivalent URLs identify
 one template, so updating a file does not create another catalog card.
 """
@@ -19,7 +19,8 @@ from urllib.parse import quote, unquote, urlencode, urlsplit
 from urllib.request import Request, urlopen
 
 
-NEW_IDS = range(63, 77)
+REFERENCE_IDS = {**{i: i - 62 for i in range(63, 77)}, **{80: 4, 81: 9, 82: 11, 83: 14, 84: 18, 85: 21, 86: 31, 87: 33, 88: 36, 89: 37, 90: 38, 91: 40, 92: 41, 93: 43, 94: 46, 95: 49, 96: 51, 97: 67, 98: 71, 99: 79, 100: 82, 101: 83, 102: 84, 103: 87, 104: 93, 105: 95, 106: 99, 107: 100, 108: 106}}
+NEW_IDS = tuple(REFERENCE_IDS)
 TEMPLATE_FILE = re.compile(r"(?:[0-9]+|template-[^/\\]+)\.html\Z")
 DEFINITION = re.compile(r"<script\b[^>]*>\s*window\.TEMPLATE\s*=\s*", re.I)
 COVER = re.compile(r"data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)\Z")
@@ -45,7 +46,7 @@ def embedded_metadata(file):
     if not isinstance(definition, dict):
         raise SyncError(f"{file.name}: embedded definition must be an object")
     ident = int(file.stem)
-    if definition.get("id") != ident or definition.get("refIndex") != ident - 62:
+    if definition.get("id") != ident or definition.get("refIndex") != REFERENCE_IDS[ident]:
         raise SyncError(f"{file.name}: template/reference number mismatch")
     name, role, cover = (definition.get(k) for k in ("name", "role", "referenceDataUrl"))
     if not isinstance(name, str) or not name.strip() or role not in {"封面", "拼图", "服务说明"}:
@@ -278,7 +279,7 @@ def sync_file(file, owner, repository, client):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check-metadata", action="store_true", help="Validate the 14 local definitions without credentials or HTTP")
+    parser.add_argument("--check-metadata", action="store_true", help="Validate registered local definitions without credentials or HTTP")
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[2]
     if args.check_metadata:
