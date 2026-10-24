@@ -1,6 +1,6 @@
 """Sync changed template URLs using the workflow's existing Supabase secrets.
 
-Reference templates 63–76 and 80–108 receive embedded metadata updates. Older templates retain
+Reference templates 63–76 and 80–117 receive embedded metadata updates. Older templates retain
 their manually maintained metadata and cover image. Equivalent URLs identify
 one template, so updating a file does not create another catalog card.
 """
@@ -19,7 +19,7 @@ from urllib.parse import quote, unquote, urlencode, urlsplit
 from urllib.request import Request, urlopen
 
 
-REFERENCE_IDS = {**{i: i - 62 for i in range(63, 77)}, **{80: 4, 81: 9, 82: 11, 83: 14, 84: 18, 85: 21, 86: 31, 87: 33, 88: 36, 89: 37, 90: 38, 91: 40, 92: 41, 93: 43, 94: 46, 95: 49, 96: 51, 97: 67, 98: 71, 99: 79, 100: 82, 101: 83, 102: 84, 103: 87, 104: 93, 105: 95, 106: 99, 107: 100, 108: 106}}
+REFERENCE_IDS = {**{i: i - 62 for i in range(63, 77)}, **{80: 4, 81: 9, 82: 11, 83: 14, 84: 18, 85: 21, 86: 31, 87: 33, 88: 36, 89: 37, 90: 38, 91: 40, 92: 41, 93: 43, 94: 46, 95: 49, 96: 51, 97: 67, 98: 71, 99: 79, 100: 82, 101: 83, 102: 84, 103: 87, 104: 93, 105: 95, 106: 99, 107: 100, 108: 106}, **{109: 1, 110: 4, 111: 6, 112: 7, 113: 13, 114: 26, 115: 51, 116: 53, 117: 55}}
 NEW_IDS = tuple(REFERENCE_IDS)
 TEMPLATE_FILE = re.compile(r"(?:[0-9]+|template-[^/\\]+)\.html\Z")
 DEFINITION = re.compile(r"<script\b[^>]*>\s*window\.TEMPLATE\s*=\s*", re.I)

@@ -280,5 +280,67 @@ class NewReferenceMetadataTests(unittest.TestCase):
     def test_examples_77_79_remain_manual(self):
         for i in (77,78,79): self.assertIsNone(sync.embedded_metadata(Path(str(i)+".html")))
 
+
+class CollageReferenceMetadataTests(unittest.TestCase):
+    selected = {109: 1, 110: 4, 111: 6, 112: 7, 113: 13,
+                114: 26, 115: 51, 116: 53, 117: 55}
+
+    def write_definition(self, root, ident, reference):
+        path = Path(root) / f"{ident}.html"
+        definition = {"id": ident, "refIndex": reference, "name": "拼图示例",
+                      "role": "拼图", "referenceDataUrl": "data:image/jpeg;base64,/9j/"}
+        path.write_text("<script>window.TEMPLATE=" + json.dumps(definition) + ";</script>")
+        return path
+
+    def test_all_nine_selected_collage_mappings(self):
+        with tempfile.TemporaryDirectory() as root:
+            for ident, reference in self.selected.items():
+                with self.subTest(ident=ident):
+                    self.assertEqual(sync.REFERENCE_IDS[ident], reference)
+                    metadata = sync.embedded_metadata(self.write_definition(root, ident, reference))
+                    self.assertEqual(metadata["refIndex"], reference)
+                    self.assertEqual(metadata["role"], "拼图")
+
+    def test_wrong_collage_references_rejected(self):
+        with tempfile.TemporaryDirectory() as root:
+            for ident, reference in self.selected.items():
+                with self.subTest(ident=ident), self.assertRaises(sync.SyncError):
+                    sync.embedded_metadata(self.write_definition(root, ident, reference + 1))
+
+    def test_collages_update_twice_without_duplicate_cards(self):
+        with tempfile.TemporaryDirectory() as root:
+            files = [self.write_definition(root, ident, reference)
+                     for ident, reference in self.selected.items()]
+            client = MemoryClient()
+            with patch.object(sync, "rendered_preview", side_effect=lambda file: f"previews/{file.stem}.jpg"):
+                for iteration in range(2):
+                    for file in files:
+                        self.assertEqual(sync.sync_file(file, OWNER, REPOSITORY, client),
+                                         "created" if iteration == 0 else "updated")
+            self.assertEqual(len(client.rows), 9)
+            self.assertEqual(sum(call[0] == "POST" for call in client.calls), 9)
+            for ident, row in zip(self.selected, client.rows):
+                self.assertEqual(row["name"], f"模板{ident}｜拼图示例")
+                self.assertEqual(row["tag"], "拼图")
+                self.assertEqual(row["img"], PAGES + f"previews/{ident}.jpg")
+                self.assertEqual(row["sort_order"], ident)
+
+    def test_script_only_change_does_not_sync_whole_library(self):
+        with tempfile.TemporaryDirectory() as root:
+            repo = Path(root)
+            for ident in (43, 80, *self.selected):
+                (repo / f"{ident}.html").touch()
+            self.assertEqual(sync.selected_templates(repo, [".github/scripts/sync_templates.py"]), [])
+            selected = sync.selected_templates(repo, ["110.html", "110.html", "previews/110.jpg"])
+            self.assertEqual([file.name for file in selected], ["110.html"])
+
+    def test_old_mappings_and_manual_examples_unchanged(self):
+        self.assertEqual({i: sync.REFERENCE_IDS[i] for i in range(63, 77)},
+                         {i: i - 62 for i in range(63, 77)})
+        self.assertEqual(sync.REFERENCE_IDS[80], 4)
+        self.assertEqual(sync.REFERENCE_IDS[108], 106)
+        for ident in (43, 77, 78, 79, 118):
+            self.assertIsNone(sync.embedded_metadata(Path(f"{ident}.html")))
+
 if __name__ == "__main__":
     unittest.main()
