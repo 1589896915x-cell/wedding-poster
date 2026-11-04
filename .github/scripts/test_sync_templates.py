@@ -339,7 +339,7 @@ class CollageReferenceMetadataTests(unittest.TestCase):
                          {i: i - 62 for i in range(63, 77)})
         self.assertEqual(sync.REFERENCE_IDS[80], 4)
         self.assertEqual(sync.REFERENCE_IDS[108], 106)
-        for ident in (43, 77, 78, 79, 120):
+        for ident in (43, 77, 78, 79):
             self.assertIsNone(sync.embedded_metadata(Path(f"{ident}.html")))
 
 
@@ -398,6 +398,23 @@ class GradientCoverMetadataTests(unittest.TestCase):
             self.assertEqual([row["is_active"] for row in client.rows], [True, False, True])
             self.assertEqual(client.rows[0]["img"], PAGES + "previews/118.jpg")
             self.assertEqual(client.rows[2]["img"], "other")
+
+
+class OneTwentyReferenceTests(unittest.TestCase):
+    def test_120_reference_mapping_and_repeat_sync(self):
+        with tempfile.TemporaryDirectory() as root:
+            file = Path(root) / "120.html"
+            definition = {"id":120,"refIndex":7,"name":"页眉上二下一·中缝标签",
+                          "role":"拼图","referenceDataUrl":"data:image/jpeg;base64,/9j/"}
+            file.write_text("<script>window.TEMPLATE=" + json.dumps(definition) + ";</script>")
+            self.assertEqual(sync.embedded_metadata(file)["refIndex"],7)
+            client = MemoryClient()
+            with patch.object(sync, "rendered_preview", return_value="previews/120.jpg"):
+                self.assertEqual(sync.sync_file(file, OWNER, REPOSITORY, client),"created")
+                self.assertEqual(sync.sync_file(file, OWNER, REPOSITORY, client),"updated")
+            self.assertEqual(len(client.rows),1)
+            self.assertEqual(client.rows[0]["tag"],"拼图")
+            self.assertEqual(client.rows[0]["img"],PAGES+"previews/120.jpg")
 
 if __name__ == "__main__":
     unittest.main()
