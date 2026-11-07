@@ -9,7 +9,7 @@
   const content = document.createElement('div');
   content.style.cssText = 'max-width:90vw';
   const picture = document.createElement('img');
-  picture.src = '../previews/' + id + '.jpg';
+  picture.src = '../previews/' + id + '.jpg?v=20261107-copy1';
   picture.alt = '锦禾 ' + id + ' 号封面预览';
   picture.style.cssText = 'display:block;margin:0 auto 16px;max-width:80vw;max-height:65vh;object-fit:contain;border-radius:5px';
   const title = document.createElement('p');
