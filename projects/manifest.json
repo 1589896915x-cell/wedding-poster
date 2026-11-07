@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "projects": [
+    {
+      "id": "jinhe",
+      "name": "锦禾宴会中心",
+      "href": "jinhe/",
+      "templateCount": 22,
+      "noteCollectionCount": 1
+    }
+  ],
+  "generalTemplates": "../index.html#tpl-grid",
+  "noteCollections": "../notes/"
+}

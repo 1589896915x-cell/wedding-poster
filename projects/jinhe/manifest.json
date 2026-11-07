@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "projectId": "jinhe",
+  "projectName": "锦禾宴会中心",
+  "updatedAt": "2026-11-07",
+  "templateCount": 22,
+  "templates": [
+    {
+      "id": 1,
+      "name": "模板 1",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/1.jpg",
+      "reference": "references/1.png",
+      "editor": "editors/1.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 4,
+      "name": "模板 4",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/4.jpg",
+      "reference": "references/4.jpg",
+      "editor": "editors/4.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 5,
+      "name": "模板 5",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/5.jpg",
+      "reference": "references/5.png",
+      "editor": "editors/5.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 10,
+      "name": "模板 10",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/10.jpg",
+      "reference": "references/10.png",
+      "editor": "editors/10.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 12,
+      "name": "模板 12",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/12.jpg",
+      "reference": "references/12.png",
+      "editor": "editors/12.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 16,
+      "name": "模板 16",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/16.jpg",
+      "reference": "references/16.png",
+      "editor": "editors/16.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 17,
+      "name": "模板 17",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/17.jpg",
+      "reference": "references/17.jpg",
+      "editor": "editors/17.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 19,
+      "name": "模板 19",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/19.jpg",
+      "reference": "references/19.jpg",
+      "editor": "editors/19.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 25,
+      "name": "模板 25",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/25.jpg",
+      "reference": "references/25.jpg",
+      "editor": "editors/25.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 62,
+      "name": "模板 62",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/62.jpg",
+      "reference": "references/62.jpg",
+      "editor": "editors/62.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 68,
+      "name": "模板 68",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/68.jpg",
+      "reference": "references/68.jpg",
+      "editor": "editors/68.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 70,
+      "name": "模板 70",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/70.jpg",
+      "reference": "references/70.jpg",
+      "editor": "editors/70.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 72,
+      "name": "模板 72",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/72.jpg",
+      "reference": "references/72.jpg",
+      "editor": "editors/72.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 80,
+      "name": "模板 80",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/80.jpg",
+      "reference": "references/80.jpg",
+      "editor": "editors/80.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 81,
+      "name": "模板 81",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/81.jpg",
+      "reference": "references/81.jpg",
+      "editor": "editors/81.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 106,
+      "name": "模板 106",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/106.jpg",
+      "reference": "references/106.jpg",
+      "editor": "editors/106.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 97,
+      "name": "模板 97",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/97.jpg",
+      "reference": "references/97.jpg",
+      "editor": "editors/97.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 96,
+      "name": "模板 96",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/96.jpg",
+      "reference": "references/96.jpg",
+      "editor": "editors/96.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 95,
+      "name": "模板 95",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/95.jpg",
+      "reference": "references/95.jpg",
+      "editor": "editors/95.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 93,
+      "name": "模板 93",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/93.jpg",
+      "reference": "references/93.jpg",
+      "editor": "editors/93.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 107,
+      "name": "模板 107",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/107.jpg",
+      "reference": "references/107.jpg",
+      "editor": "editors/107.html",
+      "width": 1200,
+      "height": 1600
+    },
+    {
+      "id": 108,
+      "name": "模板 108",
+      "role": "单张封面",
+      "status": "待审阅",
+      "preview": "previews/108.jpg",
+      "reference": "references/108.jpg",
+      "editor": "editors/108.html",
+      "width": 1200,
+      "height": 1600
+    }
+  ],
+  "noteCollections": [
+    {
+      "id": "jinhe-20261104-01",
+      "name": "预订婚宴送四大金刚",
+      "label": "婚宴 01",
+      "status": "参考原图",
+      "description": "封面、两厅信息、化妆间，共 3 个图位",
+      "href": "../../notes/jinhe/2026-11-04/01/"
+    }
+  ]
+}
