@@ -40,6 +40,7 @@ body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0a0a0a;color:#f
 .tpl-card{background:#111;border:1px solid #2a2a2a;border-radius:14px;overflow:hidden;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s;text-decoration:none;display:block;}
 .tpl-card:hover{border-color:#c8a96a;transform:translateY(-4px);box-shadow:0 16px 48px rgba(200,169,106,.15);}
 .tpl-preview{aspect-ratio:3/4;position:relative;overflow:hidden;background:#0a0a0a;}
+.tpl-preview-hint{display:grid;place-items:center;width:100%;height:100%;color:#777;font-size:13px;}
 .tpl-preview img{width:100%;height:100%;object-fit:cover;transition:transform .3s ease;display:block;}
 .tpl-card:hover .tpl-preview img{transform:scale(1.04);}
 .tpl-info{padding:14px 16px;border-top:1px solid #1e1e1e;}
@@ -82,6 +83,7 @@ body{font-family:'Noto Sans SC',system-ui,sans-serif;background:#0a0a0a;color:#f
   </div>
 </div>
 
+<script src="catalog-loader.js"></script>
 <script>
 const SB_URL='https://kyemjxgdmkupfkntflzh.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5ZW1qeGdkbWt1cGZrbnRmbHpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDI1OTcsImV4cCI6MjA5MTYxODU5N30.rJ-dxDkaxI5-aM_FAew9p1aD33I1H7h_HK9NGboUjvo';
@@ -101,59 +103,6 @@ function showSkeletons(n=6){
   const grid=document.getElementById('tpl-grid');
   grid.innerHTML=Array(n).fill(0).map(()=>`
     <div class="skeleton" style="aspect-ratio:3/4;border-radius:14px;"></div>`).join('');
-}
-
-// ── 模板列表（先渲染缓存秒开，同时后台拉最新覆盖 → 新模板无需退出重登）──
-async function loadTemplates(){
-  const CACHE_KEY='wp_tpl_cache';
-  let hadCache=false;
-  try{
-    const cached=localStorage.getItem(CACHE_KEY);
-    if(cached){
-      const {data}=JSON.parse(cached);
-      if(data&&data.length){renderTemplates(data);hadCache=true;}
-    }
-  }catch(e){}
-  if(!hadCache)showSkeletons();
-  try{
-    const r=await fetch(`${SB_URL}/rest/v1/templates?is_active=eq.true&order=sort_order.asc&select=*`,SB_HDR);
-    if(!r.ok)throw new Error('HTTP '+r.status);
-    const data=await r.json();
-    if(!data||!data.length)throw new Error('empty');
-    renderTemplates(data);
-    // Cache failure must never hide the fresh list. Inline image data is too large.
-    try{
-      const cacheData=data.map(t=>{
-        if(typeof t.img==='string'&&/^data:image\//i.test(t.img)){
-          const {img,...metadata}=t;return metadata;
-        }
-        return t;
-      });
-      localStorage.setItem(CACHE_KEY,JSON.stringify({ts:Date.now(),data:cacheData}));
-    }catch(e){
-      try{localStorage.removeItem(CACHE_KEY);}catch(e){}
-    }
-  }catch(e){
-    if(!hadCache)document.getElementById('tpl-grid').innerHTML='<div style="color:#e05a5a;font-size:12px;">模板加载失败，请刷新重试</div>';
-  }
-}
-
-function renderTemplates(templates){
-  const grid=document.getElementById('tpl-grid');
-  if(!templates||!templates.length){grid.innerHTML='<div style="color:#555;font-size:12px;">暂无模板</div>';return;}
-  grid.innerHTML=templates.map(t=>`
-    <a class="tpl-card" href="${t.url}">
-      <div class="tpl-preview">
-        ${t.img&&t.img.length>10
-          ?`<img src="${t.img}" loading="lazy" decoding="async" alt="${t.name}">`
-          :`<div style="color:#333;font-size:12px;">${t.name}</div>`}
-      </div>
-      <div class="tpl-info">
-        <div class="tpl-name">${t.name}</div>
-        <div class="tpl-desc">${t.description||''}</div>
-        ${t.tag?`<div class="tpl-tag">${t.tag}</div>`:''}
-      </div>
-    </a>`).join('');
 }
 
 let currentLic=null;
