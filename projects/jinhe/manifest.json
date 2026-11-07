@@ -9,265 +9,265 @@
       "id": 1,
       "name": "模板 1",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/1.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/1.jpg?v=20261107-original",
       "reference": "references/1.png",
       "editor": "editors/1.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/1-20c493c7cbbd.webp"
+      "thumbnail": "thumbs/1-fa23e7bd8162.webp"
     },
     {
       "id": 4,
       "name": "模板 4",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/4.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/4.jpg?v=20261107-original",
       "reference": "references/4.jpg",
       "editor": "editors/4.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/4-4cae26518385.webp"
+      "thumbnail": "thumbs/4-9dea3796961d.webp"
     },
     {
       "id": 5,
       "name": "模板 5",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/5.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/5.jpg?v=20261107-original",
       "reference": "references/5.png",
       "editor": "editors/5.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/5-ace3882c06be.webp"
+      "thumbnail": "thumbs/5-53b758004b9a.webp"
     },
     {
       "id": 10,
       "name": "模板 10",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/10.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/10.jpg?v=20261107-original",
       "reference": "references/10.png",
       "editor": "editors/10.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/10-fd97bebd6ebc.webp"
+      "thumbnail": "thumbs/10-74720b704f43.webp"
     },
     {
       "id": 12,
       "name": "模板 12",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/12.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/12.jpg?v=20261107-original",
       "reference": "references/12.png",
       "editor": "editors/12.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/12-9bfa1e9ff37a.webp"
+      "thumbnail": "thumbs/12-b562c85ce1f5.webp"
     },
     {
       "id": 16,
       "name": "模板 16",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/16.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/16.jpg?v=20261107-original",
       "reference": "references/16.png",
       "editor": "editors/16.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/16-c033e9b977d1.webp"
+      "thumbnail": "thumbs/16-fc9873cb8411.webp"
     },
     {
       "id": 17,
       "name": "模板 17",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/17.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/17.jpg?v=20261107-original",
       "reference": "references/17.jpg",
       "editor": "editors/17.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/17-15624be38e64.webp"
+      "thumbnail": "thumbs/17-f7cf88e9b4bc.webp"
     },
     {
       "id": 19,
       "name": "模板 19",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/19.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/19.jpg?v=20261107-original",
       "reference": "references/19.jpg",
       "editor": "editors/19.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/19-d32c18118c6c.webp"
+      "thumbnail": "thumbs/19-bb1c2fabf18d.webp"
     },
     {
       "id": 25,
       "name": "模板 25",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/25.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/25.jpg?v=20261107-original",
       "reference": "references/25.jpg",
       "editor": "editors/25.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/25-42b419f3dd09.webp"
+      "thumbnail": "thumbs/25-13e3e42a6900.webp"
     },
     {
       "id": 62,
       "name": "模板 62",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/62.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/62.jpg?v=20261107-original",
       "reference": "references/62.jpg",
       "editor": "editors/62.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/62-210b421971cd.webp"
+      "thumbnail": "thumbs/62-8f0f217c77a8.webp"
     },
     {
       "id": 68,
       "name": "模板 68",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/68.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/68.jpg?v=20261107-original",
       "reference": "references/68.jpg",
       "editor": "editors/68.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/68-c4bc546d5d28.webp"
+      "thumbnail": "thumbs/68-0487c9f4475b.webp"
     },
     {
       "id": 70,
       "name": "模板 70",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/70.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/70.jpg?v=20261107-original",
       "reference": "references/70.jpg",
       "editor": "editors/70.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/70-2a81f1f24727.webp"
+      "thumbnail": "thumbs/70-b9295afedd69.webp"
     },
     {
       "id": 72,
       "name": "模板 72",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/72.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/72.jpg?v=20261107-original",
       "reference": "references/72.jpg",
       "editor": "editors/72.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/72-deaa891e29fb.webp"
+      "thumbnail": "thumbs/72-c22ac19fb16f.webp"
     },
     {
       "id": 80,
       "name": "模板 80",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/80.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/80.jpg?v=20261107-original",
       "reference": "references/80.jpg",
       "editor": "editors/80.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/80-35691d4adb37.webp"
+      "thumbnail": "thumbs/80-864244a6c18e.webp"
     },
     {
       "id": 81,
       "name": "模板 81",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/81.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/81.jpg?v=20261107-original",
       "reference": "references/81.jpg",
       "editor": "editors/81.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/81-ba520fde34f5.webp"
+      "thumbnail": "thumbs/81-ae4f10ebf3e5.webp"
     },
     {
       "id": 106,
       "name": "模板 106",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/106.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/106.jpg?v=20261107-original",
       "reference": "references/106.jpg",
       "editor": "editors/106.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/106-cd3983f3e458.webp"
+      "thumbnail": "thumbs/106-8861b60eb0b1.webp"
     },
     {
       "id": 97,
       "name": "模板 97",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/97.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/97.jpg?v=20261107-original",
       "reference": "references/97.jpg",
       "editor": "editors/97.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/97-b10629d51667.webp"
+      "thumbnail": "thumbs/97-0ddc714ba31d.webp"
     },
     {
       "id": 96,
       "name": "模板 96",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/96.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/96.jpg?v=20261107-original",
       "reference": "references/96.jpg",
       "editor": "editors/96.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/96-04c06e5148d7.webp"
+      "thumbnail": "thumbs/96-42b49dc18819.webp"
     },
     {
       "id": 95,
       "name": "模板 95",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/95.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/95.jpg?v=20261107-original",
       "reference": "references/95.jpg",
       "editor": "editors/95.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/95-f9ad50e98f37.webp"
+      "thumbnail": "thumbs/95-d0db1257b8c6.webp"
     },
     {
       "id": 93,
       "name": "模板 93",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/93.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/93.jpg?v=20261107-original",
       "reference": "references/93.jpg",
       "editor": "editors/93.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/93-4185585d786b.webp"
+      "thumbnail": "thumbs/93-b5519eb357f1.webp"
     },
     {
       "id": 107,
       "name": "模板 107",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/107.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/107.jpg?v=20261107-original",
       "reference": "references/107.jpg",
       "editor": "editors/107.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/107-488fe1a4e958.webp"
+      "thumbnail": "thumbs/107-2bd245c7e634.webp"
     },
     {
       "id": 108,
       "name": "模板 108",
       "role": "单张封面",
-      "status": "待审阅",
-      "preview": "previews/108.jpg?v=20261107-copy1",
+      "status": "原样版",
+      "preview": "previews/108.jpg?v=20261107-original",
       "reference": "references/108.jpg",
       "editor": "editors/108.html",
       "width": 1200,
       "height": 1600,
-      "thumbnail": "thumbs/108-9e9797c04737.webp"
+      "thumbnail": "thumbs/108-1bb942fcfb68.webp"
     }
   ],
   "noteCollections": [

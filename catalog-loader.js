@@ -30,48 +30,125 @@ async function writeStoredPreviews(items){
   const db=await openPreviewDB();if(!db)return false;
   return await new Promise(resolve=>{try{const tx=db.transaction(PREVIEW_STORE,'readwrite');for(const item of items)tx.objectStore(PREVIEW_STORE).put(item);tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=tx.onabort=()=>{db.close();resolve(false);};}catch(e){db.close();resolve(false);}});
 }
+// Existing Pages links address files deployed by this same repository; keep storage and auth on this site.
+function normalizeCatalogURL(value){
+  if(typeof value!=='string'||!value)return value;
+  try{
+    const source=new URL(value,location.href),current=new URL(location.href);
+    if(!/^https?:$/.test(source.protocol)||source.hostname!=='1589896915x-cell.github.io'||source.port||source.username||source.password||!source.pathname.startsWith('/wedding-poster/'))return value;
+    if(current.hostname===source.hostname&&current.pathname.startsWith('/wedding-poster/'))return value;
+    current.pathname=source.pathname.slice('/wedding-poster'.length);current.search=source.search;current.hash=source.hash;
+    return current.href;
+  }catch(e){return value;}
+}
 function safeImage(src){
   if(typeof src!=='string'||!src)return '';
   if(/^data:image\/(?:jpeg|png|webp|gif);base64,/i.test(src))return src;
-  try{const u=new URL(src,location.href);return /^(?:https?:|file:)$/.test(u.protocol)?src:'';}catch(e){return '';}
+  try{const u=new URL(src,location.href);return /^(?:https?:|file:)$/.test(u.protocol)?normalizeCatalogURL(src):'';}catch(e){return '';}
+}
+// Assign src only near the viewport; native lazy loading otherwise prefetches many rows.
+const PREVIEW_LIMIT=4, PREVIEW_TIMEOUT=15000, PREVIEW_MARGIN=160;
+const previewJobs=new Map();let previewQueue=[],previewActive=0,previewObserver=null;
+function currentPreview(job){return previewJobs.get(job.id)===job&&job.frame.isConnected;}
+function previewHint(frame,text){const hint=document.createElement('span');hint.className='tpl-preview-hint';hint.textContent=text;frame.appendChild(hint);}
+function removePreviewJob(id){
+  const job=previewJobs.get(id);if(!job)return;
+  previewJobs.delete(id);previewObserver?.unobserve(job.frame);clearTimeout(job.retryTimer);
+  if(job.cancel)job.cancel();
+}
+function pumpPreviews(){
+  while(previewActive<PREVIEW_LIMIT&&previewQueue.length){
+    const job=previewQueue.shift();job.queued=false;
+    if(!currentPreview(job)||!job.near||job.done||job.cancel)continue;
+    previewActive++;job.attempts++;
+    let settled=false,timer=null;
+    const finish=error=>{
+      if(settled)return;settled=true;clearTimeout(timer);job.image.onload=job.image.onerror=null;job.cancel=null;previewActive--;
+      if(error)job.image.removeAttribute('src');
+      if(currentPreview(job)){
+        if(!error){job.done=true;previewObserver?.unobserve(job.frame);}
+        else if(error!=='cancel'&&job.attempts<2){job.retryTimer=setTimeout(()=>queuePreview(job),1000);}
+        else if(error!=='cancel'){job.done=true;previewObserver?.unobserve(job.frame);job.frame.textContent='';previewHint(job.frame,'预览暂时无法加载');}
+      }
+      pumpPreviews();
+    };
+    job.cancel=()=>finish('cancel');job.image.onload=()=>finish();job.image.onerror=()=>finish('error');
+    timer=setTimeout(()=>finish('timeout'),PREVIEW_TIMEOUT);
+    let src=job.src;
+    if(job.attempts>1){try{const u=new URL(src,location.href);if(u.hostname==='1589896915x-cell.github.io'){u.searchParams.set('_retry',String(Date.now()));src=u.href;}}catch(e){}}
+    job.image.src=src;
+  }
+}
+function queuePreview(job){
+  if(!currentPreview(job)||!job.near||job.done||job.cancel||job.queued)return;
+  job.queued=true;previewQueue.push(job);pumpPreviews();
+}
+function scanPreviews(){
+  for(const job of previewJobs.values()){
+    if(job.done||!currentPreview(job))continue;
+    const r=job.frame.getBoundingClientRect();job.near=r.width>0&&r.height>0&&r.bottom>=-PREVIEW_MARGIN&&r.top<=innerHeight+PREVIEW_MARGIN;
+    if(job.near)queuePreview(job);
+  }
+}
+function observePreview(job){
+  if('IntersectionObserver' in window){
+    if(!previewObserver)previewObserver=new IntersectionObserver(entries=>{
+      for(const entry of entries){const job=previewJobs.get(entry.target.dataset.previewId);if(!job||job.frame!==entry.target)continue;job.near=entry.isIntersecting;if(job.near)queuePreview(job);}
+    },{rootMargin:PREVIEW_MARGIN+'px 0px'});
+    job.frame.dataset.previewId=job.id;previewObserver.observe(job.frame);
+  }else{
+    if(!observePreview.fallback){let scheduled=false;const scan=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;scanPreviews();});};window.addEventListener('scroll',scan,{passive:true});window.addEventListener('resize',scan);observePreview.fallback=true;}
+    scanPreviews();
+  }
 }
 function installImage(card,t,src){
   const frame=card.querySelector('.tpl-preview');if(!frame)return;
-  const id=rowId(t), safe=safeImage(src), version=(imageGenerations.get(id)||0)+1;imageGenerations.set(id,version);
+  const id=rowId(t),safe=safeImage(src);removePreviewJob(id);imageGenerations.set(id,(imageGenerations.get(id)||0)+1);
   frame.textContent='';
-  if(!safe){const hint=document.createElement('span');hint.className='tpl-preview-hint';hint.textContent='暂无预览';frame.appendChild(hint);return;}
-  const image=document.createElement('img');image.loading='lazy';image.decoding='async';image.alt=t.name||'模板预览';
-  let tried=false;
-  image.addEventListener('error',()=>{
-    if(imageGenerations.get(id)!==version)return;
-    if(!tried){tried=true;setTimeout(()=>{if(imageGenerations.get(id)===version){
-      let retry=safe;try{const u=new URL(safe,location.href);if(u.protocol!=='data:'&&u.hostname==='1589896915x-cell.github.io'){u.searchParams.set('_retry',String(Date.now()));retry=u.href;}}catch(e){}
-      image.src=retry;
-    }},1000);return;}
-    frame.textContent='';const hint=document.createElement('span');hint.className='tpl-preview-hint';hint.textContent='预览暂时无法加载';frame.appendChild(hint);
-  });
-  image.src=safe;frame.appendChild(image);
+  if(!safe){previewHint(frame,'暂无预览');return;}
+  const image=document.createElement('img');image.loading='eager';image.decoding='async';image.alt=t.name||'模板预览';
+  frame.appendChild(image);
+  const job={id,frame,image,src:safe,near:false,done:false,queued:false,attempts:0,cancel:null,retryTimer:null};
+  previewJobs.set(id,job);observePreview(job);
 }
 function showImage(id,src,opts={}){
   id=String(id);const row=catalogRows.find(t=>rowId(t)===id);if(!row)return;
-  const safe=safeImage(src);const old=imageById.get(id)||'';
+  const safe=safeImage(row.__localPreset?row.img:src);const old=imageById.get(id)||'';
   if(opts.onlyIfEmpty&&old)return;
   if(old===safe&&document.querySelector('.tpl-card[data-template-id="'+CSS.escape(id)+'"] .tpl-preview img'))return;
   imageById.set(id,safe);
   const card=document.querySelector('.tpl-card[data-template-id="'+CSS.escape(id)+'"]');if(card)installImage(card,row,safe);
 }
-function rowSignature(rows){return JSON.stringify((rows||[]).map(t=>[rowId(t),t.name,t.url,t.description,t.tag]));}
+// Local presets are published with the site, never persisted back to the remote catalog.
+function localTemplatePresets(){
+  const source=Array.isArray(window.LOCAL_TEMPLATE_PRESETS)?window.LOCAL_TEMPLATE_PRESETS:[],seen=new Set(),rows=[];
+  for(const item of source){
+    if(!item||typeof item!=='object'||item.is_active===false||typeof item.url!=='string'||!item.url)continue;
+    const id=String(item.id??'').trim();if(!id||/^\d+$/.test(id)||seen.has(id))continue;
+    seen.add(id);rows.push({...item,id,__localPreset:true});
+  }
+  return rows;
+}
+function mergedTemplateRows(remoteRows){
+  const rows=localTemplatePresets(),seen=new Set(rows.map(rowId));
+  for(const row of remoteRows||[]){if(!row||row.__localPreset||seen.has(rowId(row)))continue;seen.add(rowId(row));rows.push(row);}
+  return rows;
+}
+function rowSignature(rows){return JSON.stringify((rows||[]).map(t=>[rowId(t),t.name,t.url,t.description,t.tag,t.__localPreset?t.img:undefined]));}
 function renderTemplates(rows){
-  const grid=document.getElementById('tpl-grid');const same=catalogRows.length>0&&rowSignature(catalogRows)===rowSignature(rows);catalogRows=rows||[];
+  rows=mergedTemplateRows(rows);
+  const grid=document.getElementById('tpl-grid');const same=catalogRows.length>0&&rowSignature(catalogRows)===rowSignature(rows);catalogRows=rows;
+  for(const row of catalogRows)if(row.__localPreset)imageById.set(rowId(row),safeImage(row.img));
   if(same)return;
+  previewQueue=[];for(const id of previewJobs.keys())removePreviewJob(id);
   if(!catalogRows.length){grid.innerHTML='<div style="color:#888;font-size:12px;">暂无模板</div>';return;}
-  grid.innerHTML=catalogRows.map(t=>`<a class="tpl-card" data-template-id="${esc(rowId(t))}" href="${esc(t.url||'#')}">
+  grid.innerHTML=catalogRows.map(t=>`<a class="tpl-card" data-template-id="${esc(rowId(t))}" href="${esc(normalizeCatalogURL(t.url||'#'))}">
     <div class="tpl-preview"></div><div class="tpl-info"><div class="tpl-name">${esc(t.name)}</div>
     <div class="tpl-desc">${esc(t.description||'')}</div>${t.tag?`<div class="tpl-tag">${esc(t.tag)}</div>`:''}</div></a>`).join('');
   for(const row of catalogRows){const id=rowId(row);const card=document.querySelector('.tpl-card[data-template-id="'+CSS.escape(id)+'"]');installImage(card,row,imageById.get(id)||'');}
 }
 function saveCatalog(){
-  try{const data=catalogRows.map(t=>{const src=imageById.get(rowId(t))||'';return {...t,img:src&&!src.startsWith('data:')?src:undefined};});localStorage.setItem('wp_tpl_cache',JSON.stringify({ts:Date.now(),data}));}catch(e){}
+  try{const data=catalogRows.filter(t=>!t.__localPreset).map(t=>{const src=imageById.get(rowId(t))||'';return {...t,img:src&&!src.startsWith('data:')?src:undefined};});localStorage.setItem('wp_tpl_cache',JSON.stringify({ts:Date.now(),data}));}catch(e){}
 }
 async function queryCatalog(query,signal,timeoutMs=10000){
   const controller=new AbortController();const abort=()=>controller.abort();
@@ -90,7 +167,7 @@ async function sha256DataURI(src){
 async function refreshLegacyInBackground(signal){
   const stored=await readStoredPreviews();
   const cachedInline=new Set(stored.filter(s=>(s.src||'').startsWith('data:image/')).map(s=>String(s.id)));
-  const ids=catalogRows.filter(t=>previewFallback(t)||cachedInline.has(rowId(t))).map(rowId).filter(x=>/^\d+$/.test(x));if(!ids.length)return;
+  const ids=catalogRows.filter(t=>!t.__localPreset&&(previewFallback(t)||cachedInline.has(rowId(t)))).map(rowId).filter(x=>/^\d+$/.test(x));if(!ids.length)return;
   let last=0;try{last=Number(localStorage.getItem(LEGACY_CHECK_KEY)||0);}catch(e){}
   if(Date.now()-last<LEGACY_CHECK_INTERVAL)return;
   try{
@@ -119,23 +196,34 @@ function scheduleLegacyVerification(){
   };
   window.addEventListener('scroll',reset,{passive:true});document.addEventListener('visibilitychange',reset);reset();
 }
+// Called explicitly by the login flow after SB_URL/SB_HDR exist. No rendering or image downloads here.
+let catalogPreload=null;
+function preloadTemplates(){
+  if(!catalogPreload){
+    const metadata=queryWithRetry('is_active=eq.true&order=sort_order.asc&select=id,name,url,description,tag,sort_order').then(data=>({data}),error=>({error}));
+    const urls=queryWithRetry('is_active=eq.true&img=not.like.data:*&select=id,img').catch(()=>null);
+    catalogPreload={metadata,urls,ready:Promise.all([metadata,urls]).then(()=>undefined)};
+  }
+  return catalogPreload.ready;
+}
 async function loadTemplates(){
   let hadCache=false, cached=[];
   try{const parsed=JSON.parse(localStorage.getItem('wp_tpl_cache')||'null');if(Array.isArray(parsed?.data))cached=parsed.data;}catch(e){}
-  if(cached.length){
+  if(cached.length||localTemplatePresets().length){
     for(const t of cached){const src=safeImage(t.img)||previewFallback(t);if(src)imageById.set(rowId(t),src);}
     renderTemplates(cached);hadCache=true;
   }else showSkeletons();
   // 图片 URL 请求与轻量列表并行；旧版内嵌图不进入首屏请求。
-  const urlPromise=queryWithRetry('is_active=eq.true&img=not.like.data:*&select=id,img').catch(()=>null);
+  preloadTemplates();const preloaded=catalogPreload;
+  const urlPromise=preloaded.urls;
   const storedPromise=readStoredPreviews();
   try{
-    const fresh=await queryWithRetry('is_active=eq.true&order=sort_order.asc&select=id,name,url,description,tag,sort_order');
+    const result=await preloaded.metadata;if(result.error)throw result.error;const fresh=result.data;
     if(!Array.isArray(fresh))throw Error('invalid list');
     const active=new Set(fresh.map(rowId));for(const id of imageById.keys())if(!active.has(id))imageById.delete(id);
     for(const t of fresh){const id=rowId(t);if(!imageById.get(id)){const src=previewFallback(t);if(src)imageById.set(id,src);}}
     renderTemplates(fresh);saveCatalog();
-  }catch(e){if(!hadCache){document.getElementById('tpl-grid').innerHTML='<div style="color:#e05a5a;font-size:12px;">模板加载失败，请刷新重试</div>';return;}}
+  }catch(e){if(!hadCache){if(catalogPreload===preloaded)catalogPreload=null;document.getElementById('tpl-grid').innerHTML='<div style="color:#e05a5a;font-size:12px;">模板加载失败，请刷新重试</div>';return;}}
   const stored=await storedPromise;
   for(const item of stored){if(item.sameAsStatic){const row=catalogRows.find(t=>rowId(t)===String(item.id));if(row)showImage(item.id,previewFallback(row));}else showImage(item.id,item.src||'');}
   const remote=await urlPromise;
@@ -144,6 +232,7 @@ async function loadTemplates(){
   const remoteIds=new Set(Array.isArray(remote)?remote.map(x=>String(x.id)):[]);
   const storedInline=new Set(stored.filter(s=>(s.src||'').startsWith('data:image/')).map(s=>String(s.id)));
   const missing=catalogRows.filter(t=>{
+    if(t.__localPreset)return false;
     const id=rowId(t),has=imageById.get(id),known=previewFallback(t);
     if(known||remoteIds.has(id))return false;
     // URL 查询成功且此 id 不在结果中：可能已改为内嵌图或移除图片。
@@ -158,5 +247,6 @@ async function loadTemplates(){
   }
   saveCatalog();
   // 仅在页面可见且连续 60 秒没有滚动时低频复核；滚动或隐藏时取消请求。
+  if(catalogPreload===preloaded)catalogPreload=null;
   scheduleLegacyVerification();
 }
