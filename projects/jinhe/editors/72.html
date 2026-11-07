@@ -170,6 +170,38 @@ function wpUpdateQuotaCache(){
     if(cached&&cached.lic?.code===_lic?.code){cached.lic=_lic;localStorage.setItem('wp-lic-cache',JSON.stringify(cached));}
   }catch(e){}
 }
+// Image and image-manifest GETs only. The deadline includes the complete response body.
+async function jinheReadImageAsset(url,kind='blob',options={}){
+  if(!['blob','json','arrayBuffer'].includes(kind))throw new Error('图片读取类型无效');
+  let lastError;
+  for(let attempt=0;attempt<2;attempt++){
+    const controller=new AbortController();let timer,timedOut=false;
+    const deadline=new Promise((_,reject)=>{
+      timer=setTimeout(()=>{
+        timedOut=true;const failure=new Error('图片下载超时');failure.code='ASSET_TIMEOUT';
+        controller.abort();reject(failure);
+      },10000);
+    });
+    const work=(async()=>{
+      const response=await fetch(url,{...options,method:'GET',signal:controller.signal});
+      if(!response.ok){
+        const failure=new Error('图片载入失败（HTTP '+response.status+'）');
+        failure.code='ASSET_LOAD';failure.retryable=response.status===408||response.status===429||response.status>=500;
+        throw failure;
+      }
+      return await response[kind]();
+    })();
+    try{return await Promise.race([work,deadline]);}
+    catch(failure){
+      lastError=timedOut?Object.assign(new Error('图片下载超时'),{code:'ASSET_TIMEOUT'}):failure;controller.abort();
+      if(failure.retryable===false)break;
+    }finally{clearTimeout(timer);}
+  }
+  const failure=new Error(lastError?.code==='ASSET_TIMEOUT'?'图片下载超时，请检查网络后重新打开。':'图片载入失败，请检查网络后重新打开。');
+  failure.code=lastError?.code||'ASSET_LOAD';failure.cause=lastError;
+  throw failure;
+}
+
 // Only license GET reads use this bounded helper; export/debit requests are unchanged.
 async function jinheAuthRead(url,options={}){
   const controller=new AbortController();
@@ -530,9 +562,8 @@ async function wpCheckExportQuota(){
         const pending=(async()=>{
           const absolute=new URL(url,location.href);
           if(absolute.origin!==location.origin)throw error('ASSET_ORIGIN','图片来源无效');
-          const response=await fetch(absolute.href,{cache:'force-cache'});
-          if(!response.ok)throw error('ASSET_LOAD','图片载入失败，请刷新重试');
-          return await blobData(await response.blob());
+          const blob=await jinheReadImageAsset(absolute.href,'blob',{cache:'force-cache'});
+          return await blobData(blob);
         })();
         jinheAssetData.set(url,pending);
         pending.catch(()=>{if(jinheAssetData.get(url)===pending)jinheAssetData.delete(url);});

@@ -471,6 +471,38 @@ async function loadImage(url){
 }
 
 /* ============ Auth ============ */
+// Image and image-manifest GETs only. The deadline includes the complete response body.
+async function jinheReadImageAsset(url,kind='blob',options={}){
+  if(!['blob','json','arrayBuffer'].includes(kind))throw new Error('图片读取类型无效');
+  let lastError;
+  for(let attempt=0;attempt<2;attempt++){
+    const controller=new AbortController();let timer,timedOut=false;
+    const deadline=new Promise((_,reject)=>{
+      timer=setTimeout(()=>{
+        timedOut=true;const failure=new Error('图片下载超时');failure.code='ASSET_TIMEOUT';
+        controller.abort();reject(failure);
+      },10000);
+    });
+    const work=(async()=>{
+      const response=await fetch(url,{...options,method:'GET',signal:controller.signal});
+      if(!response.ok){
+        const failure=new Error('图片载入失败（HTTP '+response.status+'）');
+        failure.code='ASSET_LOAD';failure.retryable=response.status===408||response.status===429||response.status>=500;
+        throw failure;
+      }
+      return await response[kind]();
+    })();
+    try{return await Promise.race([work,deadline]);}
+    catch(failure){
+      lastError=timedOut?Object.assign(new Error('图片下载超时'),{code:'ASSET_TIMEOUT'}):failure;controller.abort();
+      if(failure.retryable===false)break;
+    }finally{clearTimeout(timer);}
+  }
+  const failure=new Error(lastError?.code==='ASSET_TIMEOUT'?'图片下载超时，请检查网络后重新打开。':'图片载入失败，请检查网络后重新打开。');
+  failure.code=lastError?.code||'ASSET_LOAD';failure.cause=lastError;
+  throw failure;
+}
+
 // Only license GET reads use this bounded helper; export/debit requests are unchanged.
 async function jinheAuthRead(url,options={}){
   const controller=new AbortController();
@@ -1497,7 +1529,7 @@ async function textCheck(p,state){
  for(const f of fields){const txt=get(state,f.key);ctx.font=jinheTextFont(p,state,f);const max=Math.max(...txt.split('\n').map(line=>ctx.measureText(line).width));if(!/body|desc|list|tags|detail/i.test(f.key)&&max>Math.max(50,f.width))issues.push({code:'TEXT_TOO_WIDE',field:f.key});}
  await document.fonts.ready;return issues;
 }
-async function decode(i){const blob=await(await fetch(i.src)).blob();if(blob.size>35*1024*1024)throw fail('IMAGE_TOO_LARGE','图片超过35MB');const url=URL.createObjectURL(blob),im=new Image();try{await new Promise((yes,no)=>{const t=setTimeout(()=>no(fail('IMAGE_TIMEOUT','解码超时')),15000);im.onload=()=>{clearTimeout(t);yes()};im.onerror=()=>{clearTimeout(t);no(fail('IMAGE_DECODE','图片无法解码'))};im.src=url;});return {...i,blob,width:im.naturalWidth,height:im.naturalHeight,zoom:i.zoom??1,x:i.x??50,y:i.y??50};}finally{URL.revokeObjectURL(url);}}
+async function decode(i){const blob=await jinheReadImageAsset(i.src);if(blob.size>35*1024*1024)throw fail('IMAGE_TOO_LARGE','图片超过35MB');const url=URL.createObjectURL(blob),im=new Image();try{await new Promise((yes,no)=>{const t=setTimeout(()=>no(fail('IMAGE_TIMEOUT','解码超时')),15000);im.onload=()=>{clearTimeout(t);yes()};im.onerror=()=>{clearTimeout(t);no(fail('IMAGE_DECODE','图片无法解码'))};im.src=url;});return {...i,blob,width:im.naturalWidth,height:im.naturalHeight,zoom:i.zoom??1,x:i.x??50,y:i.y??50};}finally{URL.revokeObjectURL(url);}}
 async function preflight(task){await B.ready();const {p,state}=plan(task);const issues=await textCheck(p,state);return {ok:!issues.length,issues,imagesDecoded:false,reviewRequired:true};}
 async function apply(task){if(busy)throw fail('BUSY','正在执行');busy=true;try{await B.ready();const {p,state}=plan(task);if(window.__jinheSeeding)window.jinhePatchCopy(state);const issues=await textCheck(p,state);if(issues.length)throw fail('TEXT_TOO_WIDE',JSON.stringify(issues));const images=[];for(const i of task.images)images.push(await decode(i));await new Promise(r=>setTimeout(r,400));const s=await B.create(p.variant,task.name),identity={id:s.id,name:task.name,ct:s.ct,at:s.at,createdAt:s.createdAt,updatedAt:s.updatedAt};Object.assign(s,state,identity);if(B.pages){s.data.active=0;s.imgs={};}
  for(const i of images)await B.putImage(p.slots.find(s=>s.key===i.slot),i.blob,i);await B.save();await B.render();active=p;last=clone({...task,images:task.images.map(({src,...i})=>i)});return {ok:true,templateId:B.id,variant:p.variant,projectId:s.id,reviewRequired:true,warnings:[{code:'VISUAL_REVIEW',message:'需核对裁切、人物、近似视角、文字遮挡与事实'}]};}finally{busy=false;}}
@@ -1509,7 +1541,7 @@ window.posterAutomation=Object.freeze({version:'1.1.0',ready:B.ready,describe,pr
 </script>
 <script>
 window.jinheHydrateTask=async function(job){
- await Promise.all((job.images||[]).map(async img=>{if(!img.src.startsWith('data:')){const r=await fetch(img.src);if(!r.ok)throw Error('图片未能载入');let blob;if(img.src.endsWith('.asset.json')){const parts=await r.json();const base=new URL(img.src,location.href);const buffers=await Promise.all(parts.parts.map(async p=>{const z=await fetch(new URL(p.file,base));if(!z.ok)throw Error('图片分片未能载入');return await z.arrayBuffer();}));blob=new Blob(buffers,{type:parts.mime});}else blob=await r.blob();img.src=await new Promise((resolve,reject)=>{const rd=new FileReader();rd.onload=()=>resolve(rd.result);rd.onerror=reject;rd.readAsDataURL(blob);});}}));
+ await Promise.all((job.images||[]).map(async img=>{if(!img.src.startsWith('data:')){let blob;if(img.src.endsWith('.asset.json')){const parts=await jinheReadImageAsset(img.src,'json');const base=new URL(img.src,location.href);const buffers=await Promise.all(parts.parts.map(p=>jinheReadImageAsset(new URL(p.file,base),'arrayBuffer')));blob=new Blob(buffers,{type:parts.mime});}else blob=await jinheReadImageAsset(img.src);img.src=await new Promise((resolve,reject)=>{const rd=new FileReader();rd.onload=()=>resolve(rd.result);rd.onerror=reject;rd.readAsDataURL(blob);});}}));
  return job;
 };
 </script><script>window.jinheFlushCurrent=async()=>{if(window.__legacyBridge)await window.__legacyBridge.save();};</script><script type="application/json" id="jinhe-task">{"templateId":16,"name":"锦禾 · 模板16 · 原样版","store":"锦禾宴会中心","images":[{"slot":"bands.0","x":50,"y":50,"zoom":1,"src":"../assets/web/e878fdd2208ff40062c27d20.jpg"},{"slot":"bands.1","x":50,"y":50,"zoom":1,"src":"../assets/web/2c6f8840962a8deb78986eaf.jpg"},{"slot":"bands.2","x":50,"y":50,"zoom":1,"src":"../assets/web/c6b7318bbb3217844f7b2346.jpg"},{"slot":"bands.3","x":50,"y":50,"zoom":1,"src":"../assets/web/f2581e4ac02b5dfec623b36c.jpg"}],"nativeTexts":{"bands.0.cnText":"百合羽光厅","bands.0.enText":"20–45桌","bands.1.cnText":"铃兰森境厅","bands.1.enText":"20–35桌","bands.2.cnText":"玫瑰香颂厅","bands.2.enText":"10–22桌","bands.3.cnText":"向日葵萌宝厅","bands.3.enText":"10–22桌"}}</script><button type="button" id="jinhe-restore" style="position:fixed;right:18px;bottom:18px;z-index:2147483646;padding:12px 18px;background:#245e56;color:white;border:0;border-radius:8px;cursor:pointer">载入锦禾本版项目</button><script>document.getElementById('jinhe-restore').onclick=async()=>{const btn=document.getElementById('jinhe-restore');btn.disabled=true;btn.textContent='正在载入项目…';try{const job=await window.jinheHydrateTask(JSON.parse(document.getElementById('jinhe-task').textContent));await posterAutomation.ready();await posterAutomation.apply(job);await document.fonts.ready;const s=window.__legacyBridge.current();Object.assign(s,{maskColor:'rgba(0,0,0,0.65)',maskW:60,shadowOn:false,cnFont:'Ma Shan Zheng',cnSize:58,cnLs:0.02,enSize:30,enX:1160,cnX:1160});await window.__legacyBridge.save();await window.__legacyBridge.render();await document.fonts.ready;const check=await posterAutomation.validate();if(!check.ok)throw Error(JSON.stringify(check.issues));window.__jinheResult={ok:true,check};btn.textContent='已载入锦禾项目';}catch(e){window.__jinheResult={ok:false,error:String(e.message||e)};btn.textContent='载入失败，请查看控制台';console.error(e);}};</script><script>window.jinheOriginalAccess={exists:async id=>{const list=typeof projs!=='undefined'?projs:typeof projects!=='undefined'?projects:typeof _projects!=='undefined'?_projects:[];return list.some(p=>p.id===id&&p._jinheOriginalStyle==='20261107-original-style-v1');},open:id=>window.__legacyBridge.open(id),setIdentity:(id,name)=>{const p=window.__legacyBridge.current();p.id=id;p.name=name;}};
