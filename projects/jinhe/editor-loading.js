@@ -39,7 +39,8 @@
       return;
     }
     const nativeError = document.getElementById('status')?.textContent || '';
-    if (legacy?.error || /初始化失败|登录验证失败/.test(nativeError) || Date.now() - start > 120000) {
+    if (Date.now() - start > 120000) hint.textContent = '照片与字体仍在载入，请稍候';
+    if (legacy?.error || /初始化失败|登录验证失败/.test(nativeError)) {
       clearInterval(tick);
       title.textContent = '这次没有完整打开模板';
       hint.textContent = '请检查网络后重试，已保存的编辑内容会保留。';
