@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "revision": "20261107-collages-v1",
+  "presets": [
+    {
+      "id": "jinhe-collage-18-baihe",
+      "templateId": 18,
+      "projectId": "jinhe-collage-18-baihe",
+      "name": "锦禾｜18号拼图｜百合羽光厅",
+      "seed": "seeds/jinhe-collage-18-baihe.json",
+      "preview": "previews/jinhe-collage-18-baihe-7e2c16d17aec50b4.webp",
+      "enabled": true
+    },
+    {
+      "id": "jinhe-collage-18-linglan",
+      "templateId": 18,
+      "projectId": "jinhe-collage-18-linglan",
+      "name": "锦禾｜18号拼图｜铃兰森境厅",
+      "seed": "seeds/jinhe-collage-18-linglan.json",
+      "preview": "previews/jinhe-collage-18-linglan-cb962d7de873e393.webp",
+      "enabled": true
+    },
+    {
+      "id": "jinhe-collage-18-meigui",
+      "templateId": 18,
+      "projectId": "jinhe-collage-18-meigui",
+      "name": "锦禾｜18号拼图｜玫瑰香颂厅",
+      "seed": "seeds/jinhe-collage-18-meigui.json",
+      "preview": "previews/jinhe-collage-18-meigui-d29e5f79542fcde1.webp",
+      "enabled": true
+    },
+    {
+      "id": "jinhe-collage-18-xiangrikui",
+      "templateId": 18,
+      "projectId": "jinhe-collage-18-xiangrikui",
+      "name": "锦禾｜18号拼图｜向日葵萌宝厅",
+      "seed": "seeds/jinhe-collage-18-xiangrikui.json",
+      "preview": "previews/jinhe-collage-18-xiangrikui-df48a17bcd51c591.webp",
+      "enabled": true
+    },
+    {
+      "id": "jinhe-collage-22-baihe",
+      "templateId": 22,
+      "projectId": "jinhe-collage-22-baihe",
+      "name": "锦禾｜22号拼图｜百合羽光厅",
+      "seed": "seeds/jinhe-collage-22-baihe.json",
+      "preview": "previews/jinhe-collage-22-baihe-2fe3e8036fa7ad0e.webp",
+      "enabled": true
+    },
+    {
+      "id": "jinhe-collage-22-linglan",
+      "templateId": 22,
+      "projectId": "jinhe-collage-22-linglan",
+      "name": "锦禾｜22号拼图｜铃兰森境厅",
+      "seed": "seeds/jinhe-collage-22-linglan.json",
+      "preview": "previews/jinhe-collage-22-linglan-3b606c4f56e8d9b9.webp",
+      "enabled": true
+    },
+    {
+      "id": "jinhe-collage-22-meigui",
+      "templateId": 22,
+      "projectId": "jinhe-collage-22-meigui",
+      "name": "锦禾｜22号拼图｜玫瑰香颂厅",
+      "seed": "seeds/jinhe-collage-22-meigui.json",
+      "preview": "previews/jinhe-collage-22-meigui-f13587b709e127a9.webp",
+      "enabled": true
+    },
+    {
+      "id": "jinhe-collage-22-xiangrikui",
+      "templateId": 22,
+      "projectId": "jinhe-collage-22-xiangrikui",
+      "name": "锦禾｜22号拼图｜向日葵萌宝厅",
+      "seed": "seeds/jinhe-collage-22-xiangrikui.json",
+      "preview": "previews/jinhe-collage-22-xiangrikui-805d2dd9b686e801.webp",
+      "enabled": true
+    },
+    {
+      "id": "jinhe-collage-118-baihe",
+      "templateId": 118,
+      "projectId": "jinhe-collage-118-baihe",
+      "name": "锦禾｜118号拼图｜百合羽光厅",
+      "seed": "seeds/jinhe-collage-118-baihe.json",
+      "preview": "previews/jinhe-collage-118-baihe-890890912b42e5b2.webp",
+      "enabled": true
+    },
+    {
+      "id": "jinhe-collage-118-linglan",
+      "templateId": 118,
+      "projectId": "jinhe-collage-118-linglan",
+      "name": "锦禾｜118号拼图｜铃兰森境厅",
+      "seed": "seeds/jinhe-collage-118-linglan.json",
+      "preview": "previews/jinhe-collage-118-linglan-87f8dcb2be3ed5f1.webp",
+      "enabled": true
+    },
+    {
+      "id": "jinhe-collage-118-meigui",
+      "templateId": 118,
+      "projectId": "jinhe-collage-118-meigui",
+      "name": "锦禾｜118号拼图｜玫瑰香颂厅",
+      "seed": "seeds/jinhe-collage-118-meigui.json",
+      "preview": "previews/jinhe-collage-118-meigui-bacd01e7d0e3749c.webp",
+      "enabled": true
+    },
+    {
+      "id": "jinhe-collage-118-xiangrikui",
+      "templateId": 118,
+      "projectId": "jinhe-collage-118-xiangrikui",
+      "name": "锦禾｜118号拼图｜向日葵萌宝厅",
+      "seed": "seeds/jinhe-collage-118-xiangrikui.json",
+      "preview": "previews/jinhe-collage-118-xiangrikui-b9d6cc40a2bad3ae.webp",
+      "enabled": true
+    }
+  ]
+}

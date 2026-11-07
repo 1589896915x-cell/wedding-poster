@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "presetId": "jinhe-collage-22-xiangrikui",
+  "templateId": 22,
+  "project": {
+    "topImg": "img_1794034986061_dnytxt",
+    "topZoom": 1,
+    "topPx": 50,
+    "topPy": 50,
+    "botImg": "img_1794034986074_vnwz3o",
+    "botZoom": 1,
+    "botPx": 50,
+    "botPy": 50,
+    "splitY": 50,
+    "bgColor": "#0a0908",
+    "cnTitle": "向日葵萌宝厅",
+    "cnFont": "Noto Sans SC",
+    "cnSize": 60,
+    "cnWeight": 700,
+    "cnColor": "#ffffff",
+    "cnLs": 0.04,
+    "enLine1": "SUNFLOWER HALL",
+    "enLine2": "",
+    "enFont": "Noto Sans SC",
+    "enSize": 37,
+    "enWeight": 700,
+    "enColor": "#ffffff",
+    "enLs": 0.035,
+    "titleX": 600,
+    "titleY": 49.6,
+    "titleGap": 10,
+    "lineGap": 6,
+    "shadowOn": false,
+    "shadowBlur": 0,
+    "shadowOffY": 0,
+    "shadowColor": "rgba(23,14,32,0.88)",
+    "id": "p_1794034986054_udlg1",
+    "name": "锦禾｜22号拼图｜向日葵萌宝厅",
+    "createdAt": 1794034986054,
+    "updatedAt": 1794035414916
+  },
+  "assets": [
+    {
+      "kind": "image",
+      "slot": "topImg",
+      "src": "../images/963fcf896b89a3eaf557c94a31d928bc6683ce2bced99b80f5a528da3f499264.jpg",
+      "sha256": "963fcf896b89a3eaf557c94a31d928bc6683ce2bced99b80f5a528da3f499264"
+    },
+    {
+      "kind": "image",
+      "slot": "botImg",
+      "src": "../images/6ad947c7c715d347bc8264b4c2bb73e61bcb8ba933416b0c893aef05e9a95a47.jpg",
+      "sha256": "6ad947c7c715d347bc8264b4c2bb73e61bcb8ba933416b0c893aef05e9a95a47"
+    }
+  ]
+}

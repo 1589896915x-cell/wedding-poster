@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "presetId": "jinhe-collage-22-meigui",
+  "templateId": 22,
+  "project": {
+    "topImg": "img_1794034879597_qg53wn",
+    "topZoom": 1,
+    "topPx": 50,
+    "topPy": 50,
+    "botImg": "img_1794034879606_4nl151",
+    "botZoom": 1,
+    "botPx": 50,
+    "botPy": 50,
+    "splitY": 50,
+    "bgColor": "#0a0908",
+    "cnTitle": "玫瑰香颂厅",
+    "cnFont": "Noto Sans SC",
+    "cnSize": 60,
+    "cnWeight": 700,
+    "cnColor": "#2d3a29",
+    "cnLs": 0.04,
+    "enLine1": "ROSE HALL",
+    "enLine2": "",
+    "enFont": "Noto Sans SC",
+    "enSize": 37,
+    "enWeight": 700,
+    "enColor": "#2d3a29",
+    "enLs": 0.035,
+    "titleX": 600,
+    "titleY": 49.6,
+    "titleGap": 10,
+    "lineGap": 6,
+    "shadowOn": false,
+    "shadowBlur": 0,
+    "shadowOffY": 0,
+    "shadowColor": "rgba(23,14,32,0.88)",
+    "id": "p_1794034879588_l32is",
+    "name": "锦禾｜22号拼图｜玫瑰香颂厅",
+    "createdAt": 1794034879588,
+    "updatedAt": 1794035402719
+  },
+  "assets": [
+    {
+      "kind": "image",
+      "slot": "topImg",
+      "src": "../images/7a26bc7f1ecb416144797265227fbd0ce74062123fde70a724e182ba0a3722d7.jpg",
+      "sha256": "7a26bc7f1ecb416144797265227fbd0ce74062123fde70a724e182ba0a3722d7"
+    },
+    {
+      "kind": "image",
+      "slot": "botImg",
+      "src": "../images/2f23d8b1fea26caf6207c5e7fc8a9a38e0d45bf8c61f1793cf3e924331570830.jpg",
+      "sha256": "2f23d8b1fea26caf6207c5e7fc8a9a38e0d45bf8c61f1793cf3e924331570830"
+    }
+  ]
+}

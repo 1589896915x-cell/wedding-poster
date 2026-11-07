@@ -522,6 +522,116 @@ async function wpCheckExportQuota(){
   initPromise.catch(e=>status('初始化失败：'+e.message,true));
   function ready(){return initPromise;}
   window.posterAutomation=Object.freeze({version:'1.0.0',ready,describe,preflight,apply,validate,exportPNG});
+/* Insert inside the existing 118 IIFE, after posterAutomation is defined.
+ * This adapter uses only native project/import/storage/render functions.
+ * It does not render a replacement layout, bypass login, or call export quota.
+ */
+{
+let presetBaseline = null;
+const presetSignature = () => JSON.stringify({ ...proj, updated: undefined });
+async function presetReady() {
+  await ready();
+  if (presetBaseline === null) presetBaseline = presetSignature();
+}
+async function persistPresetEdits() {
+  clearTimeout(saveTimer);
+  if (presetSignature() !== presetBaseline) await saveNow();
+  else await saveChain;
+  presetBaseline = presetSignature();
+}
+window.JinhePresetAdapters = window.JinhePresetAdapters || {};
+window.JinhePresetAdapters[118] = Object.freeze({
+  ready: presetReady,
+  currentId: () => proj?.id || null,
+  async read(id) {
+    await ready();
+    return dbGet('projects', id);
+  },
+  async load(id) {
+    await ready();
+    if (busy) throw error('BUSY', '上一任务尚未完成');
+    setBusy(true);
+    try {
+      await persistPresetEdits();
+      if (!await loadProject(id)) return false;
+      presetBaseline = presetSignature();
+      // Verification is separate: an edited/cleared existing project stays editable.
+      return true;
+    } finally {
+      setBusy(false);
+    }
+  },
+  async create({ id, seed, assets }) {
+    await ready();
+    if (busy) throw error('BUSY', '上一任务尚未完成');
+    if (typeof id !== 'string' || !/^jinhe-collage-118-[a-z0-9-]+$/.test(id)) {
+      throw error('PRESET_ID', '118预置项目编号无效');
+    }
+    if (!seed || Number(seed.templateId ?? seed.project?.templateId) !== 118 || !seed.project) {
+      throw error('TEMPLATE_MISMATCH', '该预置项目不属于118号模板');
+    }
+    if (!navigator.locks?.request) {
+      throw error('PRESET_LOCK', '当前浏览器暂不支持安全创建预置项目，请使用新版浏览器');
+    }
+    setBusy(true);
+    try {
+      await persistPresetEdits();
+      return await navigator.locks.request(DB_NAME + ':preset:' + id, { mode: 'exclusive' }, async () => {
+      // A second request must never overwrite an already edited preset.
+      if (await dbGet('projects', id)) {
+        await loadProject(id);
+        presetBaseline = presetSignature();
+        return { id: proj.id, created: false };
+      }
+      const imported = clone(seed.project);
+      imported.photos = { ...(imported.photos || {}) };
+      const entries = assets instanceof Map ? [...assets.entries()] : Object.entries(assets || {});
+      for (const [slot, blob] of entries) {
+        if (!(blob instanceof Blob)) throw error('IMAGE_SOURCE', '预置图片尚未完整载入');
+        const descriptor = (seed.assets || []).find(asset => asset.slot === slot);
+        if (descriptor?.kind === 'font') {
+          const font = (imported.customFonts || []).find(item => item.family === slot);
+          if (!font) throw error('FONT_BACKUP', '预置字体与原工程不匹配');
+          font.src = await blobData(blob);
+        } else if (!descriptor || descriptor.kind === 'image') {
+          imported.photos[slot] = await blobData(blob);
+        } else {
+          throw error('PRESET_ASSET', '不支持的预置素材类型');
+        }
+      }
+      const state = sanitizeImport({ version: 2, templateId: 118, project: imported });
+      if (!state.photos['top-photo'] || !state.photos['bottom-photo']) {
+        throw error('MISSING_IMAGE', '118号预置项目需要完整上下两张图片');
+      }
+      state.id = id;
+      state.name = imported.name || '锦禾118号拼图';
+      await ensureFonts(state);
+      for (const [slot, src] of Object.entries(state.photos)) await decodePhoto(src, slot);
+      await document.fonts.ready;
+      proj = state;
+      lastTask = null;
+      refreshAfterLoad();
+      await requestRender();
+      await saveNow();
+      presetBaseline = presetSignature();
+      return { id: proj.id, created: true };
+      });
+    } finally {
+      setBusy(false);
+    }
+  },
+  async verify() {
+    await ready();
+    await ensureFonts(proj);
+    await document.fonts.ready;
+    for (const [slot, src] of Object.entries(proj.photos || {})) await decodePhoto(src, slot);
+    await requestRender();
+    return { ...await reportState(proj), projectId: proj.id, imageCount: Object.keys(proj.photos || {}).length };
+  }
+});
+}
+
   window.wpCheckAuth=wpCheckAuth;window.wpCheckExportQuota=wpCheckExportQuota;
 })();
-</script></body></html>
+</script><script src="presets/jinhe-collages/loader.js?v=20261107-collages-v1"></script>
+</body></html>

@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "presetId": "jinhe-collage-118-linglan",
+  "templateId": 118,
+  "project": {
+    "id": "cabceb8e-4092-4ab0-8a92-bb88b6e6f015",
+    "templateId": 118,
+    "name": "锦禾｜118号拼图｜铃兰森境厅",
+    "elements": [
+      {
+        "type": "image",
+        "id": "top-photo",
+        "label": "上方图片",
+        "x": 0,
+        "y": 0,
+        "w": 1200,
+        "h": 880,
+        "r": 0,
+        "zoom": 1,
+        "px": 50,
+        "py": 50
+      },
+      {
+        "type": "image",
+        "id": "bottom-photo",
+        "label": "下方图片",
+        "x": 0,
+        "y": 760,
+        "w": 1200,
+        "h": 840,
+        "r": 0,
+        "zoom": 1,
+        "px": 50,
+        "py": 50,
+        "blendTop": 120
+      },
+      {
+        "type": "gradient",
+        "id": "top-shade",
+        "x": 0,
+        "y": 0,
+        "w": 1200,
+        "h": 350,
+        "direction": "vertical",
+        "stops": [
+          [
+            0,
+            "rgba(0,0,0,0.48)"
+          ],
+          [
+            0.7,
+            "rgba(0,0,0,0.23)"
+          ],
+          [
+            1,
+            "rgba(0,0,0,0)"
+          ]
+        ]
+      },
+      {
+        "type": "text",
+        "id": "main-title",
+        "label": "主标题",
+        "text": "铃兰森境厅",
+        "x": 72,
+        "y": 89,
+        "w": 1070,
+        "size": 84,
+        "font": "serif",
+        "weight": 700,
+        "color": "#ffffff",
+        "align": "left",
+        "spacing": 0,
+        "lineHeight": 1.2,
+        "shadow": 0,
+        "shadowColor": "rgba(0,0,0,0)",
+        "shadowOffsetX": 0,
+        "shadowOffsetY": 0,
+        "stroke": "transparent",
+        "strokeWidth": 0
+      },
+      {
+        "type": "text",
+        "id": "subtitle",
+        "label": "副标题",
+        "text": "嵊州一站式婚礼酒店｜20–35桌\n预定婚宴赠送司仪、摄影、摄像、化妆",
+        "x": 78,
+        "y": 226,
+        "w": 1050,
+        "size": 30,
+        "font": "Uploaded_093c95c6_973c_404f_b955_2dc7e223f385",
+        "weight": 400,
+        "color": "#ffffff",
+        "align": "left",
+        "spacing": 0,
+        "lineHeight": 1.4,
+        "shadow": 0,
+        "shadowColor": "rgba(0,0,0,0)",
+        "shadowOffsetX": 0,
+        "shadowOffsetY": 0,
+        "stroke": "transparent",
+        "strokeWidth": 0
+      },
+      {
+        "type": "text",
+        "id": "footer-en",
+        "label": "底部英文",
+        "text": "JINHE BANQUET CENTER",
+        "x": 280,
+        "y": 1455,
+        "w": 640,
+        "size": 36,
+        "font": "Uploaded_093c95c6_973c_404f_b955_2dc7e223f385",
+        "weight": 400,
+        "color": "#ffffff",
+        "align": "center",
+        "spacing": 2,
+        "lineHeight": 1.2,
+        "shadow": 0,
+        "shadowColor": "rgba(0,0,0,0)",
+        "shadowOffsetX": 0,
+        "shadowOffsetY": 0,
+        "stroke": "transparent",
+        "strokeWidth": 0
+      },
+      {
+        "type": "text",
+        "id": "footer-cn",
+        "label": "底部名称",
+        "text": "锦禾宴会中心",
+        "x": 320,
+        "y": 1506,
+        "w": 560,
+        "size": 28,
+        "font": "Uploaded_093c95c6_973c_404f_b955_2dc7e223f385",
+        "weight": 400,
+        "color": "#ffffff",
+        "align": "center",
+        "spacing": 4,
+        "lineHeight": 1.2,
+        "shadow": 0,
+        "shadowColor": "rgba(0,0,0,0)",
+        "shadowOffsetX": 0,
+        "shadowOffsetY": 0,
+        "stroke": "transparent",
+        "strokeWidth": 0
+      }
+    ],
+    "background": "#eeeeee",
+    "editableArtworkSchema": 1,
+    "sampleSlots": [],
+    "metadata": {
+      "store": "锦禾",
+      "hall": "铃兰森境厅",
+      "source": "native-full-project",
+      "templateId": 118,
+      "images": [
+        {
+          "slot": "top-photo",
+          "x": 50,
+          "y": 50,
+          "zoom": 1,
+          "store": "锦禾",
+          "hall": "铃兰森境厅",
+          "assetId": "8615ac8db39ec4c8e6c961b6e4e35378796ca8b334fb08c82c908ea9ce6e94c9",
+          "sourceType": "真实照片经原片调色"
+        },
+        {
+          "slot": "bottom-photo",
+          "x": 50,
+          "y": 50,
+          "zoom": 1,
+          "store": "锦禾",
+          "hall": "铃兰森境厅",
+          "assetId": "102c959e85225ffe12f993377ed0fee77ab9e20edf7fd5a995fbc496e5598825",
+          "sourceType": "真实照片经原片调色"
+        }
+      ],
+      "workflow": "可编辑拼图制作；尚待原生导入和视觉核验"
+    },
+    "updated": 1794035146165,
+    "customFonts": [
+      {
+        "family": "Uploaded_093c95c6_973c_404f_b955_2dc7e223f385",
+        "label": "思源黑体-Medium500",
+        "src": ""
+      }
+    ],
+    "photos": {}
+  },
+  "assets": [
+    {
+      "kind": "image",
+      "slot": "top-photo",
+      "src": "../images/80ec844033f3d6ae75429fc6ba9743ac0f00b078ec6103aecbfba195d2443834.jpg",
+      "sha256": "80ec844033f3d6ae75429fc6ba9743ac0f00b078ec6103aecbfba195d2443834"
+    },
+    {
+      "kind": "image",
+      "slot": "bottom-photo",
+      "src": "../images/e2146cfa11b25aff02291e68048506fb1edd6545a93ab7dcc9f696bcdc9ea016.jpg",
+      "sha256": "e2146cfa11b25aff02291e68048506fb1edd6545a93ab7dcc9f696bcdc9ea016"
+    },
+    {
+      "kind": "font",
+      "slot": "Uploaded_093c95c6_973c_404f_b955_2dc7e223f385",
+      "src": "../fonts/25f99471d18e0c178df7b5fc57fb494486847acca527634b100c24efa7db7c02.woff2",
+      "sha256": "25f99471d18e0c178df7b5fc57fb494486847acca527634b100c24efa7db7c02",
+      "mime": "application/octet-stream"
+    }
+  ]
+}

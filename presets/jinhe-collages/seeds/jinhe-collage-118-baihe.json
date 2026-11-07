@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "presetId": "jinhe-collage-118-baihe",
+  "templateId": 118,
+  "project": {
+    "id": "63b5f99f-a967-4c34-894e-7a8963ac5dca",
+    "templateId": 118,
+    "name": "锦禾｜118号拼图｜百合羽光厅",
+    "elements": [
+      {
+        "type": "image",
+        "id": "top-photo",
+        "label": "上方图片",
+        "x": 0,
+        "y": 0,
+        "w": 1200,
+        "h": 880,
+        "r": 0,
+        "zoom": 1,
+        "px": 50,
+        "py": 50
+      },
+      {
+        "type": "image",
+        "id": "bottom-photo",
+        "label": "下方图片",
+        "x": 0,
+        "y": 760,
+        "w": 1200,
+        "h": 840,
+        "r": 0,
+        "zoom": 1,
+        "px": 50,
+        "py": 50,
+        "blendTop": 120
+      },
+      {
+        "type": "gradient",
+        "id": "top-shade",
+        "x": 0,
+        "y": 0,
+        "w": 1200,
+        "h": 350,
+        "direction": "vertical",
+        "stops": [
+          [
+            0,
+            "rgba(0,0,0,0.48)"
+          ],
+          [
+            0.7,
+            "rgba(0,0,0,0.23)"
+          ],
+          [
+            1,
+            "rgba(0,0,0,0)"
+          ]
+        ]
+      },
+      {
+        "type": "text",
+        "id": "main-title",
+        "label": "主标题",
+        "text": "百合羽光厅",
+        "x": 72,
+        "y": 89,
+        "w": 1070,
+        "size": 84,
+        "font": "serif",
+        "weight": 700,
+        "color": "#ffffff",
+        "align": "left",
+        "spacing": 0,
+        "lineHeight": 1.2,
+        "shadow": 0,
+        "shadowColor": "rgba(0,0,0,0)",
+        "shadowOffsetX": 0,
+        "shadowOffsetY": 0,
+        "stroke": "transparent",
+        "strokeWidth": 0
+      },
+      {
+        "type": "text",
+        "id": "subtitle",
+        "label": "副标题",
+        "text": "嵊州一站式婚礼酒店｜20–45桌\n预定婚宴赠送司仪、摄影、摄像、化妆",
+        "x": 78,
+        "y": 226,
+        "w": 1050,
+        "size": 30,
+        "font": "Uploaded_093c95c6_973c_404f_b955_2dc7e223f385",
+        "weight": 400,
+        "color": "#ffffff",
+        "align": "left",
+        "spacing": 0,
+        "lineHeight": 1.4,
+        "shadow": 0,
+        "shadowColor": "rgba(0,0,0,0)",
+        "shadowOffsetX": 0,
+        "shadowOffsetY": 0,
+        "stroke": "transparent",
+        "strokeWidth": 0
+      },
+      {
+        "type": "text",
+        "id": "footer-en",
+        "label": "底部英文",
+        "text": "JINHE BANQUET CENTER",
+        "x": 280,
+        "y": 1455,
+        "w": 640,
+        "size": 36,
+        "font": "Uploaded_093c95c6_973c_404f_b955_2dc7e223f385",
+        "weight": 400,
+        "color": "#ffffff",
+        "align": "center",
+        "spacing": 2,
+        "lineHeight": 1.2,
+        "shadow": 0,
+        "shadowColor": "rgba(0,0,0,0)",
+        "shadowOffsetX": 0,
+        "shadowOffsetY": 0,
+        "stroke": "transparent",
+        "strokeWidth": 0
+      },
+      {
+        "type": "text",
+        "id": "footer-cn",
+        "label": "底部名称",
+        "text": "锦禾宴会中心",
+        "x": 320,
+        "y": 1506,
+        "w": 560,
+        "size": 28,
+        "font": "Uploaded_093c95c6_973c_404f_b955_2dc7e223f385",
+        "weight": 400,
+        "color": "#ffffff",
+        "align": "center",
+        "spacing": 4,
+        "lineHeight": 1.2,
+        "shadow": 0,
+        "shadowColor": "rgba(0,0,0,0)",
+        "shadowOffsetX": 0,
+        "shadowOffsetY": 0,
+        "stroke": "transparent",
+        "strokeWidth": 0
+      }
+    ],
+    "background": "#eeeeee",
+    "editableArtworkSchema": 1,
+    "sampleSlots": [],
+    "metadata": {
+      "store": "锦禾",
+      "hall": "百合羽光厅",
+      "source": "native-full-project",
+      "templateId": 118,
+      "images": [
+        {
+          "slot": "top-photo",
+          "x": 50,
+          "y": 50,
+          "zoom": 1,
+          "store": "锦禾",
+          "hall": "百合羽光厅",
+          "assetId": "428b22386470cc62a98bd48e44e03dd48f33433c1af265bf4597bac7cfa9e338",
+          "sourceType": "真实照片经已授权修图"
+        },
+        {
+          "slot": "bottom-photo",
+          "x": 50,
+          "y": 50,
+          "zoom": 1,
+          "store": "锦禾",
+          "hall": "百合羽光厅",
+          "assetId": "31137b48dea6cd56602bfceec626f197f116d7c33e5c907c1550314ea694524c",
+          "sourceType": "真实照片经已授权修图"
+        }
+      ],
+      "workflow": "可编辑拼图制作；尚待原生导入和视觉核验"
+    },
+    "updated": 1794035142556,
+    "customFonts": [
+      {
+        "family": "Uploaded_093c95c6_973c_404f_b955_2dc7e223f385",
+        "label": "思源黑体-Medium500",
+        "src": ""
+      }
+    ],
+    "photos": {}
+  },
+  "assets": [
+    {
+      "kind": "image",
+      "slot": "top-photo",
+      "src": "../images/b64165a6d04708c7503da671344ea2e9d2bc5a3dc942881a607d76406148a460.jpg",
+      "sha256": "b64165a6d04708c7503da671344ea2e9d2bc5a3dc942881a607d76406148a460"
+    },
+    {
+      "kind": "image",
+      "slot": "bottom-photo",
+      "src": "../images/f3cfdc68236f19246417bff197a047e1fddb0f9aba022f14947824aaf00e7fbd.jpg",
+      "sha256": "f3cfdc68236f19246417bff197a047e1fddb0f9aba022f14947824aaf00e7fbd"
+    },
+    {
+      "kind": "font",
+      "slot": "Uploaded_093c95c6_973c_404f_b955_2dc7e223f385",
+      "src": "../fonts/25f99471d18e0c178df7b5fc57fb494486847acca527634b100c24efa7db7c02.woff2",
+      "sha256": "25f99471d18e0c178df7b5fc57fb494486847acca527634b100c24efa7db7c02",
+      "mime": "application/octet-stream"
+    }
+  ]
+}

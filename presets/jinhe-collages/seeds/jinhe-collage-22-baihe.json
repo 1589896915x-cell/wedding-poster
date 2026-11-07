@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "presetId": "jinhe-collage-22-baihe",
+  "templateId": 22,
+  "project": {
+    "topImg": "img_1794034877699_sw03bs",
+    "topZoom": 1,
+    "topPx": 50,
+    "topPy": 50,
+    "botImg": "img_1794034877705_0g2rb7",
+    "botZoom": 1,
+    "botPx": 50,
+    "botPy": 50,
+    "splitY": 50,
+    "bgColor": "#0a0908",
+    "cnTitle": "百合羽光厅",
+    "cnFont": "Noto Sans SC",
+    "cnSize": 60,
+    "cnWeight": 700,
+    "cnColor": "#243843",
+    "cnLs": 0.04,
+    "enLine1": "LILY HALL",
+    "enLine2": "",
+    "enFont": "Noto Sans SC",
+    "enSize": 37,
+    "enWeight": 700,
+    "enColor": "#243843",
+    "enLs": 0.035,
+    "titleX": 600,
+    "titleY": 49.6,
+    "titleGap": 10,
+    "lineGap": 6,
+    "shadowOn": false,
+    "shadowBlur": 0,
+    "shadowOffY": 0,
+    "shadowColor": "rgba(23,14,32,0.88)",
+    "id": "p_1794034877691_4sbu6",
+    "name": "锦禾｜22号拼图｜百合羽光厅",
+    "createdAt": 1794034877691,
+    "updatedAt": 1794035382372
+  },
+  "assets": [
+    {
+      "kind": "image",
+      "slot": "topImg",
+      "src": "../images/d77ab9f2ddc7f1d438a34e66b76d21ef4667806002eae967f37268ad01c18f1e.jpg",
+      "sha256": "d77ab9f2ddc7f1d438a34e66b76d21ef4667806002eae967f37268ad01c18f1e"
+    },
+    {
+      "kind": "image",
+      "slot": "botImg",
+      "src": "../images/dded618a25ce2cebf9e2f536827e784deba97c5095424d0dd855abfe3b3280ed.jpg",
+      "sha256": "dded618a25ce2cebf9e2f536827e784deba97c5095424d0dd855abfe3b3280ed"
+    }
+  ]
+}
