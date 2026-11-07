@@ -14,7 +14,8 @@
       "reference": "references/1.png",
       "editor": "editors/1.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/1-20c493c7cbbd.webp"
     },
     {
       "id": 4,
@@ -25,7 +26,8 @@
       "reference": "references/4.jpg",
       "editor": "editors/4.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/4-4cae26518385.webp"
     },
     {
       "id": 5,
@@ -36,7 +38,8 @@
       "reference": "references/5.png",
       "editor": "editors/5.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/5-ace3882c06be.webp"
     },
     {
       "id": 10,
@@ -47,7 +50,8 @@
       "reference": "references/10.png",
       "editor": "editors/10.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/10-fd97bebd6ebc.webp"
     },
     {
       "id": 12,
@@ -58,7 +62,8 @@
       "reference": "references/12.png",
       "editor": "editors/12.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/12-9bfa1e9ff37a.webp"
     },
     {
       "id": 16,
@@ -69,7 +74,8 @@
       "reference": "references/16.png",
       "editor": "editors/16.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/16-c033e9b977d1.webp"
     },
     {
       "id": 17,
@@ -80,7 +86,8 @@
       "reference": "references/17.jpg",
       "editor": "editors/17.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/17-15624be38e64.webp"
     },
     {
       "id": 19,
@@ -91,7 +98,8 @@
       "reference": "references/19.jpg",
       "editor": "editors/19.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/19-d32c18118c6c.webp"
     },
     {
       "id": 25,
@@ -102,7 +110,8 @@
       "reference": "references/25.jpg",
       "editor": "editors/25.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/25-42b419f3dd09.webp"
     },
     {
       "id": 62,
@@ -113,7 +122,8 @@
       "reference": "references/62.jpg",
       "editor": "editors/62.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/62-210b421971cd.webp"
     },
     {
       "id": 68,
@@ -124,7 +134,8 @@
       "reference": "references/68.jpg",
       "editor": "editors/68.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/68-c4bc546d5d28.webp"
     },
     {
       "id": 70,
@@ -135,7 +146,8 @@
       "reference": "references/70.jpg",
       "editor": "editors/70.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/70-2a81f1f24727.webp"
     },
     {
       "id": 72,
@@ -146,7 +158,8 @@
       "reference": "references/72.jpg",
       "editor": "editors/72.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/72-deaa891e29fb.webp"
     },
     {
       "id": 80,
@@ -157,7 +170,8 @@
       "reference": "references/80.jpg",
       "editor": "editors/80.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/80-35691d4adb37.webp"
     },
     {
       "id": 81,
@@ -168,7 +182,8 @@
       "reference": "references/81.jpg",
       "editor": "editors/81.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/81-ba520fde34f5.webp"
     },
     {
       "id": 106,
@@ -179,7 +194,8 @@
       "reference": "references/106.jpg",
       "editor": "editors/106.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/106-cd3983f3e458.webp"
     },
     {
       "id": 97,
@@ -190,7 +206,8 @@
       "reference": "references/97.jpg",
       "editor": "editors/97.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/97-b10629d51667.webp"
     },
     {
       "id": 96,
@@ -201,7 +218,8 @@
       "reference": "references/96.jpg",
       "editor": "editors/96.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/96-04c06e5148d7.webp"
     },
     {
       "id": 95,
@@ -212,7 +230,8 @@
       "reference": "references/95.jpg",
       "editor": "editors/95.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/95-f9ad50e98f37.webp"
     },
     {
       "id": 93,
@@ -223,7 +242,8 @@
       "reference": "references/93.jpg",
       "editor": "editors/93.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/93-4185585d786b.webp"
     },
     {
       "id": 107,
@@ -234,7 +254,8 @@
       "reference": "references/107.jpg",
       "editor": "editors/107.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/107-488fe1a4e958.webp"
     },
     {
       "id": 108,
@@ -245,7 +266,8 @@
       "reference": "references/108.jpg",
       "editor": "editors/108.html",
       "width": 1200,
-      "height": 1600
+      "height": 1600,
+      "thumbnail": "thumbs/108-9e9797c04737.webp"
     }
   ],
   "noteCollections": [
